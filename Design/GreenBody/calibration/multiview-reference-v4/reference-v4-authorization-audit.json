@@ -1,0 +1,36 @@
+{
+  "schema": "greenbody-reference-v4-annotation-reconciliation-v1",
+  "authorization": "授权",
+  "source_protocol": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/multiview-reference-v3",
+  "source_image_sha256": "73b210848a7ea201c45ed6443fb74d5d4852fcb16794bf434814c0d6f9a6e863",
+  "v4_side_reference_source_sha256": "73b210848a7ea201c45ed6443fb74d5d4852fcb16794bf434814c0d6f9a6e863",
+  "artwork_edit": "none; the source artwork is byte-identical in all v4 view copies",
+  "side_annotation_changes": {
+    "screen_left_shoulder": {
+      "old_source_y": 215,
+      "new_source_y": 214
+    },
+    "screen_left_elbow": {
+      "old_source_y": 338,
+      "new_source_y": 318
+    },
+    "screen_left_wrist": {
+      "old_source_y": 444,
+      "new_source_y": 430
+    },
+    "screen_left_hip": {
+      "old_source_y": 425,
+      "new_source_y": 416
+    },
+    "screen_left_knee": {
+      "old_source_y": 586,
+      "new_source_y": 588
+    },
+    "screen_left_ankle": {
+      "old_source_y": 770,
+      "new_source_y": 772
+    }
+  },
+  "constraint": "Shared front/side joint vertical coordinates are reconciled under the fixed same-scale orthographic camera and pose.",
+  "limitation": "This restores a coherent landmark target; it does not make the current model 99% accurate or change scoring weights."
+}

@@ -1,0 +1,27 @@
+{
+  "schema": "greenbody-reference-v1",
+  "revision": 3,
+  "image": "../reference/green-body-concept.png",
+  "image_sha256": "a495910b0855d94a9d5679e41362d4f7aaeda724d0800025c7b5b70871f9b3cd",
+  "view": "neutral-standing-hero",
+  "annotation_status": "provisional",
+  "annotation_note": "AI概念图关节中心为人工目测估计；完成放大图复核，但未获用户逐点确认，不能视作三维真值。容差为原图像素估计，不是统计置信区间。轮廓由锁定颜色分割提取，边缘仍有不确定性。",
+  "roi": [160, 74, 475, 825],
+  "segmentation": {"min_green": 50, "green_red_ratio": 1.025, "green_blue_ratio": 1.30},
+  "canonical": {"width": 480, "height": 800, "body_height": 720, "top": 40},
+  "scoring": {"body_height": 720, "body_top_y": 40, "body_center_x": 240},
+  "landmarks": {
+    "screen_left_shoulder": {"xy": [250, 245], "uncertainty_px": 10, "weight": 1},
+    "screen_right_shoulder": {"xy": [386, 245], "uncertainty_px": 10, "weight": 1},
+    "screen_left_elbow": {"xy": [234, 333], "uncertainty_px": 9, "weight": 1},
+    "screen_right_elbow": {"xy": [398, 338], "uncertainty_px": 9, "weight": 1},
+    "screen_left_wrist": {"xy": [203, 442], "uncertainty_px": 7, "weight": 1},
+    "screen_right_wrist": {"xy": [429, 443], "uncertainty_px": 7, "weight": 1},
+    "screen_left_hip": {"xy": [294, 426], "uncertainty_px": 12, "weight": 1},
+    "screen_right_hip": {"xy": [345, 426], "uncertainty_px": 12, "weight": 1},
+    "screen_left_knee": {"xy": [264, 588], "uncertainty_px": 10, "weight": 1},
+    "screen_right_knee": {"xy": [367, 587], "uncertainty_px": 10, "weight": 1},
+    "screen_left_ankle": {"xy": [227, 761], "uncertainty_px": 7, "weight": 1},
+    "screen_right_ankle": {"xy": [373, 757], "uncertainty_px": 7, "weight": 1}
+  }
+}

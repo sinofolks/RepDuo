@@ -1,0 +1,403 @@
+{
+  "generated_at_utc": "2026-09-13T04:39:52.018614+00:00",
+  "blender_version": "5.2.1 LTS",
+  "blend_file": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/GreenBody-v6-work.blend",
+  "read_only_model_validation": true,
+  "errors": [],
+  "warnings": [],
+  "original_mesh": {
+    "object": "GreenBody",
+    "mesh": "GB_V2_ContinuousBody",
+    "vertex_count": 13024,
+    "edge_count": 26021,
+    "face_count": 12999,
+    "polygon_size_histogram": {
+      "4": 12982,
+      "3": 8,
+      "50": 1,
+      "5": 8
+    },
+    "all_vertex_coordinates_finite": true,
+    "nonfinite_vertex_indices_sample": [],
+    "zero_area_threshold_square_meters_local": 1e-12,
+    "zero_area_face_count": 0,
+    "zero_area_face_indices_sample": [],
+    "nonfinite_face_area_count": 0,
+    "repeated_index_face_count": 0,
+    "nonmanifold_edge_count_including_boundary_and_wire": 0,
+    "boundary_edge_count": 0,
+    "wire_edge_count": 0,
+    "overconnected_edge_count": 0,
+    "nonmanifold_edge_indices_sample": [],
+    "loose_vertex_count": 0,
+    "loose_vertex_indices_sample": [],
+    "connected_component_count": 1,
+    "connected_component_vertex_counts": [
+      13024
+    ],
+    "bounds_local_meters": {
+      "minimum": [
+        -0.5477655529975891,
+        -0.3731380105018616,
+        0.0
+      ],
+      "maximum": [
+        0.5477655529975891,
+        0.09154704213142395,
+        1.8198000192642212
+      ],
+      "dimensions": [
+        1.0955311059951782,
+        0.4646850526332855,
+        1.8198000192642212
+      ]
+    }
+  },
+  "armature_weights": {
+    "scene_armatures": [
+      "GB_ReviewArmature"
+    ],
+    "associated_armatures": [
+      "GB_ReviewArmature"
+    ],
+    "armature_modifiers": [
+      {
+        "name": "Review posture — preserve volume",
+        "target": "GB_ReviewArmature",
+        "show_viewport": true,
+        "show_render": true
+      }
+    ],
+    "deforming_bone_name_count": 163,
+    "matched_bone_vertex_group_count": 139,
+    "ignored_nonbone_vertex_groups": [],
+    "normalization_tolerance": 0.0001,
+    "bone_weight_sum_minimum": 0.9999999366700649,
+    "bone_weight_sum_maximum": 1.0000000707805157,
+    "maximum_absolute_normalization_error": 7.078051567077637e-08,
+    "outside_tolerance_count": 0,
+    "outside_tolerance_sample": [],
+    "unweighted_vertex_count": 0,
+    "unweighted_vertex_indices_sample": [],
+    "invalid_weight_vertex_count": 0,
+    "invalid_weight_vertex_indices_sample": [],
+    "all_vertices_normalized": true
+  },
+  "evaluated_mesh": {
+    "evaluation_context": "Current frame and viewport dependency graph; no scene mutation",
+    "vertex_count": 208170,
+    "face_count": 208168,
+    "all_world_coordinates_finite": true,
+    "nonfinite_vertex_indices_sample": [],
+    "bounds_world_meters": {
+      "minimum": [
+        -0.3506648540496826,
+        -0.17644670605659485,
+        -0.0034982492215931416
+      ],
+      "maximum": [
+        0.3215273916721344,
+        0.09463533759117126,
+        1.8189722299575806
+      ],
+      "dimensions": [
+        0.672192245721817,
+        0.2710820436477661,
+        1.8224704791791737
+      ]
+    },
+    "modifiers": [
+      {
+        "name": "Review posture — preserve volume",
+        "type": "ARMATURE",
+        "show_viewport": true,
+        "show_render": true
+      },
+      {
+        "name": "Subtle surface polish",
+        "type": "CORRECTIVE_SMOOTH",
+        "show_viewport": true,
+        "show_render": true
+      },
+      {
+        "name": "Presentation subdivision",
+        "type": "SUBSURF",
+        "show_viewport": true,
+        "show_render": true,
+        "viewport_levels": 2,
+        "render_levels": 2
+      }
+    ]
+  },
+  "camera_framing": [
+    {
+      "camera": "GB_Camera_Hero",
+      "type": "ORTHO",
+      "ortho_scale": 2.1700000762939453,
+      "resolution": [
+        1000,
+        1200
+      ],
+      "all_evaluated_world_bbox_corners_in_frustum": true,
+      "projected_bbox_corners_ndc_xyz": [
+        [
+          0.34149545431137085,
+          0.061924856156110764,
+          6.907864570617676
+        ],
+        [
+          0.34149548411369324,
+          0.8995219469070435,
+          6.7745208740234375
+        ],
+        [
+          0.29919669032096863,
+          0.07069357484579086,
+          7.167233943939209
+        ],
+        [
+          0.299196720123291,
+          0.908290684223175,
+          7.033890724182129
+        ],
+        [
+          0.698110044002533,
+          0.06831999868154526,
+          7.0970258712768555
+        ],
+        [
+          0.698110044002533,
+          0.9059171080589294,
+          6.963682651519775
+        ],
+        [
+          0.6558113098144531,
+          0.07708871364593506,
+          7.356395721435547
+        ],
+        [
+          0.6558113098144531,
+          0.9146857857704163,
+          7.223052501678467
+        ]
+      ],
+      "ndc_margin": {
+        "left": 0.29919669032096863,
+        "right": 0.30188995599746704,
+        "bottom": 0.061924856156110764,
+        "top": 0.08531421422958374
+      }
+    },
+    {
+      "camera": "GB_Camera_Front",
+      "type": "ORTHO",
+      "ortho_scale": 2.140000104904175,
+      "resolution": [
+        1000,
+        1200
+      ],
+      "all_evaluated_world_bbox_corners_in_frustum": true,
+      "projected_bbox_corners_ndc_xyz": [
+        [
+          0.3033654987812042,
+          0.059112485498189926,
+          6.823553085327148
+        ],
+        [
+          0.3033654987812042,
+          0.9107341170310974,
+          6.823553562164307
+        ],
+        [
+          0.3033654987812042,
+          0.05911245942115784,
+          7.094635486602783
+        ],
+        [
+          0.3033654987812042,
+          0.9107341170310974,
+          7.094635486602783
+        ],
+        [
+          0.6802957057952881,
+          0.059112485498189926,
+          6.823553085327148
+        ],
+        [
+          0.6802957057952881,
+          0.9107341170310974,
+          6.823553562164307
+        ],
+        [
+          0.6802957057952881,
+          0.05911245942115784,
+          7.094635486602783
+        ],
+        [
+          0.6802957057952881,
+          0.9107341170310974,
+          7.094635486602783
+        ]
+      ],
+      "ndc_margin": {
+        "left": 0.3033654987812042,
+        "right": 0.3197042942047119,
+        "bottom": 0.05911245942115784,
+        "top": 0.08926588296890259
+      }
+    },
+    {
+      "camera": "GB_Camera_Side",
+      "type": "ORTHO",
+      "ortho_scale": 2.140000104904175,
+      "resolution": [
+        1000,
+        1200
+      ],
+      "all_evaluated_world_bbox_corners_in_frustum": true,
+      "projected_bbox_corners_ndc_xyz": [
+        [
+          0.4010581076145172,
+          0.05911284685134888,
+          7.350665092468262
+        ],
+        [
+          0.4010581076145172,
+          0.9107345342636108,
+          7.350665092468262
+        ],
+        [
+          0.5530667304992676,
+          0.05911284685134888,
+          7.3506646156311035
+        ],
+        [
+          0.5530667304992676,
+          0.9107345342636108,
+          7.350665092468262
+        ],
+        [
+          0.4010581076145172,
+          0.05911284685134888,
+          6.678472518920898
+        ],
+        [
+          0.4010581076145172,
+          0.9107345342636108,
+          6.678472518920898
+        ],
+        [
+          0.5530667304992676,
+          0.05911284685134888,
+          6.678472518920898
+        ],
+        [
+          0.5530667304992676,
+          0.9107345342636108,
+          6.678472518920898
+        ]
+      ],
+      "ndc_margin": {
+        "left": 0.4010581076145172,
+        "right": 0.4469332695007324,
+        "bottom": 0.05911284685134888,
+        "top": 0.08926546573638916
+      }
+    },
+    {
+      "camera": "GB_Camera_Back",
+      "type": "ORTHO",
+      "ortho_scale": 2.140000104904175,
+      "resolution": [
+        1000,
+        1200
+      ],
+      "all_evaluated_world_bbox_corners_in_frustum": true,
+      "projected_bbox_corners_ndc_xyz": [
+        [
+          0.6966338157653809,
+          0.05911242961883545,
+          7.176446914672852
+        ],
+        [
+          0.6966339349746704,
+          0.9107341170310974,
+          7.176446914672852
+        ],
+        [
+          0.6966338157653809,
+          0.05911242961883545,
+          6.905364513397217
+        ],
+        [
+          0.6966339945793152,
+          0.9107341170310974,
+          6.905364990234375
+        ],
+        [
+          0.3197035789489746,
+          0.05911245942115784,
+          7.176446437835693
+        ],
+        [
+          0.31970372796058655,
+          0.9107341170310974,
+          7.176446914672852
+        ],
+        [
+          0.319703608751297,
+          0.059112485498189926,
+          6.905364513397217
+        ],
+        [
+          0.31970375776290894,
+          0.9107341766357422,
+          6.905364990234375
+        ]
+      ],
+      "ndc_margin": {
+        "left": 0.3197035789489746,
+        "right": 0.3033660054206848,
+        "bottom": 0.05911242961883545,
+        "top": 0.08926582336425781
+      }
+    }
+  ],
+  "body_materials": [
+    {
+      "name": "GB_V2_Satin_Lime",
+      "principled_shaders": [
+        {
+          "node": "Principled BSDF",
+          "base_color_linear_rgba": [
+            0.4793201684951782,
+            0.7835378050804138,
+            0.04373503103852272,
+            1.0
+          ],
+          "base_color_srgb_hex": "#B8E53B",
+          "base_color_is_linked": false,
+          "roughness": 0.47999998927116394,
+          "metallic": 0.0
+        }
+      ]
+    }
+  ],
+  "external_images": [],
+  "blend_file_integrity": {
+    "before": {
+      "path": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/GreenBody-v6-work.blend",
+      "size_bytes": 691891,
+      "mtime_ns": 1789274345473629617,
+      "sha256": "1f4c67375a454315b3ec0b19eec4bd9b4634c1d232c99e2160626a7f074bde3b"
+    },
+    "after": {
+      "path": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/GreenBody-v6-work.blend",
+      "size_bytes": 691891,
+      "mtime_ns": 1789274345473629617,
+      "sha256": "1f4c67375a454315b3ec0b19eec4bd9b4634c1d232c99e2160626a7f074bde3b"
+    },
+    "unchanged": true
+  },
+  "status": "PASS"
+}

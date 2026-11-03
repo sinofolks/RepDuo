@@ -1,0 +1,54 @@
+name: RepDuo CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: macos-15
+    timeout-minutes: 35
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Run portable domain and persistence tests
+        run: swift test
+
+      - name: Select and boot an available iPhone Simulator
+        id: simulator
+        shell: bash
+        run: |
+          simulator_id=$(xcrun simctl list devices available -j | jq -r '[.devices[][] | select(.name | startswith("iPhone"))][0].udid // empty')
+          if [[ -z "$simulator_id" ]]; then
+            echo "No eligible iPhone Simulator is installed" >&2
+            exit 1
+          fi
+          xcrun simctl boot "$simulator_id" 2>/dev/null || true
+          xcrun simctl bootstatus "$simulator_id" -b
+          echo "id=$simulator_id" >> "$GITHUB_OUTPUT"
+
+      - name: Build and execute iOS unit and UI tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project RepDuo.xcodeproj \
+            -scheme RepDuo \
+            -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.id }}" \
+            -resultBundlePath "$RUNNER_TEMP/RepDuoTests.xcresult" \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Upload test result bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: RepDuoTests-xcresult
+          path: ${{ runner.temp }}/RepDuoTests.xcresult
+          if-no-files-found: ignore

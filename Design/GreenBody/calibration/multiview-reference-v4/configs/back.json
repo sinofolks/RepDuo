@@ -1,0 +1,155 @@
+{
+  "schema": "greenbody-reference-v1",
+  "revision": 4,
+  "image": "../../../reference/green-body-turnaround-v3b-harmonized.png",
+  "image_sha256": "73b210848a7ea201c45ed6443fb74d5d4852fcb16794bf434814c0d6f9a6e863",
+  "view": "approved-turnaround-back",
+  "design_approval": {
+    "status": "user_approved",
+    "user_statement": "我认可刚才的三视图",
+    "date": "2026-09-13"
+  },
+  "annotation_status": "provisional",
+  "annotation_note": "用户授权后，以固定同尺度正交相机和同一站姿为约束，校正侧视共享关节的纵向标注；原三视图像素未被改写。AI生成图仍不是实测三维几何。",
+  "roi": [
+    1110,
+    25,
+    1490,
+    835
+  ],
+  "segmentation": {
+    "min_green": 50,
+    "green_red_ratio": 1.025,
+    "green_blue_ratio": 1.3
+  },
+  "canonical": {
+    "width": 480,
+    "height": 800,
+    "body_height": 720,
+    "top": 40
+  },
+  "scoring": {
+    "body_height": 720,
+    "body_top_y": 40,
+    "body_center_x": 240
+  },
+  "landmarks": {
+    "screen_right_shoulder": {
+      "xy": [
+        1383,
+        214
+      ],
+      "uncertainty_px": 10,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_left_shoulder": {
+      "xy": [
+        1214,
+        214
+      ],
+      "uncertainty_px": 10,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_right_elbow": {
+      "xy": [
+        1411,
+        318
+      ],
+      "uncertainty_px": 10,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_left_elbow": {
+      "xy": [
+        1189,
+        318
+      ],
+      "uncertainty_px": 10,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_right_wrist": {
+      "xy": [
+        1445,
+        430
+      ],
+      "uncertainty_px": 10,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_left_wrist": {
+      "xy": [
+        1155,
+        430
+      ],
+      "uncertainty_px": 10,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_right_hip": {
+      "xy": [
+        1335,
+        416
+      ],
+      "uncertainty_px": 12,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_left_hip": {
+      "xy": [
+        1258,
+        416
+      ],
+      "uncertainty_px": 12,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_right_knee": {
+      "xy": [
+        1356,
+        588
+      ],
+      "uncertainty_px": 10,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_left_knee": {
+      "xy": [
+        1239,
+        588
+      ],
+      "uncertainty_px": 10,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_right_ankle": {
+      "xy": [
+        1393,
+        772
+      ],
+      "uncertainty_px": 10,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_left_ankle": {
+      "xy": [
+        1209,
+        772
+      ],
+      "uncertainty_px": 10,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    }
+  },
+  "reference_series": "turnaround-v4-orthographic-landmarks",
+  "harmonization": {
+    "method": "v3 artwork retained byte-for-byte; side shared-joint annotations reconciled to front under locked orthographic protocol",
+    "authorization": "User explicitly authorized side reference / joint-annotation correction: 授权",
+    "source_reference_series": "turnaround-v3-harmonized",
+    "source_image_sha256": "73b210848a7ea201c45ed6443fb74d5d4852fcb16794bf434814c0d6f9a6e863",
+    "edited_pixels": 0,
+    "not_a_model_render": true
+  }
+}

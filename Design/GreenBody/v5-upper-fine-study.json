@@ -1,0 +1,8 @@
+[
+  {"name":"left5-out10-planes", "parameters":{"left_arm_in":5,"left_forearm_out":10,"axilla_fill":0.008,"nose_plane":0.006,"chin_plane":0.002}},
+  {"name":"left7-out12-planes", "parameters":{"left_arm_in":7,"left_forearm_out":12,"axilla_fill":0.008,"nose_plane":0.006,"chin_plane":0.002}},
+  {"name":"both-in-planes", "parameters":{"left_arm_in":5,"left_forearm_out":10,"right_arm_out":-2,"right_forearm_in":-2,"axilla_fill":0.008,"nose_plane":0.006,"chin_plane":0.002}},
+  {"name":"both-in-out-planes", "parameters":{"left_arm_in":5,"left_forearm_out":10,"right_arm_out":-3,"right_forearm_in":-5,"axilla_fill":0.008,"nose_plane":0.006,"chin_plane":0.002}},
+  {"name":"forearm10", "parameters":{"left_arm_in":5,"left_forearm_out":10,"right_arm_out":-2,"right_forearm_in":-2,"forearm_extra":0.1,"axilla_fill":0.008,"nose_plane":0.006,"chin_plane":0.002}},
+  {"name":"forearm20", "parameters":{"left_arm_in":5,"left_forearm_out":10,"right_arm_out":-2,"right_forearm_in":-2,"forearm_extra":0.2,"axilla_fill":0.008,"nose_plane":0.006,"chin_plane":0.002}}
+]

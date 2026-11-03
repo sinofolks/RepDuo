@@ -1,0 +1,20 @@
+{
+  "upstream_commit": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+  "sha256": {
+    "source/LICENSE-ASSETS-CC0.md": "f6089cba01cb570a24712b41ab8a586ccd3cc5ef53dc266ca50b95c288956d2c",
+    "source/MAKEHUMAN-LICENSE.md": "edd99571ca62698f78c943fd4fffb159a413c315fa0d4819d3cec5cadaf8b4f1",
+    "source/adult-male.target": "70e228ba7164737dae664454394536fc5935fa48d333c1a97d77e2dc6eacc5f5",
+    "source/default.mhskel": "99f179bce0aa850b45d4191a1d0d234c5851f881c057439470ded3bddf729a24",
+    "source/default_weights.mhw": "0f3641d651ae3d00ad6b4ccee43142edb109d3bd909d27d9e4139ef1beed8625",
+    "source/eye-left-closure.target": "e38cb77fd888de3d0d944efe6f3511bf3ca4076b0397fa7c840d8368f08205c2",
+    "source/eye-right-closure.target": "58faf2c199272bfd87478ea122cdaa4b4b8669505be0d75f777c5471527b2b15",
+    "source/ideal-proportions.target": "7bbd790604c908417ff8ca11e566e3577508d92a4f397a2ace0f89f4cc3aa373",
+    "source/l-ear-scale-decr.target": "dbe6da6a32a278887bd851c1ce8a3cc8be36e2c833d033afc043a865f171583c",
+    "source/lean-tone.target": "5873f11edc96fde72a79ec35fa1d292a6a1a594b5eadfd82d59faf48834561de",
+    "source/makehuman-base.obj": "8e761e6624b8f54536409135d1636da63b32486a90d4897f84e121d144f6fb4c",
+    "source/mouth-lowerlip-volume-decr.target": "45f1fe355546cdaa86581512810ee1cd2c6971ac67ffb46d3391ac438e539d15",
+    "source/mouth-upperlip-volume-decr.target": "20b285d94ecb62cf605907d65659ab11ff760dbb938ba9ae7fc13429b1e3ba16",
+    "source/nose-scale-depth-decr.target": "b46c35046c9c451b7ffe77acc0573bd945d7c6acaefe43d8c21912d4ce1a6e4c",
+    "source/r-ear-scale-decr.target": "aae4f2455ace56046d1e58fff9a83fea220cd722e24727af352fbaf376a2bb35"
+  }
+}

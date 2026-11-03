@@ -1,0 +1,20 @@
+.DS_Store
+DerivedData/
+build/
+.build/
+*.xcuserstate
+xcuserdata/
+
+# Generated Blender calibration evidence and local render output.
+Design/GreenBody/renders/
+Design/GreenBody/calibration/captures/
+Design/GreenBody/calibration/runs/
+Design/GreenBody/calibration/report.html
+Design/GreenBody/calibration/multiview/
+Design/GreenBody/calibration/multiview-pose-v2/
+Design/GreenBody/calibration/multiview-reference-v3/captures/
+Design/GreenBody/calibration/multiview-reference-v3/runs/
+Design/GreenBody/calibration/multiview-reference-v3/report.html
+Design/GreenBody/calibration/multiview-reference-v4/captures/
+Design/GreenBody/calibration/multiview-reference-v4/runs/
+Design/GreenBody/calibration/multiview-reference-v4/report.html

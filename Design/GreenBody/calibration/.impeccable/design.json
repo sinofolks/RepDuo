@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-13T02:00:24Z",
+  "title": "Design System: GreenBody Calibration",
+  "extensions": {
+    "focus": [
+      {
+        "name": "interactive-focus",
+        "selector": "button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,summary:focus-visible",
+        "css": "outline:2px solid var(--accent);outline-offset:3px",
+        "source": "report-template.html"
+      },
+      {
+        "name": "scroll-region-focus",
+        "selector": ".table-scroll:focus-visible",
+        "css": "outline:2px solid var(--accent);outline-offset:3px",
+        "appliesTo": ["regional table region", "landmark table region", "history table region"],
+        "source": "report-template.html"
+      },
+      {
+        "name": "skip-link-reveal",
+        "selector": ".skip-link:focus",
+        "css": "top:12px",
+        "defaultPosition": "position:fixed;top:-80px;left:16px;z-index:10",
+        "target": "#inspection",
+        "source": "report-template.html"
+      }
+    ],
+    "overflow": [
+      {
+        "name": "table-container",
+        "selector": ".table-scroll",
+        "css": "overflow:auto;max-width:100%",
+        "focusableRegions": [
+          {
+            "label": "局部差异横向滚动表格",
+            "role": "region",
+            "tabindex": 0,
+            "describedBy": "regionScrollHint",
+            "tableMinWidth": "395px"
+          },
+          {
+            "label": "关键点误差横向滚动表格",
+            "role": "region",
+            "tabindex": 0,
+            "describedBy": "jointScrollHint",
+            "tableMinWidth": "410px at max-width:780px"
+          },
+          {
+            "label": "历史分数与增减横向滚动表格",
+            "role": "region",
+            "tabindex": 0,
+            "describedBy": "historyScrollHint",
+            "tableMinWidth": "580px"
+          }
+        ],
+        "source": "report-template.html"
+      },
+      {
+        "name": "raw-measurements",
+        "selector": ".raw-details pre",
+        "css": "white-space:pre-wrap;overflow-wrap:anywhere;max-height:210px;overflow:auto",
+        "source": "report-template.html"
+      },
+      {
+        "name": "provenance",
+        "selector": ".provenance",
+        "css": "white-space:pre-wrap;overflow-wrap:anywhere;max-height:420px;overflow:auto",
+        "source": "report-template.html"
+      },
+      {
+        "name": "inspection-clipping",
+        "selector": ".inspection,.stage",
+        "css": "overflow:hidden",
+        "purpose": "Contains the image layers within the stage and rounded inspection boundary.",
+        "source": "report-template.html"
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "intermediate",
+        "value": "1080px",
+        "query": "(max-width:1080px)",
+        "rules": [
+          {"selector": ".workspace", "css": "grid-template-columns:minmax(0,1fr) 330px;gap:18px"},
+          {"selector": ".shell", "css": "padding:22px 20px 36px"},
+          {"selector": ".run-picker", "css": "max-width:48%"},
+          {"selector": "#runSelect", "css": "width:100%"},
+          {"selector": ".inspection-toolbar", "css": "align-items:flex-start;flex-direction:column;gap:10px"},
+          {"selector": ".stage", "css": "height:590px"},
+          {"selector": ".metric-description", "css": "font-size:.76rem"}
+        ]
+      },
+      {
+        "name": "phone-stack",
+        "value": "780px",
+        "query": "(max-width:780px)",
+        "rules": [
+          {"selector": ".shell", "css": "padding:20px 16px 32px"},
+          {"selector": ".topbar", "css": "align-items:stretch;flex-direction:column;gap:16px"},
+          {"selector": ".run-picker", "css": "max-width:none"},
+          {"selector": ".run-picker label", "css": "font-size:.88rem"},
+          {"selector": "#runSelect", "css": "flex:1;min-width:0"},
+          {"selector": ".workspace", "css": "grid-template-columns:1fr;gap:25px"},
+          {"selector": ".inspection-toolbar", "css": "flex-direction:row;align-items:center;flex-wrap:wrap"},
+          {"selector": ".stage", "css": "height:min(66vh,580px);min-height:340px"},
+          {"selector": ".summary-head", "css": "margin-top:0"},
+          {"selector": ".details-grid", "css": "grid-template-columns:1fr;gap:28px;margin-top:28px"},
+          {"selector": ".blend-line", "css": "grid-template-columns:auto minmax(60px,1fr) 42px;gap:9px"},
+          {"selector": ".blend-line button", "css": "grid-column:1/-1;justify-self:start;min-height:36px;font-size:.83rem"},
+          {"selector": ".history .section-heading", "css": "align-items:flex-start;flex-direction:column;gap:12px"},
+          {"selector": ".history-controls", "css": "max-width:100%"},
+          {"selector": ".history-controls select", "css": "min-width:0;max-width:calc(100vw - 110px)"},
+          {"selector": ".warning", "css": "padding:11px 12px;font-size:.85rem"},
+          {"selector": ".legend", "css": "gap:12px"},
+          {"selector": ".metrics th,.metrics td", "css": "padding-top:11px;padding-bottom:11px"},
+          {"selector": ".joint-table", "css": "min-width:410px"},
+          {"selector": ".title-line", "css": "gap:8px"},
+          {"selector": ".title-line p", "css": "font-size:.8rem"},
+          {"selector": ".section-heading", "css": "flex-wrap:wrap"},
+          {"selector": ".scroll-hint", "css": "display:block;color:var(--muted);font-size:.85rem;margin:0 0 10px"}
+        ],
+        "defaultScrollHintCss": "display:none"
+      }
+    ]
+  }
+}

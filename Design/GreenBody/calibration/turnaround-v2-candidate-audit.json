@@ -1,0 +1,107 @@
+{
+  "schema": "greenbody-turnaround-candidate-audit-v1",
+  "candidate": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/reference/green-body-turnaround-v2-harmonize-candidate.png",
+  "candidate_sha256": "a283dfbaa5899da4a705553637e287295c6a512d1511ff73f8460552d1127a85",
+  "original": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/reference/green-body-turnaround-v1-candidate.png",
+  "original_sha256": "0b67949743a66b47a6b86fa0f0493068f792e6de4bbd2943e6da58e01f96f6b4",
+  "front_back_mirror_iou": 0.9057379628658345,
+  "translation_sensitivity": {
+    "best_iou": 0.9156649373655574,
+    "dx": 1,
+    "dy": 1,
+    "applied": false
+  },
+  "front_back_ideal_score_ceiling": 98.73497406048337,
+  "design_silhouette_retention": {
+    "front": 0.9775235779945952,
+    "side": 0.9779923483330297,
+    "back": 0.9609725712567391
+  },
+  "alignment": {
+    "front": {
+      "method": "foreground height + bbox horizontal center; uniform scale and translation only",
+      "source_bounds_xyxy": [
+        208,
+        43,
+        532,
+        818
+      ],
+      "scale": 0.9290322580645162,
+      "translate": [
+        -103.74193548387098,
+        0.05161290322580214
+      ],
+      "source_size": [
+        1672,
+        941
+      ],
+      "canonical_size": [
+        480,
+        800
+      ],
+      "rotation": 0,
+      "mirror": false,
+      "nonuniform_warp": false,
+      "note": "\u5168\u5c40\u753b\u9762\u5360\u6bd4\u4e0e\u5e73\u79fb\u88ab\u6d88\u9664\uff0c\u4e0d\u8ba1\u5165\u5f62\u4f53\u5206\uff1b\u76f8\u673a\u89d2\u5ea6\u548c\u59ff\u6001\u5dee\u5f02\u4ecd\u4f1a\u5f71\u54cd\u8bc4\u5206\u3002"
+    },
+    "side": {
+      "method": "foreground height + bbox horizontal center; uniform scale and translation only",
+      "source_bounds_xyxy": [
+        761,
+        43,
+        899,
+        819
+      ],
+      "scale": 0.9278350515463918,
+      "translate": [
+        -530.1030927835052,
+        0.10309278350515427
+      ],
+      "source_size": [
+        1672,
+        941
+      ],
+      "canonical_size": [
+        480,
+        800
+      ],
+      "rotation": 0,
+      "mirror": false,
+      "nonuniform_warp": false,
+      "note": "\u5168\u5c40\u753b\u9762\u5360\u6bd4\u4e0e\u5e73\u79fb\u88ab\u6d88\u9664\uff0c\u4e0d\u8ba1\u5165\u5f62\u4f53\u5206\uff1b\u76f8\u673a\u89d2\u5ea6\u548c\u59ff\u6001\u5dee\u5f02\u4ecd\u4f1a\u5f71\u54cd\u8bc4\u5206\u3002"
+    },
+    "back": {
+      "method": "foreground height + bbox horizontal center; uniform scale and translation only",
+      "source_bounds_xyxy": [
+        1136,
+        43,
+        1461,
+        819
+      ],
+      "scale": 0.9278350515463918,
+      "translate": [
+        -964.7938144329898,
+        0.10309278350515427
+      ],
+      "source_size": [
+        1672,
+        941
+      ],
+      "canonical_size": [
+        480,
+        800
+      ],
+      "rotation": 0,
+      "mirror": false,
+      "nonuniform_warp": false,
+      "note": "\u5168\u5c40\u753b\u9762\u5360\u6bd4\u4e0e\u5e73\u79fb\u88ab\u6d88\u9664\uff0c\u4e0d\u8ba1\u5165\u5f62\u4f53\u5206\uff1b\u76f8\u673a\u89d2\u5ea6\u548c\u59ff\u6001\u5dee\u5f02\u4ecd\u4f1a\u5f71\u54cd\u8bc4\u5206\u3002"
+    }
+  },
+  "reference_selected": false,
+  "notes": [
+    "Analysis only; no image is rewritten, warped or locked.",
+    "Mirror IoU is a necessary projection consistency check, not full 3D certification.",
+    "A ceiling above99 does not imply achievable99: other scores may conflict too.",
+    "Design retention measures silhouettes only; visual inspection remains required."
+  ]
+}

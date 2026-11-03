@@ -1,0 +1,61 @@
+{
+  "schema": "greenbody-reference-3d-consistency-audit-v1",
+  "scope": "Reference landmark vertical coordinates only; read-only; no model/reference/protocol edits.",
+  "camera_assumption": "Locked orthographic cameras have common vertical target and ortho scale; same fixed pose is used for all views.",
+  "shared_front_side_landmarks": [
+    {
+      "name": "screen_left_shoulder",
+      "front_y_px": 198.34411384217333,
+      "side_y_px": 198.86451612903227,
+      "absolute_vertical_difference_px": 0.5204022868589391,
+      "front_uncertainty_px": 9.314359637774903,
+      "side_uncertainty_px": 9.290322580645162
+    },
+    {
+      "name": "screen_left_elbow",
+      "front_y_px": 295.21345407503236,
+      "side_y_px": 313.13548387096773,
+      "absolute_vertical_difference_px": 17.922029795935373,
+      "front_uncertainty_px": 9.314359637774903,
+      "side_uncertainty_px": 9.290322580645162
+    },
+    {
+      "name": "screen_left_wrist",
+      "front_y_px": 399.53428201811124,
+      "side_y_px": 411.61290322580646,
+      "absolute_vertical_difference_px": 12.078621207695221,
+      "front_uncertainty_px": 9.314359637774903,
+      "side_uncertainty_px": 9.290322580645162
+    },
+    {
+      "name": "screen_left_hip",
+      "front_y_px": 386.4941785252264,
+      "side_y_px": 393.9612903225807,
+      "absolute_vertical_difference_px": 7.467111797354278,
+      "front_uncertainty_px": 11.177231565329883,
+      "side_uncertainty_px": 11.148387096774194
+    },
+    {
+      "name": "screen_left_knee",
+      "front_y_px": 546.7011642949547,
+      "side_y_px": 543.5354838709678,
+      "absolute_vertical_difference_px": 3.165680423986828,
+      "front_uncertainty_px": 9.314359637774903,
+      "side_uncertainty_px": 9.290322580645162
+    },
+    {
+      "name": "screen_left_ankle",
+      "front_y_px": 718.0853816300129,
+      "side_y_px": 714.4774193548387,
+      "absolute_vertical_difference_px": 3.6079622751741454,
+      "front_uncertainty_px": 9.314359637774903,
+      "side_uncertainty_px": 9.290322580645162
+    }
+  ],
+  "maximum_vertical_difference_px": 17.922029795935373,
+  "maximum_vertical_difference_landmark": "screen_left_elbow",
+  "maximum_difference_combined_uncertainty_px": 13.155507938284087,
+  "maximum_difference_exceeds_combined_uncertainty": true,
+  "front_back_harmonized_note": "Back was programmatically mirrored from front contour; it is not independent 3D evidence.",
+  "conclusion": "The elbow difference exceeds the independent front/side uncertainty combined in quadrature. The supplied 2D views therefore do not certify a single exact locked-pose 3D joint set; they constrain a best-fit model, not a proof that every-view 99 is physically attainable."
+}

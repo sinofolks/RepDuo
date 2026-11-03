@@ -1,0 +1,10 @@
+{
+  "head_yaw":20,"neck_lean":3,"head_counterlean":-4,"spine_lean":2,"body_yaw":0,
+  "right_arm_in":2,"right_forearm_out":3,"left_arm_in":3.5,"left_forearm_out":3,
+  "chest_plane":0.85,"chest_polish":0.45,"arm_volume":0.065,
+  "head_refinement":true,
+  "head_parameters":{"strength":1,"neck_strength":1,"nose":0.0045,"chin":0.0018,"face_exponent":0.86,"ear_relief":0.8,"base_polish":1},
+  "lower_refinement":true,
+  "lower_parameters":{"calf_volume":0.1,"forefoot_width":0.1,"instep_height":0.007,"calf_center":0.34,"calf_span":0.23},
+  "stance":{"foot_yaw_R":-38,"foot_yaw_L":46,"knee_shift_R":[0.012,-0.018,0],"ankle_shift_R":[-0.03,0.01,0],"knee_shift_L":[0,0,0],"ankle_shift_L":[-0.018,0,0]}
+}

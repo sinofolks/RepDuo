@@ -1,0 +1,113 @@
+[
+  {
+    "name": "standard squat",
+    "exercise": "squat",
+    "expectedReps": 1,
+    "samples": [
+      {"timestamp": 0.00, "angle": 170}, {"timestamp": 0.10, "angle": 170},
+      {"timestamp": 0.25, "angle": 140}, {"timestamp": 0.35, "angle": 138},
+      {"timestamp": 0.55, "angle": 95}, {"timestamp": 0.65, "angle": 94},
+      {"timestamp": 0.80, "angle": 125}, {"timestamp": 0.90, "angle": 130},
+      {"timestamp": 1.05, "angle": 165}, {"timestamp": 1.15, "angle": 168}
+    ]
+  },
+  {
+    "name": "half squat",
+    "exercise": "squat",
+    "expectedReps": 0,
+    "samples": [
+      {"timestamp": 0.0, "angle": 170}, {"timestamp": 0.1, "angle": 170},
+      {"timestamp": 0.3, "angle": 140}, {"timestamp": 0.4, "angle": 138},
+      {"timestamp": 0.7, "angle": 128}, {"timestamp": 0.9, "angle": 168}
+    ]
+  },
+  {
+    "name": "too fast squat",
+    "exercise": "squat",
+    "expectedReps": 0,
+    "samples": [
+      {"timestamp": 0.00, "angle": 170}, {"timestamp": 0.03, "angle": 170},
+      {"timestamp": 0.06, "angle": 140}, {"timestamp": 0.09, "angle": 138},
+      {"timestamp": 0.12, "angle": 95}, {"timestamp": 0.15, "angle": 94},
+      {"timestamp": 0.18, "angle": 125}, {"timestamp": 0.21, "angle": 130},
+      {"timestamp": 0.24, "angle": 165}, {"timestamp": 0.27, "angle": 168}
+    ]
+  },
+  {
+    "name": "side occlusion",
+    "exercise": "squat",
+    "expectedReps": 0,
+    "samples": [
+      {"timestamp": 0.0, "angle": 170}, {"timestamp": 0.1, "angle": 170},
+      {"timestamp": 0.2, "angle": 140}, {"timestamp": 0.3, "angle": 138},
+      {"timestamp": 0.4, "angle": null, "quality": "missing"},
+      {"timestamp": 1.3, "angle": null, "quality": "missing"},
+      {"timestamp": 1.5, "angle": 168}, {"timestamp": 1.6, "angle": 170}
+    ]
+  },
+  {
+    "name": "standard push-up",
+    "exercise": "pushUp",
+    "expectedReps": 1,
+    "samples": [
+      {"timestamp": 0.00, "angle": 170}, {"timestamp": 0.10, "angle": 170},
+      {"timestamp": 0.25, "angle": 138}, {"timestamp": 0.35, "angle": 136},
+      {"timestamp": 0.55, "angle": 94}, {"timestamp": 0.65, "angle": 92},
+      {"timestamp": 0.80, "angle": 120}, {"timestamp": 0.90, "angle": 124},
+      {"timestamp": 1.05, "angle": 166}, {"timestamp": 1.15, "angle": 169}
+    ]
+  },
+  {
+    "name": "push-up hips sagging",
+    "exercise": "pushUp",
+    "expectedReps": 0,
+    "samples": [
+      {"timestamp": 0.00, "angle": 170, "formAcceptable": false},
+      {"timestamp": 0.10, "angle": 170, "formAcceptable": false},
+      {"timestamp": 0.30, "angle": 136, "formAcceptable": false},
+      {"timestamp": 0.50, "angle": 92, "formAcceptable": false},
+      {"timestamp": 0.80, "angle": 124, "formAcceptable": false},
+      {"timestamp": 1.10, "angle": 169, "formAcceptable": false}
+    ]
+  },
+  {
+    "name": "multiple people",
+    "exercise": "squat",
+    "expectedReps": 0,
+    "samples": [
+      {"timestamp": 0.0, "angle": 170, "quality": "multiple"},
+      {"timestamp": 0.2, "angle": 138, "quality": "multiple"},
+      {"timestamp": 0.5, "angle": 94, "quality": "multiple"},
+      {"timestamp": 0.8, "angle": 130, "quality": "multiple"},
+      {"timestamp": 1.1, "angle": 168, "quality": "multiple"}
+    ]
+  },
+  {
+    "name": "low light confidence",
+    "exercise": "pushUp",
+    "expectedReps": 0,
+    "samples": [
+      {"timestamp": 0.0, "angle": 170, "quality": "unstable"},
+      {"timestamp": 0.2, "angle": 136, "quality": "unstable"},
+      {"timestamp": 0.5, "angle": 92, "quality": "unstable"},
+      {"timestamp": 0.8, "angle": 124, "quality": "unstable"},
+      {"timestamp": 1.1, "angle": 169, "quality": "unstable"}
+    ]
+  },
+  {
+    "name": "body exits then returns",
+    "exercise": "squat",
+    "expectedReps": 1,
+    "samples": [
+      {"timestamp": 0.0, "angle": 170}, {"timestamp": 0.1, "angle": 170},
+      {"timestamp": 0.2, "angle": 138}, {"timestamp": 0.3, "angle": 136},
+      {"timestamp": 0.4, "angle": null, "quality": "missing"},
+      {"timestamp": 1.3, "angle": null, "quality": "missing"},
+      {"timestamp": 1.5, "angle": 170}, {"timestamp": 1.6, "angle": 170},
+      {"timestamp": 1.8, "angle": 140}, {"timestamp": 1.9, "angle": 138},
+      {"timestamp": 2.1, "angle": 95}, {"timestamp": 2.2, "angle": 94},
+      {"timestamp": 2.4, "angle": 125}, {"timestamp": 2.5, "angle": 130},
+      {"timestamp": 2.7, "angle": 165}, {"timestamp": 2.8, "angle": 168}
+    ]
+  }
+]

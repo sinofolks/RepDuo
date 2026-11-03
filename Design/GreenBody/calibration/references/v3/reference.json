@@ -1,0 +1,270 @@
+{
+  "schema": "greenbody-reference-lock-v1",
+  "config": {
+    "schema": "greenbody-reference-v1",
+    "revision": 3,
+    "image": "../reference/green-body-concept.png",
+    "image_sha256": "a495910b0855d94a9d5679e41362d4f7aaeda724d0800025c7b5b70871f9b3cd",
+    "view": "neutral-standing-hero",
+    "annotation_status": "provisional",
+    "annotation_note": "AI概念图关节中心为人工目测估计；完成放大图复核，但未获用户逐点确认，不能视作三维真值。容差为原图像素估计，不是统计置信区间。轮廓由锁定颜色分割提取，边缘仍有不确定性。",
+    "roi": [
+      160,
+      74,
+      475,
+      825
+    ],
+    "segmentation": {
+      "min_green": 50,
+      "green_red_ratio": 1.025,
+      "green_blue_ratio": 1.3
+    },
+    "canonical": {
+      "width": 480,
+      "height": 800,
+      "body_height": 720,
+      "top": 40
+    },
+    "scoring": {
+      "body_height": 720,
+      "body_top_y": 40,
+      "body_center_x": 240
+    },
+    "landmarks": {
+      "screen_left_shoulder": {
+        "xy": [
+          250,
+          245
+        ],
+        "uncertainty_px": 10,
+        "weight": 1
+      },
+      "screen_right_shoulder": {
+        "xy": [
+          386,
+          245
+        ],
+        "uncertainty_px": 10,
+        "weight": 1
+      },
+      "screen_left_elbow": {
+        "xy": [
+          234,
+          333
+        ],
+        "uncertainty_px": 9,
+        "weight": 1
+      },
+      "screen_right_elbow": {
+        "xy": [
+          398,
+          338
+        ],
+        "uncertainty_px": 9,
+        "weight": 1
+      },
+      "screen_left_wrist": {
+        "xy": [
+          203,
+          442
+        ],
+        "uncertainty_px": 7,
+        "weight": 1
+      },
+      "screen_right_wrist": {
+        "xy": [
+          429,
+          443
+        ],
+        "uncertainty_px": 7,
+        "weight": 1
+      },
+      "screen_left_hip": {
+        "xy": [
+          294,
+          426
+        ],
+        "uncertainty_px": 12,
+        "weight": 1
+      },
+      "screen_right_hip": {
+        "xy": [
+          345,
+          426
+        ],
+        "uncertainty_px": 12,
+        "weight": 1
+      },
+      "screen_left_knee": {
+        "xy": [
+          264,
+          588
+        ],
+        "uncertainty_px": 10,
+        "weight": 1
+      },
+      "screen_right_knee": {
+        "xy": [
+          367,
+          587
+        ],
+        "uncertainty_px": 10,
+        "weight": 1
+      },
+      "screen_left_ankle": {
+        "xy": [
+          227,
+          761
+        ],
+        "uncertainty_px": 7,
+        "weight": 1
+      },
+      "screen_right_ankle": {
+        "xy": [
+          373,
+          757
+        ],
+        "uncertainty_px": 7,
+        "weight": 1
+      }
+    }
+  },
+  "original_source": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/reference/green-body-concept.png",
+  "original_sha256": "a495910b0855d94a9d5679e41362d4f7aaeda724d0800025c7b5b70871f9b3cd",
+  "config_sha256": "ab0e672d876d94ea1bbfac5eeb49928c387d3a738c875dd926ac0c60448b4236",
+  "source_sha256": "7cbec3d12b7833f04ed9dc1bf9338faf0e1e5273aac474e921ffddea64fc93ad",
+  "mask_sha256": "e51c52e7eca10ffeff90006c12f9e6e77edf08bb03bc9ad5bbacf0946bd42933",
+  "landmarks": {
+    "screen_left_shoulder": {
+      "xy": [
+        175.38461538461536,
+        196.43724696356276
+      ],
+      "uncertainty_px": 9.7165991902834,
+      "weight": 1
+    },
+    "screen_right_shoulder": {
+      "xy": [
+        307.5303643724696,
+        196.43724696356276
+      ],
+      "uncertainty_px": 9.7165991902834,
+      "weight": 1
+    },
+    "screen_left_elbow": {
+      "xy": [
+        159.8380566801619,
+        281.9433198380567
+      ],
+      "uncertainty_px": 8.74493927125506,
+      "weight": 1
+    },
+    "screen_right_elbow": {
+      "xy": [
+        319.1902834008097,
+        286.8016194331984
+      ],
+      "uncertainty_px": 8.74493927125506,
+      "weight": 1
+    },
+    "screen_left_wrist": {
+      "xy": [
+        129.71659919028338,
+        387.8542510121457
+      ],
+      "uncertainty_px": 6.80161943319838,
+      "weight": 1
+    },
+    "screen_right_wrist": {
+      "xy": [
+        349.3117408906882,
+        388.8259109311741
+      ],
+      "uncertainty_px": 6.80161943319838,
+      "weight": 1
+    },
+    "screen_left_hip": {
+      "xy": [
+        218.13765182186233,
+        372.30769230769226
+      ],
+      "uncertainty_px": 11.65991902834008,
+      "weight": 1
+    },
+    "screen_right_hip": {
+      "xy": [
+        267.6923076923077,
+        372.30769230769226
+      ],
+      "uncertainty_px": 11.65991902834008,
+      "weight": 1
+    },
+    "screen_left_knee": {
+      "xy": [
+        188.9878542510121,
+        529.7165991902834
+      ],
+      "uncertainty_px": 9.7165991902834,
+      "weight": 1
+    },
+    "screen_right_knee": {
+      "xy": [
+        289.06882591093114,
+        528.744939271255
+      ],
+      "uncertainty_px": 9.7165991902834,
+      "weight": 1
+    },
+    "screen_left_ankle": {
+      "xy": [
+        153.03643724696354,
+        697.8137651821862
+      ],
+      "uncertainty_px": 6.80161943319838,
+      "weight": 1
+    },
+    "screen_right_ankle": {
+      "xy": [
+        294.8987854251012,
+        693.9271255060729
+      ],
+      "uncertainty_px": 6.80161943319838,
+      "weight": 1
+    }
+  },
+  "alignment": {
+    "method": "foreground height + bbox horizontal center; uniform scale and translation only",
+    "source_bounds_xyxy": [
+      182,
+      84,
+      451,
+      825
+    ],
+    "scale": 0.97165991902834,
+    "translate": [
+      -67.53036437246965,
+      -41.61943319838056
+    ],
+    "source_size": [
+      1672,
+      941
+    ],
+    "canonical_size": [
+      480,
+      800
+    ],
+    "rotation": 0,
+    "mirror": false,
+    "nonuniform_warp": false,
+    "note": "全局画面占比与平移被消除，不计入形体分；相机角度和姿态差异仍会影响评分。"
+  },
+  "assets": {
+    "reference": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/references/v3/reference.png",
+    "candidate": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/references/v3/candidate.png",
+    "reference_mask": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/references/v3/reference_mask.png",
+    "candidate_mask": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/references/v3/candidate_mask.png",
+    "overlay": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/references/v3/overlay.png",
+    "difference": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/references/v3/difference.png",
+    "landmarks": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/references/v3/landmarks.png"
+  }
+}

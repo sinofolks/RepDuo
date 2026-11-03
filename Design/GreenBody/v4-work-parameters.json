@@ -1,0 +1,15 @@
+{
+  "ankle_lift":0.035,
+  "knee_lift":0.055,
+  "leg_twist":30,
+  "calf_extra":0.08,
+  "upperarm_extra":0.10,
+  "torso_yaw":5,
+  "nasal_projection":0.004,
+  "restrained_instep":0.5,
+  "thumb_relax":0.3,
+  "foot_yaw_R":-38,
+  "foot_yaw_L":46,
+  "forefoot_extra":0,
+  "toe_rounding":0
+}

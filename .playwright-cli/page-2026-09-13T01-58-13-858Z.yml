@@ -1,0 +1,365 @@
+- generic [active] [ref=f2e1]:
+  - link "跳到叠图检查" [ref=f2e2] [cursor=pointer]:
+    - /url: "#inspection"
+  - generic [ref=f2e3]:
+    - banner [ref=f2e4]:
+      - generic [ref=f2e5]:
+        - heading "GreenBody 校准" [level=1] [ref=f2e6]
+        - paragraph [ref=f2e7]: 单视角 · 本地证据
+      - generic [ref=f2e8]:
+        - generic [ref=f2e9]: 模型记录
+        - combobox "选择模型校准记录" [ref=f2e10] [cursor=pointer]:
+          - option "V1 · 2026/09/13 09:41"
+          - option "V2 · 2026/09/13 09:41"
+          - option "V1 · 2026/09/13 09:42"
+          - option "V2 · 2026/09/13 09:42"
+          - option "V2-repeat · 2026/09/13 09:43" [selected]
+    - note [ref=f2e11]:
+      - paragraph [ref=f2e14]:
+        - strong [ref=f2e15]: 暂定校准，不是还原率。
+        - text: AI 概念图关键点尚待人工复核。0–100 是当前协议下的启发式一致性指数，不代表 3D 形象还原百分比，也不能证明动作变形质量。
+    - main [ref=f2e16]:
+      - generic [ref=f2e17]:
+        - region "参考图与模型叠图检查" [ref=f2e18]:
+          - generic [ref=f2e19]:
+            - generic [ref=f2e20]:
+              - generic [ref=f2e21]: 查看
+              - combobox "查看" [ref=f2e22] [cursor=pointer]:
+                - option "交互叠图" [selected]
+                - option "仅参考图"
+                - option "仅模型渲染"
+                - option "轮廓差异"
+                - option "关键点"
+            - generic "测量标记图例" [ref=f2e23]:
+              - generic [ref=f2e24]: 参考 · 青色
+              - generic [ref=f2e26]: 模型 · 橙色
+          - generic [ref=f2e28]:
+            - img "当前校准记录的已对齐参考图" [ref=f2e29]
+            - img "当前校准记录的已对齐 Blender 模型渲染" [ref=f2e30]
+          - generic [ref=f2e31]:
+            - generic [ref=f2e32]:
+              - generic [ref=f2e33]: 模型不透明度
+              - slider "模型不透明度" [ref=f2e34] [cursor=pointer]: "50"
+              - status [ref=f2e35]: 50%
+              - button "重置叠图" [ref=f2e36] [cursor=pointer]
+            - paragraph [ref=f2e37]: 拖动查看相同画布上的轮廓错位；0% 为参考图，100% 为模型渲染。这里的百分比仅表示图层不透明度。
+        - complementary "当前校准指标" [ref=f2e38]:
+          - generic [ref=f2e39]:
+            - heading "V2-repeat" [level=2] [ref=f2e40]
+            - generic [ref=f2e41]: 暂定标注
+          - generic [ref=f2e42]:
+            - term [ref=f2e43]: 采集
+            - definition [ref=f2e44]: 形体＋姿态 / 固定材质与灯光
+            - term [ref=f2e45]: 协议
+            - definition [ref=f2e46]: a27899fbaaab3a81843483895ebc7f9e27e151740b8476f89b2362f8e0765d1f
+            - term [ref=f2e47]: 时间
+            - definition [ref=f2e48]: 2026/09/13 09:43
+            - term [ref=f2e49]: 记录
+            - definition [ref=f2e50]: 20260913T014334268045Z-V2-repeat
+          - table [ref=f2e52]:
+            - rowgroup [ref=f2e53]:
+              - row [ref=f2e54]:
+                - columnheader "指标" [ref=f2e55]
+                - columnheader "指数" [ref=f2e56]
+                - columnheader "权重" [ref=f2e57]
+            - rowgroup [ref=f2e58]:
+              - row [ref=f2e59]:
+                - cell "轮廓重合 固定画布上，前景交集与并集的比值。 交并比 0.710" [ref=f2e60]:
+                  - generic [ref=f2e61]: 轮廓重合
+                  - paragraph [ref=f2e62]: 固定画布上，前景交集与并集的比值。
+                  - paragraph [ref=f2e63]: 交并比 0.710
+                  - group [ref=f2e64]:
+                    - generic "原始测量" [ref=f2e65] [cursor=pointer]
+                - cell "71.0" [ref=f2e66]
+                - cell "30.0%" [ref=f2e67]
+              - row [ref=f2e68]:
+                - cell "轮廓边界匹配 在固定像素容差内，比较双向轮廓匹配。 F1 0.214 · 容差 3.6 px" [ref=f2e69]:
+                  - generic [ref=f2e70]: 轮廓边界匹配
+                  - paragraph [ref=f2e71]: 在固定像素容差内，比较双向轮廓匹配。
+                  - paragraph [ref=f2e72]: F1 0.214 · 容差 3.6 px
+                  - group [ref=f2e73]:
+                    - generic "原始测量" [ref=f2e74] [cursor=pointer]
+                - cell "21.4" [ref=f2e75]
+                - cell "20.0%" [ref=f2e76]
+              - row [ref=f2e77]:
+                - cell "高度带宽度 各高度带等权比较左右外缘和前景占用宽度。 7 个高度带 · 误差尺度 18.0 px" [ref=f2e78]:
+                  - generic [ref=f2e79]: 高度带宽度
+                  - paragraph [ref=f2e80]: 各高度带等权比较左右外缘和前景占用宽度。
+                  - paragraph [ref=f2e81]: 7 个高度带 · 误差尺度 18.0 px
+                  - group [ref=f2e82]:
+                    - generic "原始测量" [ref=f2e83] [cursor=pointer]
+                - cell "58.4" [ref=f2e84]
+                - cell "20.0%" [ref=f2e85]
+              - row [ref=f2e86]:
+                - cell "关键点位置 按参考点固定权重比较；缺失点不重新归一化。 均距 16.2 px · 已测 12 / 12" [ref=f2e87]:
+                  - generic [ref=f2e88]: 关键点位置
+                  - paragraph [ref=f2e89]: 按参考点固定权重比较；缺失点不重新归一化。
+                  - paragraph [ref=f2e90]: 均距 16.2 px · 已测 12 / 12
+                  - group [ref=f2e91]:
+                    - generic "原始测量" [ref=f2e92] [cursor=pointer]
+                - cell "81.9" [ref=f2e93]
+                - cell "15.0%" [ref=f2e94]
+              - row [ref=f2e95]:
+                - cell "颜色分布 在有效重叠区比较 Lab 颜色，不等于材质还原。 平均色差 7.99 · 重叠 81.4%" [ref=f2e96]:
+                  - generic [ref=f2e97]: 颜色分布
+                  - paragraph [ref=f2e98]: 在有效重叠区比较 Lab 颜色，不等于材质还原。
+                  - paragraph [ref=f2e99]: 平均色差 7.99 · 重叠 81.4%
+                  - group [ref=f2e100]:
+                    - generic "原始测量" [ref=f2e101] [cursor=pointer]
+                - cell "54.8" [ref=f2e102]
+                - cell "10.0%" [ref=f2e103]
+              - row [ref=f2e104]:
+                - cell "明暗分布 比较粗尺度明暗分布，不等于真实灯光还原。 亮度误差 6.13 · 平滑 18.0 px" [ref=f2e105]:
+                  - generic [ref=f2e106]: 明暗分布
+                  - paragraph [ref=f2e107]: 比较粗尺度明暗分布，不等于真实灯光还原。
+                  - paragraph [ref=f2e108]: 亮度误差 6.13 · 平滑 18.0 px
+                  - group [ref=f2e109]:
+                    - generic "原始测量" [ref=f2e110] [cursor=pointer]
+                - cell "44.1" [ref=f2e111]
+                - cell "5.0%" [ref=f2e112]
+            - rowgroup [ref=f2e113]:
+              - row [ref=f2e114]:
+                - rowheader "综合指数 协议内 0–100，非还原率" [ref=f2e115]:
+                  - text: 综合指数
+                  - generic [ref=f2e116]: 协议内 0–100，非还原率
+                - cell "57.21" [ref=f2e117]
+          - generic [ref=f2e118]:
+            - term [ref=f2e119]: 几何与姿态指数
+            - definition [ref=f2e120]: "58.26"
+            - term [ref=f2e121]: 外观指数
+            - definition [ref=f2e122]: "51.23"
+            - term [ref=f2e123]: 遮罩敏感性范围
+            - definition [ref=f2e124]: 56.44–57.21
+          - paragraph [ref=f2e125]: 参考遮罩边缘 ±1 px 扰动范围；不是统计置信区间。
+          - paragraph [ref=f2e126]: 本次采集覆盖了原模型材质；外观指数不是对原始材质的评判。
+          - paragraph [ref=f2e127]: 评分取自已保存记录；权重按本记录总和归一显示，不重新计算指数。
+          - list [ref=f2e128]:
+            - listitem [ref=f2e129]: AI概念图关节中心为人工目测估计；完成放大图复核，但未获用户逐点确认，不能视作三维真值。容差为原图像素估计，不是统计置信区间。轮廓由锁定颜色分割提取，边缘仍有不确定性。
+      - generic [ref=f2e130]:
+        - generic [ref=f2e131]:
+          - generic [ref=f2e132]:
+            - heading "局部差异" [level=2] [ref=f2e133]
+            - paragraph [ref=f2e134]: 固定高度带 · 自头顶向下
+          - paragraph [ref=f2e135]: 左右滑动表格查看画面右侧误差；键盘聚焦后可用左右方向键。
+          - region "局部差异横向滚动表格" [ref=f2e136]:
+            - table [ref=f2e137]:
+              - rowgroup [ref=f2e138]:
+                - row [ref=f2e139]:
+                  - columnheader "高度带" [ref=f2e140]
+                  - columnheader "指数" [ref=f2e141]
+                  - columnheader "画面左 / px" [ref=f2e142]
+                  - columnheader "画面右 / px" [ref=f2e143]
+              - rowgroup [ref=f2e144]:
+                - row [ref=f2e145]:
+                  - cell "头部带 0–15% 高度 IoU 0.588" [ref=f2e146]:
+                    - text: 头部带
+                    - generic [ref=f2e147]: 0–15% 高度
+                    - generic [ref=f2e148]: IoU 0.588
+                  - cell "45.3" [ref=f2e149]
+                  - cell "轮廓 12.7 占宽 12.8" [ref=f2e150]:
+                    - generic [ref=f2e151]: 轮廓 12.7
+                    - generic [ref=f2e152]: 占宽 12.8
+                  - cell "轮廓 16.0 占宽 15.8" [ref=f2e153]:
+                    - generic [ref=f2e154]: 轮廓 16.0
+                    - generic [ref=f2e155]: 占宽 15.8
+                - row [ref=f2e156]:
+                  - cell "肩部带 15–27% 高度 IoU 0.902" [ref=f2e157]:
+                    - text: 肩部带
+                    - generic [ref=f2e158]: 15–27% 高度
+                    - generic [ref=f2e159]: IoU 0.902
+                  - cell "67.3" [ref=f2e160]
+                  - cell "轮廓 7.7 占宽 9.4" [ref=f2e161]:
+                    - generic [ref=f2e162]: 轮廓 7.7
+                    - generic [ref=f2e163]: 占宽 9.4
+                  - cell "轮廓 5.7 占宽 5.9" [ref=f2e164]:
+                    - generic [ref=f2e165]: 轮廓 5.7
+                    - generic [ref=f2e166]: 占宽 5.9
+                - row [ref=f2e167]:
+                  - cell "躯干带 27–46% 高度 IoU 0.734" [ref=f2e168]:
+                    - text: 躯干带
+                    - generic [ref=f2e169]: 27–46% 高度
+                    - generic [ref=f2e170]: IoU 0.734
+                  - cell "65.5" [ref=f2e171]
+                  - cell "轮廓 2.8 占宽 5.0" [ref=f2e172]:
+                    - generic [ref=f2e173]: 轮廓 2.8
+                    - generic [ref=f2e174]: 占宽 5.0
+                  - cell "轮廓 10.1 占宽 14.6" [ref=f2e175]:
+                    - generic [ref=f2e176]: 轮廓 10.1
+                    - generic [ref=f2e177]: 占宽 14.6
+                - row [ref=f2e178]:
+                  - cell "髋部带 46–59% 高度 IoU 0.719" [ref=f2e179]:
+                    - text: 髋部带
+                    - generic [ref=f2e180]: 46–59% 高度
+                    - generic [ref=f2e181]: IoU 0.719
+                  - cell "67.2" [ref=f2e182]
+                  - cell "轮廓 7.3 占宽 4.4" [ref=f2e183]:
+                    - generic [ref=f2e184]: 轮廓 7.3
+                    - generic [ref=f2e185]: 占宽 4.4
+                  - cell "轮廓 5.2 占宽 12.0" [ref=f2e186]:
+                    - generic [ref=f2e187]: 轮廓 5.2
+                    - generic [ref=f2e188]: 占宽 12.0
+                - row [ref=f2e189]:
+                  - cell "大腿带 59–75% 高度 IoU 0.806" [ref=f2e190]:
+                    - text: 大腿带
+                    - generic [ref=f2e191]: 59–75% 高度
+                    - generic [ref=f2e192]: IoU 0.806
+                  - cell "77.7" [ref=f2e193]
+                  - cell "轮廓 6.5 占宽 4.5" [ref=f2e194]:
+                    - generic [ref=f2e195]: 轮廓 6.5
+                    - generic [ref=f2e196]: 占宽 4.5
+                  - cell "轮廓 3.9 占宽 3.4" [ref=f2e197]:
+                    - generic [ref=f2e198]: 轮廓 3.9
+                    - generic [ref=f2e199]: 占宽 3.4
+                - row [ref=f2e200]:
+                  - cell "小腿带 75–94% 高度 IoU 0.573" [ref=f2e201]:
+                    - text: 小腿带
+                    - generic [ref=f2e202]: 75–94% 高度
+                    - generic [ref=f2e203]: IoU 0.573
+                  - cell "64.7" [ref=f2e204]
+                  - cell "轮廓 12.9 占宽 5.3" [ref=f2e205]:
+                    - generic [ref=f2e206]: 轮廓 12.9
+                    - generic [ref=f2e207]: 占宽 5.3
+                  - cell "轮廓 6.8 占宽 6.5" [ref=f2e208]:
+                    - generic [ref=f2e209]: 轮廓 6.8
+                    - generic [ref=f2e210]: 占宽 6.5
+                - row [ref=f2e211]:
+                  - cell "双脚带 94–100% 高度 IoU 0.327" [ref=f2e212]:
+                    - text: 双脚带
+                    - generic [ref=f2e213]: 94–100% 高度
+                    - generic [ref=f2e214]: IoU 0.327
+                  - cell "21.0" [ref=f2e215]
+                  - cell "轮廓 29.4 占宽 14.1" [ref=f2e216]:
+                    - generic [ref=f2e217]: 轮廓 29.4
+                    - generic [ref=f2e218]: 占宽 14.1
+                  - cell "轮廓 41.5 占宽 34.1" [ref=f2e219]:
+                    - generic [ref=f2e220]: 轮廓 41.5
+                    - generic [ref=f2e221]: 占宽 34.1
+          - paragraph [ref=f2e222]: 这是固定高度带，不是身体语义分割；同一带可能同时包含躯干、手臂等。左右均指画面方向。轮廓＝外缘平均绝对误差；占宽＝前景占用宽度误差。
+        - generic [ref=f2e223]:
+          - generic [ref=f2e224]:
+            - heading "关键点误差" [level=2] [ref=f2e225]
+            - paragraph [ref=f2e226]: 参考标注包含不确定度
+          - paragraph [ref=f2e227]: 左右滑动表格查看完整状态；键盘聚焦后可用左右方向键。
+          - region "关键点误差横向滚动表格" [ref=f2e228]:
+            - table [ref=f2e229]:
+              - rowgroup [ref=f2e230]:
+                - row [ref=f2e231]:
+                  - columnheader "关键点" [ref=f2e232]
+                  - columnheader "距离 / px" [ref=f2e233]
+                  - columnheader "参考不确定度 / px" [ref=f2e234]
+                  - columnheader "说明" [ref=f2e235]
+              - rowgroup [ref=f2e236]:
+                - row [ref=f2e237]:
+                  - cell "1.画面左肩" [ref=f2e238]
+                  - cell "10.0" [ref=f2e239]
+                  - cell "9.7" [ref=f2e240]
+                  - cell "已测量" [ref=f2e241]
+                - row [ref=f2e242]:
+                  - cell "2.画面右肩" [ref=f2e243]
+                  - cell "10.5" [ref=f2e244]
+                  - cell "9.7" [ref=f2e245]
+                  - cell "已测量" [ref=f2e246]
+                - row [ref=f2e247]:
+                  - cell "3.画面左肘" [ref=f2e248]
+                  - cell "19.1" [ref=f2e249]
+                  - cell "8.7" [ref=f2e250]
+                  - cell "已测量" [ref=f2e251]
+                - row [ref=f2e252]:
+                  - cell "4.画面右肘" [ref=f2e253]
+                  - cell "7.7" [ref=f2e254]
+                  - cell "8.7" [ref=f2e255]
+                  - cell "已测量" [ref=f2e256]
+                - row [ref=f2e257]:
+                  - cell "5.画面左腕" [ref=f2e258]
+                  - cell "10.1" [ref=f2e259]
+                  - cell "6.8" [ref=f2e260]
+                  - cell "已测量" [ref=f2e261]
+                - row [ref=f2e262]:
+                  - cell "6.画面右腕" [ref=f2e263]
+                  - cell "8.5" [ref=f2e264]
+                  - cell "6.8" [ref=f2e265]
+                  - cell "已测量" [ref=f2e266]
+                - row [ref=f2e267]:
+                  - cell "7.画面左髋" [ref=f2e268]
+                  - cell "25.4" [ref=f2e269]
+                  - cell "11.7" [ref=f2e270]
+                  - cell "已测量" [ref=f2e271]
+                - row [ref=f2e272]:
+                  - cell "8.画面右髋" [ref=f2e273]
+                  - cell "3.1" [ref=f2e274]
+                  - cell "11.7" [ref=f2e275]
+                  - cell "已测量" [ref=f2e276]
+                - row [ref=f2e277]:
+                  - cell "9.画面左膝" [ref=f2e278]
+                  - cell "20.9" [ref=f2e279]
+                  - cell "9.7" [ref=f2e280]
+                  - cell "已测量" [ref=f2e281]
+                - row [ref=f2e282]:
+                  - cell "10.画面右膝" [ref=f2e283]
+                  - cell "18.5" [ref=f2e284]
+                  - cell "9.7" [ref=f2e285]
+                  - cell "已测量" [ref=f2e286]
+                - row [ref=f2e287]:
+                  - cell "11.画面左踝" [ref=f2e288]
+                  - cell "30.3" [ref=f2e289]
+                  - cell "6.8" [ref=f2e290]
+                  - cell "已测量" [ref=f2e291]
+                - row [ref=f2e292]:
+                  - cell "12.画面右踝" [ref=f2e293]
+                  - cell "30.5" [ref=f2e294]
+                  - cell "6.8" [ref=f2e295]
+                  - cell "已测量" [ref=f2e296]
+          - paragraph [ref=f2e297]: 像素距离以已保存的对齐画布为准，不等于三维关节误差。
+      - generic [ref=f2e298]:
+        - generic [ref=f2e299]:
+          - generic [ref=f2e300]:
+            - heading "历史记录" [level=2] [ref=f2e301]
+            - paragraph [ref=f2e302]: 不同协议分开查看；重复测量不是模型进步。
+          - generic [ref=f2e303]:
+            - generic [ref=f2e304]: 协议
+            - combobox "选择历史记录协议" [ref=f2e305] [cursor=pointer]:
+              - option "6af5c96e051988253c3ea85837667fe3460b483ecbc442b87479bf21fee9a601"
+              - option "a27899fbaaab3a81843483895ebc7f9e27e151740b8476f89b2362f8e0765d1f" [selected]
+            - generic [ref=f2e306]:
+              - checkbox "显示重复测量" [ref=f2e307]
+              - text: 显示重复测量
+        - paragraph [ref=f2e308]: 左右滑动表格查看分数增减、比较对象和时间；键盘聚焦后可用左右方向键。
+        - region "历史分数与增减横向滚动表格" [ref=f2e309]:
+          - table [ref=f2e310]:
+            - rowgroup [ref=f2e311]:
+              - row [ref=f2e312]:
+                - columnheader "模型记录" [ref=f2e313]
+                - columnheader "状态" [ref=f2e314]
+                - columnheader "综合指数" [ref=f2e315]
+                - columnheader "较上一候选" [ref=f2e316]
+                - columnheader "生成时间" [ref=f2e317]
+            - rowgroup [ref=f2e318]:
+              - row [ref=f2e319]:
+                - cell [ref=f2e320]:
+                  - button "V1" [ref=f2e321] [cursor=pointer]
+                - cell "暂定标注" [ref=f2e322]
+                - cell "56.30" [ref=f2e324]
+                - cell "—" [ref=f2e325]
+                - cell "2026/09/13 09:42" [ref=f2e326]
+              - row [ref=f2e327]:
+                - cell "V2-repeat 2 次同候选测量，显示最近一次" [ref=f2e328]:
+                  - button "V2-repeat" [ref=f2e329] [cursor=pointer]
+                  - generic [ref=f2e330]: 2 次同候选测量，显示最近一次
+                - cell "暂定标注" [ref=f2e331]
+                - cell "57.21" [ref=f2e333]
+                - cell "+0.91 相对 V1" [ref=f2e334]:
+                  - text: "+0.91"
+                  - generic [ref=f2e335]: 相对 V1
+                - cell "2026/09/13 09:43" [ref=f2e336]
+        - paragraph [ref=f2e337]: 当前仅显示协议 a27899fbaaab。已折叠 1 条相同内容指纹的重复测量。同模型复测用于稳定性检查，不算模型进步；增减只比较同协议、完整测量且内容不同的候选。
+      - generic [ref=f2e338]:
+        - heading "记录中的检查建议" [level=2] [ref=f2e339]
+        - list [ref=f2e340]:
+          - listitem [ref=f2e341]: 优先检查 feet：区域匹配分 21.0。结合叠图区分相机/姿态偏移与局部厚度，单次只改一个因素。
+          - listitem [ref=f2e342]: 优先检查 head：区域匹配分 45.3。结合叠图区分相机/姿态偏移与局部厚度，单次只改一个因素。
+          - listitem [ref=f2e343]: 优先检查 shins：区域匹配分 64.7。结合叠图区分相机/姿态偏移与局部厚度，单次只改一个因素。
+          - listitem [ref=f2e344]: 固定相机协议下比较形体；调相机或摄影棚请开新协议并重新渲染基线。
+          - listitem [ref=f2e345]: 总分上升不等于全部改善：先检查各区域退步、侧背面和动作变形，再决定是否保留模型。
+      - group [ref=f2e346]:
+        - generic "查看输入来源、资产校验与配准参数" [ref=f2e347] [cursor=pointer]
+      - paragraph [ref=f2e348]: 本报告可离线打开。所有图片均来自记录的输入或计量派生图；不做视觉重绘，不修改 Blender 模型，也不接入 iOS。

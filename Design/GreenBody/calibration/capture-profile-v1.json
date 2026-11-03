@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "name": "RepDuo Green Body fixed-appearance capture v1",
+  "body_object": "GreenBody",
+  "frame": 1,
+  "studio": {"module": "scripts/studio_v2.py", "function": "setup_studio_v2", "variant": "Selected3"},
+  "code_dependencies": {
+    "scripts/studio.py": "67726584f9b17d52f83525c5d4474a695da0ee7e4e6e283fce64060ecb6df3a9",
+    "scripts/studio_v2.py": "19c33074ba1b40fb53464a1c49e6f5657cd0a19f226becbb73490997a2002426"
+  },
+  "camera": {
+    "type": "ORTHO", "location": [-2.0, -6.8, 1.45], "target": [0.0, 0.0, 0.93],
+    "ortho_scale": 2.17, "lens_mm": 70.0, "clip_start": 0.05, "clip_end": 150.0
+  },
+  "render": {
+    "engine": "CYCLES", "device": "CPU", "width": 768, "height": 960,
+    "samples": 32, "seed": 20260913, "adaptive_sampling": false,
+    "beauty_denoising": true, "mask_denoising": false,
+    "pixel_aspect_x": 1.0, "pixel_aspect_y": 1.0,
+    "format": "PNG", "color_mode": "RGB", "color_depth": "8"
+  },
+  "color_management": {"view_transform": "Standard", "look": "None", "exposure": -1.65, "gamma": 1.0},
+  "world": {"color": [0.24, 0.255, 0.25, 1.0], "strength": 0.025},
+  "lights": [
+    {"name": "GB_Key_Softbox", "location": [3.1, -3.2, 3.7], "target": [0.0, 0.0, 1.1], "energy": 920.0, "width": 2.1, "height": 2.9, "color": [1.0, 1.0, 0.98]},
+    {"name": "GB_Fill_Softbox", "location": [-2.8, -4.5, 1.7], "target": [0.0, 0.0, 0.95], "energy": 45.0, "width": 3.0, "height": 3.3, "color": [0.98, 0.99, 1.0]},
+    {"name": "GB_Rim_Strip", "location": [-2.6, 1.1, 3.6], "target": [0.0, 0.0, 1.05], "energy": 450.0, "width": 1.35, "height": 3.2, "color": [1.0, 1.0, 0.98]},
+    {"name": "GB_Back_Soft_Fill", "location": [2.2, 3.5, 2.6], "target": [0.0, 0.0, 1.05], "energy": 130.0, "width": 3.0, "height": 3.3, "color": [0.98, 1.0, 1.0]}
+  ],
+  "light_linking": {"receiver": "GreenBody", "floor_receives_direct_light": false},
+  "material_policy": "Selected3 satin lime for fixed-appearance geometry/pose comparison; --native-appearance restores copied source body materials",
+  "mask_policy": "Second real geometry render: opaque white emission body, black world, no floor or other geometry, identical camera; antialiased edges, no color thresholding"
+}

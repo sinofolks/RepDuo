@@ -1,0 +1,309 @@
+{
+  "schema": "greenbody-reference-lock-v1",
+  "config": {
+    "schema": "greenbody-reference-v1",
+    "revision": 3,
+    "image": "../../../reference/green-body-turnaround-v3b-harmonized.png",
+    "image_sha256": "73b210848a7ea201c45ed6443fb74d5d4852fcb16794bf434814c0d6f9a6e863",
+    "view": "approved-turnaround-back",
+    "design_approval": {
+      "status": "user_approved",
+      "user_statement": "我认可刚才的三视图",
+      "date": "2026-09-13"
+    },
+    "annotation_status": "provisional",
+    "annotation_note": "三视图外观设计已获用户认可；关节中心是目测估计，尚未逐点确认。侧视仅记每对重叠关节中的一个投影，不宣称被遮挡关节已被观测。AI生成三视图并非实测三维几何。 新版为用户授权的轮廓校正，不是实测三维；背面关节由正面镜像推定。新旧参考评分不得当作模型进步相减。",
+    "roi": [
+      1110,
+      25,
+      1490,
+      835
+    ],
+    "segmentation": {
+      "min_green": 50,
+      "green_red_ratio": 1.025,
+      "green_blue_ratio": 1.3
+    },
+    "canonical": {
+      "width": 480,
+      "height": 800,
+      "body_height": 720,
+      "top": 40
+    },
+    "scoring": {
+      "body_height": 720,
+      "body_top_y": 40,
+      "body_center_x": 240
+    },
+    "landmarks": {
+      "screen_right_shoulder": {
+        "xy": [
+          1383,
+          214
+        ],
+        "uncertainty_px": 10,
+        "weight": 1,
+        "source": "Inferred mirror of authoritative front annotation; not independently observed"
+      },
+      "screen_left_shoulder": {
+        "xy": [
+          1214,
+          214
+        ],
+        "uncertainty_px": 10,
+        "weight": 1,
+        "source": "Inferred mirror of authoritative front annotation; not independently observed"
+      },
+      "screen_right_elbow": {
+        "xy": [
+          1411,
+          318
+        ],
+        "uncertainty_px": 10,
+        "weight": 1,
+        "source": "Inferred mirror of authoritative front annotation; not independently observed"
+      },
+      "screen_left_elbow": {
+        "xy": [
+          1189,
+          318
+        ],
+        "uncertainty_px": 10,
+        "weight": 1,
+        "source": "Inferred mirror of authoritative front annotation; not independently observed"
+      },
+      "screen_right_wrist": {
+        "xy": [
+          1445,
+          430
+        ],
+        "uncertainty_px": 10,
+        "weight": 1,
+        "source": "Inferred mirror of authoritative front annotation; not independently observed"
+      },
+      "screen_left_wrist": {
+        "xy": [
+          1155,
+          430
+        ],
+        "uncertainty_px": 10,
+        "weight": 1,
+        "source": "Inferred mirror of authoritative front annotation; not independently observed"
+      },
+      "screen_right_hip": {
+        "xy": [
+          1335,
+          416
+        ],
+        "uncertainty_px": 12,
+        "weight": 1,
+        "source": "Inferred mirror of authoritative front annotation; not independently observed"
+      },
+      "screen_left_hip": {
+        "xy": [
+          1258,
+          416
+        ],
+        "uncertainty_px": 12,
+        "weight": 1,
+        "source": "Inferred mirror of authoritative front annotation; not independently observed"
+      },
+      "screen_right_knee": {
+        "xy": [
+          1356,
+          588
+        ],
+        "uncertainty_px": 10,
+        "weight": 1,
+        "source": "Inferred mirror of authoritative front annotation; not independently observed"
+      },
+      "screen_left_knee": {
+        "xy": [
+          1239,
+          588
+        ],
+        "uncertainty_px": 10,
+        "weight": 1,
+        "source": "Inferred mirror of authoritative front annotation; not independently observed"
+      },
+      "screen_right_ankle": {
+        "xy": [
+          1393,
+          772
+        ],
+        "uncertainty_px": 10,
+        "weight": 1,
+        "source": "Inferred mirror of authoritative front annotation; not independently observed"
+      },
+      "screen_left_ankle": {
+        "xy": [
+          1209,
+          772
+        ],
+        "uncertainty_px": 10,
+        "weight": 1,
+        "source": "Inferred mirror of authoritative front annotation; not independently observed"
+      }
+    },
+    "reference_series": "turnaround-v3-harmonized",
+    "harmonization": {
+      "method": "authoritative mirrored front mask + original-back interval texture transport",
+      "audit_sha256": "04a708a097b679354bc287c52024cb73807690dd0913ac9c0f66d5b609635f1b",
+      "original_reference_sha256": "0b67949743a66b47a6b86fa0f0493068f792e6de4bbd2943e6da58e01f96f6b4",
+      "authorization": "User confirmed reference correction, then explicitly permitted programmatic editing: 允许啊，快点吧",
+      "scope": "Original front and side pixels unchanged; original back texture transported inside mirrored-front silhouette.",
+      "not_a_model_render": true,
+      "final_visual_user_approval": false
+    }
+  },
+  "original_source": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/reference/green-body-turnaround-v3b-harmonized.png",
+  "original_sha256": "73b210848a7ea201c45ed6443fb74d5d4852fcb16794bf434814c0d6f9a6e863",
+  "config_sha256": "b49046990b23896d8f06a602e0071e1a2af723a6f12dbb3517c86e8b0f9cfa02",
+  "source_sha256": "8d0934d8229cf81c46026534a0a296b1aa680b6ee025da5c8c74069631aa7507",
+  "mask_sha256": "7062eb6000bd8f53d130c1b45c067f8195ffd20d764510266dd1c8a7f3302fff",
+  "landmarks": {
+    "screen_right_shoulder": {
+      "xy": [
+        318.24062095730915,
+        198.34411384217333
+      ],
+      "uncertainty_px": 9.314359637774903,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_left_shoulder": {
+      "xy": [
+        160.82794307891345,
+        198.34411384217333
+      ],
+      "uncertainty_px": 9.314359637774903,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_right_elbow": {
+      "xy": [
+        344.32082794307894,
+        295.21345407503236
+      ],
+      "uncertainty_px": 9.314359637774903,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_left_elbow": {
+      "xy": [
+        137.5420439844761,
+        295.21345407503236
+      ],
+      "uncertainty_px": 9.314359637774903,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_right_wrist": {
+      "xy": [
+        375.9896507115136,
+        399.53428201811124
+      ],
+      "uncertainty_px": 9.314359637774903,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_left_wrist": {
+      "xy": [
+        105.87322121604143,
+        399.53428201811124
+      ],
+      "uncertainty_px": 9.314359637774903,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_right_hip": {
+      "xy": [
+        273.5316946959897,
+        386.4941785252264
+      ],
+      "uncertainty_px": 11.177231565329883,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_left_hip": {
+      "xy": [
+        201.81112548512306,
+        386.4941785252264
+      ],
+      "uncertainty_px": 11.177231565329883,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_right_knee": {
+      "xy": [
+        293.091849935317,
+        546.7011642949547
+      ],
+      "uncertainty_px": 9.314359637774903,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_left_knee": {
+      "xy": [
+        184.11384217335058,
+        546.7011642949547
+      ],
+      "uncertainty_px": 9.314359637774903,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_right_ankle": {
+      "xy": [
+        327.5549805950841,
+        718.0853816300129
+      ],
+      "uncertainty_px": 9.314359637774903,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    },
+    "screen_left_ankle": {
+      "xy": [
+        156.17076326002598,
+        718.0853816300129
+      ],
+      "uncertainty_px": 9.314359637774903,
+      "weight": 1,
+      "source": "Inferred mirror of authoritative front annotation; not independently observed"
+    }
+  },
+  "alignment": {
+    "method": "foreground height + bbox horizontal center; uniform scale and translation only",
+    "source_bounds_xyxy": [
+      1137,
+      44,
+      1461,
+      817
+    ],
+    "scale": 0.9314359637774903,
+    "translate": [
+      -969.9353169469598,
+      -0.983182406209572
+    ],
+    "source_size": [
+      1672,
+      941
+    ],
+    "canonical_size": [
+      480,
+      800
+    ],
+    "rotation": 0,
+    "mirror": false,
+    "nonuniform_warp": false,
+    "note": "全局画面占比与平移被消除，不计入形体分；相机角度和姿态差异仍会影响评分。"
+  },
+  "assets": {
+    "reference": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/multiview-reference-v3/references/back/reference.png",
+    "candidate": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/multiview-reference-v3/references/back/candidate.png",
+    "reference_mask": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/multiview-reference-v3/references/back/reference_mask.png",
+    "candidate_mask": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/multiview-reference-v3/references/back/candidate_mask.png",
+    "overlay": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/multiview-reference-v3/references/back/overlay.png",
+    "difference": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/multiview-reference-v3/references/back/difference.png",
+    "landmarks": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/multiview-reference-v3/references/back/landmarks.png"
+  }
+}

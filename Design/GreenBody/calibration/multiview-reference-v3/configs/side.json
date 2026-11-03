@@ -1,0 +1,96 @@
+{
+  "schema": "greenbody-reference-v1",
+  "revision": 3,
+  "image": "../../../reference/green-body-turnaround-v3b-harmonized.png",
+  "image_sha256": "73b210848a7ea201c45ed6443fb74d5d4852fcb16794bf434814c0d6f9a6e863",
+  "view": "approved-turnaround-side",
+  "design_approval": {
+    "status": "user_approved",
+    "user_statement": "我认可刚才的三视图",
+    "date": "2026-09-13"
+  },
+  "annotation_status": "provisional",
+  "annotation_note": "三视图外观设计已获用户认可；关节中心是目测估计，尚未逐点确认。侧视仅记每对重叠关节中的一个投影，不宣称被遮挡关节已被观测。AI生成三视图并非实测三维几何。 新版为用户授权的轮廓校正，不是实测三维；背面关节由正面镜像推定。新旧参考评分不得当作模型进步相减。",
+  "roi": [
+    735,
+    25,
+    925,
+    835
+  ],
+  "segmentation": {
+    "min_green": 50,
+    "green_red_ratio": 1.025,
+    "green_blue_ratio": 1.3
+  },
+  "canonical": {
+    "width": 480,
+    "height": 800,
+    "body_height": 720,
+    "top": 40
+  },
+  "scoring": {
+    "body_height": 720,
+    "body_top_y": 40,
+    "body_center_x": 240
+  },
+  "landmarks": {
+    "screen_left_shoulder": {
+      "xy": [
+        835,
+        215
+      ],
+      "uncertainty_px": 10,
+      "weight": 1
+    },
+    "screen_left_elbow": {
+      "xy": [
+        836,
+        338
+      ],
+      "uncertainty_px": 10,
+      "weight": 1
+    },
+    "screen_left_wrist": {
+      "xy": [
+        808,
+        444
+      ],
+      "uncertainty_px": 10,
+      "weight": 1
+    },
+    "screen_left_hip": {
+      "xy": [
+        850,
+        425
+      ],
+      "uncertainty_px": 12,
+      "weight": 1
+    },
+    "screen_left_knee": {
+      "xy": [
+        837,
+        586
+      ],
+      "uncertainty_px": 10,
+      "weight": 1
+    },
+    "screen_left_ankle": {
+      "xy": [
+        857,
+        770
+      ],
+      "uncertainty_px": 10,
+      "weight": 1
+    }
+  },
+  "reference_series": "turnaround-v3-harmonized",
+  "harmonization": {
+    "method": "authoritative mirrored front mask + original-back interval texture transport",
+    "audit_sha256": "04a708a097b679354bc287c52024cb73807690dd0913ac9c0f66d5b609635f1b",
+    "original_reference_sha256": "0b67949743a66b47a6b86fa0f0493068f792e6de4bbd2943e6da58e01f96f6b4",
+    "authorization": "User confirmed reference correction, then explicitly permitted programmatic editing: 允许啊，快点吧",
+    "scope": "Original front and side pixels unchanged; original back texture transported inside mirrored-front silhouette.",
+    "not_a_model_render": true,
+    "final_visual_user_approval": false
+  }
+}

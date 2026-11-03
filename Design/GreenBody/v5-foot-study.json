@@ -1,0 +1,6 @@
+[
+  {"name":"forearm10-arm5", "parameters":{"left_arm_in":5,"left_forearm_out":10,"forearm_extra":0.1,"axilla_fill":0.008,"nose_plane":0.006,"chin_plane":0.002}},
+  {"name":"near-foot10", "parameters":{"left_arm_in":5,"left_forearm_out":10,"foot_yaw_delta_R":10,"axilla_fill":0.008,"nose_plane":0.006,"chin_plane":0.002}},
+  {"name":"near-foot20", "parameters":{"left_arm_in":5,"left_forearm_out":10,"foot_yaw_delta_R":20,"axilla_fill":0.008,"nose_plane":0.006,"chin_plane":0.002}},
+  {"name":"both-feet10", "parameters":{"left_arm_in":5,"left_forearm_out":10,"foot_yaw_delta_R":10,"foot_yaw_delta_L":-10,"axilla_fill":0.008,"nose_plane":0.006,"chin_plane":0.002}}
+]

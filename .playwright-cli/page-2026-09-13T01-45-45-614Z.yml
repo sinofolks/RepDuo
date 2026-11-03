@@ -1,0 +1,280 @@
+- generic [active] [ref=e1]:
+  - link "跳到叠图检查" [ref=e2] [cursor=pointer]:
+    - /url: "#inspection"
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - heading "GreenBody 校准" [level=1] [ref=e6]
+        - paragraph [ref=e7]: 单视角 · 本地证据
+      - generic [ref=e8]:
+        - generic [ref=e9]: 模型记录
+        - combobox "选择模型校准记录" [ref=e10] [cursor=pointer]:
+          - option "V1 · 2026/09/13 09:41"
+          - option "V2 · 2026/09/13 09:41"
+          - option "V1 · 2026/09/13 09:42"
+          - option "V2 · 2026/09/13 09:42"
+          - option "V2-repeat · 2026/09/13 09:43" [selected]
+    - note [ref=e11]:
+      - paragraph [ref=e14]:
+        - strong [ref=e15]: 暂定校准，不是还原率。
+        - text: AI 概念图关键点尚待人工复核。0–100 是当前协议下的启发式一致性指数，不代表 3D 形象还原百分比，也不能证明动作变形质量。
+    - main [ref=e16]:
+      - generic [ref=e17]:
+        - region "参考图与模型叠图检查" [ref=e18]:
+          - generic [ref=e19]:
+            - generic [ref=e20]:
+              - generic [ref=e21]: 查看
+              - combobox "查看" [ref=e22] [cursor=pointer]:
+                - option "交互叠图" [selected]
+                - option "仅参考图"
+                - option "仅模型渲染"
+                - option "轮廓差异"
+                - option "关键点"
+            - generic "测量标记图例" [ref=e23]:
+              - generic [ref=e24]: 参考 · 青色
+              - generic [ref=e26]: 模型 · 橙色
+          - generic [ref=e28]:
+            - img "当前校准记录的已对齐参考图" [ref=e29]
+            - img "当前校准记录的已对齐 Blender 模型渲染" [ref=e30]
+          - generic [ref=e31]:
+            - generic [ref=e32]:
+              - generic [ref=e33]: 模型不透明度
+              - slider "模型不透明度" [ref=e34] [cursor=pointer]: "50"
+              - status [ref=e35]: 50%
+              - button "重置叠图" [ref=e36] [cursor=pointer]
+            - paragraph [ref=e37]: 拖动查看相同画布上的轮廓错位；0% 为参考图，100% 为模型渲染。这里的百分比仅表示图层不透明度。
+        - complementary "当前校准指标" [ref=e38]:
+          - generic [ref=e39]:
+            - heading "V2-repeat" [level=2] [ref=e40]
+            - generic [ref=e41]: 暂定标注
+          - generic [ref=e42]:
+            - term [ref=e43]: 协议
+            - definition [ref=e44]: a27899fbaaab3a81843483895ebc7f9e27e151740b8476f89b2362f8e0765d1f
+            - term [ref=e45]: 时间
+            - definition [ref=e46]: 2026/09/13 09:43
+            - term [ref=e47]: 记录
+            - definition [ref=e48]: 20260913T014334268045Z-V2-repeat
+          - table [ref=e50]:
+            - rowgroup [ref=e51]:
+              - row [ref=e52]:
+                - columnheader "指标" [ref=e53]
+                - columnheader "指数" [ref=e54]
+                - columnheader "权重" [ref=e55]
+            - rowgroup [ref=e56]:
+              - row [ref=e57]:
+                - 'cell "轮廓重合 Foreground intersection / union on the fixed canvas. 原始值：{\"iou\":0.7098195034805643,\"intersection_pixels\":69135,\"union_pixels\":97398}" [ref=e58]':
+                  - generic [ref=e59]: 轮廓重合
+                  - paragraph [ref=e60]: Foreground intersection / union on the fixed canvas.
+                  - paragraph [ref=e61]: "原始值：{\"iou\":0.7098195034805643,\"intersection_pixels\":69135,\"union_pixels\":97398}"
+                - cell "71.0" [ref=e62]
+                - cell "30%" [ref=e63]
+              - row [ref=e64]:
+                - 'cell "boundary_f1 Symmetric 2D boundary precision/recall within a fixed pixel tolerance. 原始值：{\"f1\":0.21355838300917016,\"precision\":0.21612595419847327,\"recall\":0.21105110095554633,\"tolerance_px\":3.6,\"reference_boundary_pixels\":4814,\"candidate_boundary_pixels\":4192}" [ref=e65]':
+                  - generic [ref=e66]: boundary_f1
+                  - paragraph [ref=e67]: Symmetric 2D boundary precision/recall within a fixed pixel tolerance.
+                  - paragraph [ref=e68]: "原始值：{\"f1\":0.21355838300917016,\"precision\":0.21612595419847327,\"recall\":0.21105110095554633,\"tolerance_px\":3.6,\"reference_boundary_pixels\":4814,\"candidate_boundary_pixels\":4192}"
+                - cell "21.4" [ref=e69]
+                - cell "20%" [ref=e70]
+              - row [ref=e71]:
+                - 'cell "width_profile Equal-weight fixed height bands; left/right outline extent and occupied row width. 原始值：{\"error_scale_px\":18,\"equal_weight_regions\":[\"head\",\"shoulders\",\"torso\",\"hips\",\"thighs\",\"shins\",\"feet\"]}" [ref=e72]':
+                  - generic [ref=e73]: width_profile
+                  - paragraph [ref=e74]: Equal-weight fixed height bands; left/right outline extent and occupied row width.
+                  - paragraph [ref=e75]: "原始值：{\"error_scale_px\":18,\"equal_weight_regions\":[\"head\",\"shoulders\",\"torso\",\"hips\",\"thighs\",\"shins\",\"feet\"]}"
+                - cell "58.4" [ref=e76]
+                - cell "20%" [ref=e77]
+              - row [ref=e78]:
+                - 'cell "关键点位置 Reference-weighted point agreement; missing/invalid candidates score zero without renormalization. 原始值：{\"coverage\":1,\"required_count\":12,\"valid_count\":12,\"missing\":[],\"invalid\":[],\"weighted_denominator\":12,\"error_scale_px\":36,\"mean_valid_error_px\":16.212979392809835,\"max_valid_error_px\":30.524905339392223,\"missing_policy\":\"zero_score_fixed_reference_denominator\"}" [ref=e79]':
+                  - generic [ref=e80]: 关键点位置
+                  - paragraph [ref=e81]: Reference-weighted point agreement; missing/invalid candidates score zero without renormalization.
+                  - paragraph [ref=e82]: "原始值：{\"coverage\":1,\"required_count\":12,\"valid_count\":12,\"missing\":[],\"invalid\":[],\"weighted_denominator\":12,\"error_scale_px\":36,\"mean_valid_error_px\":16.212979392809835,\"max_valid_error_px\":30.524905339392223,\"missing_policy\":\"zero_score_fixed_reference_denominator\"}"
+                - cell "81.9" [ref=e83]
+                - cell "15%" [ref=e84]
+              - row [ref=e85]:
+                - 'cell "颜色分布 Overlap-gated Lab mean/distribution agreement of the rendered appearance, not material truth. 原始值：{\"overlap_coverage\":0.8135060717311494,\"overlap_pixels\":69135,\"delta_e_mean\":7.985128767933305,\"delta_e_quantiles\":7.807507878321033,\"reference_mean_lab\":[60.48286660451593,-26.02142947626653,50.854563554059325],\"candidate_mean_lab\":[64.37280888055653,-29.86914981447033,56.67054831405663],\"delta_e_scale\":20}" [ref=e86]':
+                  - generic [ref=e87]: 颜色分布
+                  - paragraph [ref=e88]: Overlap-gated Lab mean/distribution agreement of the rendered appearance, not material truth.
+                  - paragraph [ref=e89]: "原始值：{\"overlap_coverage\":0.8135060717311494,\"overlap_pixels\":69135,\"delta_e_mean\":7.985128767933305,\"delta_e_quantiles\":7.807507878321033,\"reference_mean_lab\":[60.48286660451593,-26.02142947626653,50.854563554059325],\"candidate_mean_lab\":[64.37280888055653,-29.86914981447033,56.67054831405663],\"delta_e_scale\":20}"
+                - cell "54.8" [ref=e90]
+                - cell "10%" [ref=e91]
+              - row [ref=e92]:
+                - 'cell "明暗分布 Overlap-gated coarse spatial L* contrast agreement, not recovered lighting or material truth. 原始值：{\"overlap_coverage\":0.8135060717311494,\"spatial_lstar_mae\":6.1298221389616,\"sigma_px\":18,\"lstar_scale\":10,\"global_mean_removed\":true}" [ref=e93]':
+                  - generic [ref=e94]: 明暗分布
+                  - paragraph [ref=e95]: Overlap-gated coarse spatial L* contrast agreement, not recovered lighting or material truth.
+                  - paragraph [ref=e96]: "原始值：{\"overlap_coverage\":0.8135060717311494,\"spatial_lstar_mae\":6.1298221389616,\"sigma_px\":18,\"lstar_scale\":10,\"global_mean_removed\":true}"
+                - cell "44.1" [ref=e97]
+                - cell "5%" [ref=e98]
+            - rowgroup [ref=e99]:
+              - row [ref=e100]:
+                - rowheader "综合指数 协议内 0–100，非还原率" [ref=e101]:
+                  - text: 综合指数
+                  - generic [ref=e102]: 协议内 0–100，非还原率
+                - cell "57.2" [ref=e103]
+          - paragraph [ref=e104]: 仅展示已保存的测量值；此页面不重新计算评分。
+          - list [ref=e105]:
+            - listitem [ref=e106]: AI概念图关节中心为人工目测估计；完成放大图复核，但未获用户逐点确认，不能视作三维真值。容差为原图像素估计，不是统计置信区间。轮廓由锁定颜色分割提取，边缘仍有不确定性。
+      - generic [ref=e107]:
+        - generic [ref=e108]:
+          - generic [ref=e109]:
+            - heading "局部差异" [level=2] [ref=e110]
+            - paragraph [ref=e111]: 定位下一处需要检查的位置
+          - table [ref=e113]:
+            - rowgroup [ref=e114]:
+              - row [ref=e115]:
+                - columnheader "区域" [ref=e116]
+                - columnheader "指数" [ref=e117]
+                - columnheader "测量说明" [ref=e118]
+            - rowgroup [ref=e119]:
+              - row [ref=e120]:
+                - cell "头部" [ref=e121]
+                - cell "45.3" [ref=e122]
+                - cell "—" [ref=e123]
+              - row [ref=e124]:
+                - cell "shoulders" [ref=e125]
+                - cell "67.3" [ref=e126]
+                - cell "—" [ref=e127]
+              - row [ref=e128]:
+                - cell "躯干" [ref=e129]
+                - cell "65.5" [ref=e130]
+                - cell "—" [ref=e131]
+              - row [ref=e132]:
+                - cell "hips" [ref=e133]
+                - cell "67.2" [ref=e134]
+                - cell "—" [ref=e135]
+              - row [ref=e136]:
+                - cell "thighs" [ref=e137]
+                - cell "77.7" [ref=e138]
+                - cell "—" [ref=e139]
+              - row [ref=e140]:
+                - cell "shins" [ref=e141]
+                - cell "64.7" [ref=e142]
+                - cell "—" [ref=e143]
+              - row [ref=e144]:
+                - cell "双脚" [ref=e145]
+                - cell "21.0" [ref=e146]
+                - cell "—" [ref=e147]
+          - paragraph [ref=e148]: 区域指数采用记录中的定义；未提供的分项留空，不补算。
+        - generic [ref=e149]:
+          - generic [ref=e150]:
+            - heading "关键点误差" [level=2] [ref=e151]
+            - paragraph [ref=e152]: 参考标注包含不确定度
+          - table [ref=e154]:
+            - rowgroup [ref=e155]:
+              - row [ref=e156]:
+                - columnheader "关键点" [ref=e157]
+                - columnheader "距离 / px" [ref=e158]
+                - columnheader "参考不确定度 / px" [ref=e159]
+                - columnheader "说明" [ref=e160]
+            - rowgroup [ref=e161]:
+              - row [ref=e162]:
+                - cell "screen_left_shoulder" [ref=e163]
+                - cell "10.0" [ref=e164]
+                - cell "9.7" [ref=e165]
+                - cell "valid" [ref=e166]
+              - row [ref=e167]:
+                - cell "screen_right_shoulder" [ref=e168]
+                - cell "10.5" [ref=e169]
+                - cell "9.7" [ref=e170]
+                - cell "valid" [ref=e171]
+              - row [ref=e172]:
+                - cell "screen_left_elbow" [ref=e173]
+                - cell "19.1" [ref=e174]
+                - cell "8.7" [ref=e175]
+                - cell "valid" [ref=e176]
+              - row [ref=e177]:
+                - cell "screen_right_elbow" [ref=e178]
+                - cell "7.7" [ref=e179]
+                - cell "8.7" [ref=e180]
+                - cell "valid" [ref=e181]
+              - row [ref=e182]:
+                - cell "screen_left_wrist" [ref=e183]
+                - cell "10.1" [ref=e184]
+                - cell "6.8" [ref=e185]
+                - cell "valid" [ref=e186]
+              - row [ref=e187]:
+                - cell "screen_right_wrist" [ref=e188]
+                - cell "8.5" [ref=e189]
+                - cell "6.8" [ref=e190]
+                - cell "valid" [ref=e191]
+              - row [ref=e192]:
+                - cell "screen_left_hip" [ref=e193]
+                - cell "25.4" [ref=e194]
+                - cell "11.7" [ref=e195]
+                - cell "valid" [ref=e196]
+              - row [ref=e197]:
+                - cell "screen_right_hip" [ref=e198]
+                - cell "3.1" [ref=e199]
+                - cell "11.7" [ref=e200]
+                - cell "valid" [ref=e201]
+              - row [ref=e202]:
+                - cell "screen_left_knee" [ref=e203]
+                - cell "20.9" [ref=e204]
+                - cell "9.7" [ref=e205]
+                - cell "valid" [ref=e206]
+              - row [ref=e207]:
+                - cell "screen_right_knee" [ref=e208]
+                - cell "18.5" [ref=e209]
+                - cell "9.7" [ref=e210]
+                - cell "valid" [ref=e211]
+              - row [ref=e212]:
+                - cell "screen_left_ankle" [ref=e213]
+                - cell "30.3" [ref=e214]
+                - cell "6.8" [ref=e215]
+                - cell "valid" [ref=e216]
+              - row [ref=e217]:
+                - cell "screen_right_ankle" [ref=e218]
+                - cell "30.5" [ref=e219]
+                - cell "6.8" [ref=e220]
+                - cell "valid" [ref=e221]
+          - paragraph [ref=e222]: 像素距离以已保存的对齐画布为准，不等于三维关节误差。
+      - generic [ref=e223]:
+        - generic [ref=e224]:
+          - generic [ref=e225]:
+            - heading "历史记录" [level=2] [ref=e226]
+            - paragraph [ref=e227]: 不同协议分开查看；只比较同协议的有效指数。
+          - generic [ref=e228]:
+            - generic [ref=e229]: 协议
+            - combobox "选择历史记录协议" [ref=e230] [cursor=pointer]:
+              - option "6af5c96e051988253c3ea85837667fe3460b483ecbc442b87479bf21fee9a601"
+              - option "a27899fbaaab3a81843483895ebc7f9e27e151740b8476f89b2362f8e0765d1f" [selected]
+        - table [ref=e232]:
+          - rowgroup [ref=e233]:
+            - row [ref=e234]:
+              - columnheader "模型记录" [ref=e235]
+              - columnheader "状态" [ref=e236]
+              - columnheader "综合指数" [ref=e237]
+              - columnheader "较上一有效记录" [ref=e238]
+              - columnheader "生成时间" [ref=e239]
+          - rowgroup [ref=e240]:
+            - row [ref=e241]:
+              - cell [ref=e242]:
+                - button "V1" [ref=e243] [cursor=pointer]
+              - cell "暂定标注" [ref=e244]
+              - cell "56.3" [ref=e246]
+              - cell "—" [ref=e247]
+              - cell "2026/09/13 09:42" [ref=e248]
+            - row [ref=e249]:
+              - cell [ref=e250]:
+                - button "V2" [ref=e251] [cursor=pointer]
+              - cell "暂定标注" [ref=e252]
+              - cell "57.2" [ref=e254]
+              - cell "+0.9" [ref=e255]
+              - cell "2026/09/13 09:42" [ref=e256]
+            - row [ref=e257]:
+              - cell [ref=e258]:
+                - button "V2-repeat" [ref=e259] [cursor=pointer]
+              - cell "暂定标注" [ref=e260]
+              - cell "57.2" [ref=e262]
+              - cell "0.0" [ref=e263]
+              - cell "2026/09/13 09:43" [ref=e264]
+        - paragraph [ref=e265]: 当前仅显示协议 a27899fbaaab3a81843483895ebc7f9e27e151740b8476f89b2362f8e0765d1f。暂定标注仍是暂定证据，指数上升不代表模型已通过验收。
+      - generic [ref=e266]:
+        - heading "记录中的检查建议" [level=2] [ref=e267]
+        - list [ref=e268]:
+          - listitem [ref=e269]: 优先检查 feet：区域匹配分 21.0。结合叠图区分相机/姿态偏移与局部厚度，单次只改一个因素。
+          - listitem [ref=e270]: 优先检查 head：区域匹配分 45.3。结合叠图区分相机/姿态偏移与局部厚度，单次只改一个因素。
+          - listitem [ref=e271]: 优先检查 shins：区域匹配分 64.7。结合叠图区分相机/姿态偏移与局部厚度，单次只改一个因素。
+          - listitem [ref=e272]: 固定相机协议下比较形体；调相机或摄影棚请开新协议并重新渲染基线。
+          - listitem [ref=e273]: 总分上升不等于全部改善：先检查各区域退步、侧背面和动作变形，再决定是否保留模型。
+      - group [ref=e274]:
+        - generic "查看输入来源、资产校验与配准参数" [ref=e275] [cursor=pointer]
+      - paragraph [ref=e276]: 本报告可离线打开。所有图片均来自记录的输入或计量派生图；不做视觉重绘，不修改 Blender 模型，也不接入 iOS。

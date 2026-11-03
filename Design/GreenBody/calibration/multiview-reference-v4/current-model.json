@@ -1,0 +1,38 @@
+{
+  "schema": "greenbody-working-selection-v1",
+  "date": "2026-09-13",
+  "selected_model": "../../GreenBody-v53-work.blend",
+  "selected_model_sha256": "67e5215fab5a865ad77dd701c996b18b86b5bba562aeb3924e830a9ad3ba6edb",
+  "selected_capture_summary": "captures/V52-foot-x-width-15/summary.json",
+  "status": "unfinished_working_geometry",
+  "goal_99_achieved": false,
+  "approved_for_animation": false,
+  "selected_scores": {
+    "front": 82.01729424549961,
+    "side": 84.94951973855274,
+    "back": 81.95020689461933
+  },
+  "equal_view_mean": 82.97234029289056,
+  "minimum_view_score": 81.95020689461933,
+  "selection_reason": "Under the user-authorized v4 landmark-reconciled reference, V53 uses the best tested 15% foot-chain X cross-section expansion from V50. It improves every view, aggregate mean and minimum over the validated 10% study; the 25% study regresses. Structural, driver, squat and push-up checks pass. V53 is not 99 or final animation approval.",
+  "reference_protocol": "turnaround-v4-orthographic-landmarks",
+  "reference_authorization_audit": "reference-v4-authorization-audit.json",
+  "control_vertex_count": 22020,
+  "contains_shape_keys_and_drivers": true,
+  "runtime_port_not_implemented": true,
+  "not_selected": {
+    "V52-foot-x-width-25": "81.98341/84.49435/81.89802, mean82.79193/min81.89802; all aggregates regress versus 15%, rejected.",
+    "V52-foot-x-width-10": "82.01701/84.92788/81.94993, mean82.96494/min81.94993; superseded by validated 15% V53.",
+    "V50-waist-x-width-035": "81.90913/85.05250/81.86342, mean82.94168/min81.86342; superseded by V52's higher mean/minimum.",
+    "V51-glossier-035-030": "C2E93C roughness.35/specular.30: 81.87791/84.90461/81.73502, mean82.83918/min81.73502; material-only regression versus V50, rejected.",
+    "V50-waist-x-width-05": "81.89111/85.04167/81.84756, mean82.92678/min81.84756; below V50-3.5% in every aggregate, rejected.",
+    "V49-shoulder-root-inset-06": "81.75468/85.07590/81.64415, mean82.82491/min81.64415; superseded by V50, which improves every view.",
+    "V48-thigh-x-width-04": "Thigh X expansion: 81.70483/85.09197/81.63614, mean82.81098/min81.63614; better minimum but lower mean than V49, rejected.",
+    "V47-ankle06-foot-x-width-04": "81.72446/85.11425/81.61177, mean82.81683/min81.61177; superseded by V49's higher mean/minimum.",
+    "V45-ankle-x-taper-10": "10% ankle taper: 81.46392/85.10017/81.35667, mean82.64025/min81.35667; front/back regression, rejected.",
+    "V46-foot-x-width-04": "Foot-chain X width only: 81.67220/85.09284/81.56141, mean82.77548/min81.56141; improves V40 but is below combined V47.",
+    "V45-ankle-x-taper-06": "81.68819/85.08828/81.58757, mean82.78801/min81.58757; superseded by V47, which improves every v4 view.",
+    "V40-v4-baseline": "Source for V45 and retained as a separate v4 recapture: 81.63624/85.06909/81.53865, mean82.74799/min81.53865.",
+    "all-v3-results": "Retained unchanged. V3 and v4 use different reference annotation revisions and must not be subtracted as model progress."
+  }
+}

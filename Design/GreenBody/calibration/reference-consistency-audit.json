@@ -1,0 +1,43 @@
+{
+  "schema": "greenbody-reference-feasibility-audit-v1",
+  "source_hashes": {
+    "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/multiview/references/front/reference_mask.png": "35838310991f0865b625bdf3b035fabc2e0dc81d769a06fbeaecd7d6b79d4c92",
+    "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/multiview/references/back/reference_mask.png": "077113e360ccb54f93073970df0b4fa3554289fb8b2af290f3e6f0e12e379439",
+    "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/multiview-pose-v2/runs/20260913T050625036753Z-V9-restrained-front/candidate_mask.png": "3929d3df76635027753a944a77514b9fa1b291dcf346ffd1b82668e541e51384",
+    "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/multiview-pose-v2/runs/20260913T050636899982Z-V9-restrained-back/candidate_mask.png": "26da0bc6b11efb4515e599230374d370dd0898916b58dffba354983923fcbf68"
+  },
+  "reference_front_back_mirror_iou": 0.9087081140236594,
+  "generous_translation_search": {
+    "range_x_px": [
+      -12,
+      12
+    ],
+    "range_y_px": [
+      -6,
+      6
+    ],
+    "best_iou": 0.9176020942408377,
+    "best_dx": 1,
+    "best_dy": 1,
+    "note": "Read-only sensitivity allowance, not applied to reference or scorer"
+  },
+  "observed_v9_candidate_mirror_jaccard_distance": 0.0015176212691810909,
+  "ideal_mirrored_shape_composite_mean_upper_bound": 98.76403141361257,
+  "bound_using_observed_v9_raster_gap": 98.78679573265028,
+  "sensitivity_bound_allowing_one_percent_candidate_raster_gap": 98.91403141361256,
+  "derivation": {
+    "assumption": "One opaque mesh, one pose, front/back orthographic cameras; mirrored ideal silhouettes coincide",
+    "jaccard_triangle": "IoU(Rf,Cf)+IoU(Rb,Cb) <= 1+IoU(Rf,mirror(Rb))+d(Cf,mirror(Cb))",
+    "all_other_scores_assumed": 100,
+    "silhouette_weight": 30,
+    "composite_mean_bound": "100 - 15 * (1 - reference_IoU - candidate_mirror_distance)",
+    "consequence": "If the mean front/back upper bound is below99, both views cannot simultaneously reach99 under these assumptions"
+  },
+  "limitations": [
+    "The1% raster-gap case is a sensitivity allowance, not a universal renderer error guarantee",
+    "This bounds the locked image-agreement protocol, not subjective quality or actual 3D reconstruction percentage",
+    "No claim that the current model is close to this upper bound",
+    "Harmonizing the approved reference, changing pose assumptions or redefining the99 target requires explicit user direction; no such change performed"
+  ],
+  "recommended_next_decision": "Ask whether to harmonize a geometrically consistent reference turnaround while retaining the approved design. Do not inflate scores or silently alter the reference."
+}

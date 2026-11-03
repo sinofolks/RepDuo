@@ -1,0 +1,38 @@
+{
+  "schema": "greenbody-three-view-agreement-v1",
+  "status": "provisional_reference_agreement",
+  "scores": {
+    "front": 71.3974203795525,
+    "side": 75.48392240082327,
+    "back": 71.36999278999058
+  },
+  "equal_view_mean": 72.75044519012211,
+  "minimum_view_score": 71.36999278999058,
+  "numeric_99_target_met_in_every_view": false,
+  "automatic_model_approval": false,
+  "source_canonical_sha256": "9cfe41224d71f4357dceb5397e7955b73572ab39b42e6da27bac1e12bff6cb64",
+  "shared_state_verified": {
+    "geometry_hash": "1d84989d5d3fd7f1c44b640ae913ba092d9eac573b8494a2cb4ba6f124f77b38",
+    "pose_hash": "c6b170bd700079c4275aa26e9206cd38f62f54a8c495f776263a337702b90471",
+    "material_hash": "3a7f5b8112496c3dc2eaa20be5248eb4e09eb5e01617a6104c7b40150c64196f"
+  },
+  "protocols": {
+    "front": "aaac3e36295ac6fdc77daaf642d6eea7340b59f75e922f6ba3bcdbe26a2065d6",
+    "side": "0f08186c41ac1ab4771b9fbc52c4ba933c591ba178348e2fabb7bdc2b824457c",
+    "back": "6c6cb644c77bb3fe89eece5b22cf790450b5e91ebfaaf023b0806bfef4fa38d2"
+  },
+  "interpretation": "Three reference projections, not a certified 3D reconstruction percentage. Inspect per-view regions, actual geometry and deformation before approval.",
+  "reference_version": "v3-harmonized",
+  "pose_version": "v2",
+  "baseline_model": "V10-legdepth",
+  "capture_mode": "Re-evaluation of unchanged, hash-verified V10 captures; no new rendering",
+  "capture_root": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/multiview-pose-v2/captures/V10-legdepth",
+  "reference": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/reference/green-body-turnaround-v3b-harmonized.png",
+  "model_improvement_claimed": false,
+  "old_reference_scores_comparable": false,
+  "view_results": {
+    "front": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/multiview-reference-v3/runs/20260913T061440944960Z-V10-baseline-ref3-front/result.json",
+    "side": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/multiview-reference-v3/runs/20260913T061443263469Z-V10-baseline-ref3-side/result.json",
+    "back": "/Users/aaronphy/Documents/ChatGPT/RepDuo/Design/GreenBody/calibration/multiview-reference-v3/runs/20260913T061445608215Z-V10-baseline-ref3-back/result.json"
+  }
+}
