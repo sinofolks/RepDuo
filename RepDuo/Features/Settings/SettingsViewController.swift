@@ -28,7 +28,8 @@ final class SettingsViewController: RDBaseViewController {
         super.viewDidLoad()
         title = "SETTINGS".rdLocalized
         tableView.backgroundColor = RDColor.background
-        tableView.separatorColor = RDColor.separatorOnDark
+        tableView.separatorColor = RDColor.surfaceSecondary
+        tableView.sectionHeaderTopPadding = 18
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Setting")
@@ -41,6 +42,7 @@ final class SettingsViewController: RDBaseViewController {
         let control = UISwitch()
         control.isOn = isOn
         control.onTintColor = RDColor.neonGreen
+        control.thumbTintColor = nil
         control.addAction(UIAction { action(($0.sender as? UISwitch)?.isOn ?? false) }, for: .valueChanged)
         return control
     }
@@ -81,7 +83,7 @@ extension SettingsViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
-        case 0: return 4
+        case 0: return 6
         case 1: return 1
         default: return 3
         }
@@ -89,7 +91,7 @@ extension SettingsViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch section {
-        case 0: return "TRAINING CUES".rdLocalized
+        case 0: return "TRAINING".rdLocalized
         case 1: return "NEON BODY".rdLocalized
         default: return "DATA & PRIVACY".rdLocalized
         }
@@ -108,12 +110,28 @@ extension SettingsViewController: UITableViewDataSource, UITableViewDelegate {
         if indexPath.section == 0 {
             switch indexPath.row {
             case 0:
+                cell.textLabel?.text = "Daily goal".rdLocalized
+                cell.accessoryView = RDStepperView(
+                    value: preferences.dailyRepGoal,
+                    range: AppPreferences.dailyRepGoalRange,
+                    step: 10,
+                    label: "Daily goal"
+                ) { [weak self] in self?.preferences.dailyRepGoal = $0 }
+            case 1:
+                cell.textLabel?.text = "Reps per set".rdLocalized
+                cell.accessoryView = RDStepperView(
+                    value: preferences.setRepTarget,
+                    range: AppPreferences.setRepTargetRange,
+                    step: 5,
+                    label: "Reps per set"
+                ) { [weak self] in self?.preferences.setRepTarget = $0 }
+            case 2:
                 cell.textLabel?.text = "Audio cues".rdLocalized
                 cell.accessoryView = makeSwitch(isOn: preferences.soundEnabled) { [weak self] in self?.preferences.soundEnabled = $0 }
-            case 1:
+            case 3:
                 cell.textLabel?.text = "Haptic feedback".rdLocalized
                 cell.accessoryView = makeSwitch(isOn: preferences.hapticsEnabled) { [weak self] in self?.preferences.hapticsEnabled = $0 }
-            case 2:
+            case 4:
                 cell.textLabel?.text = "Three-second countdown".rdLocalized
                 cell.accessoryView = makeSwitch(isOn: preferences.countdownEnabled) { [weak self] in self?.preferences.countdownEnabled = $0 }
             default:
@@ -156,6 +174,75 @@ extension SettingsViewController: UITableViewDataSource, UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
-        (view as? UITableViewHeaderFooterView)?.textLabel?.textColor = RDColor.textSecondary
+        guard let header = view as? UITableViewHeaderFooterView else { return }
+        header.textLabel?.textColor = RDColor.neonGreen
+        header.textLabel?.font = RDFont.eyebrow(13)
+    }
+
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        UITableView.automaticDimension
+    }
+}
+
+/// Compact −/value/+ control that reads as an adjustable element in VoiceOver.
+private final class RDStepperView: UIView {
+    private let valueLabel = UILabel()
+    private let range: ClosedRange<Int>
+    private let step: Int
+    private let onChange: (Int) -> Void
+    private var value: Int
+
+    init(value: Int, range: ClosedRange<Int>, step: Int, label: String, onChange: @escaping (Int) -> Void) {
+        self.value = value
+        self.range = range
+        self.step = step
+        self.onChange = onChange
+        super.init(frame: CGRect(x: 0, y: 0, width: 128, height: 40))
+        valueLabel.font = RDFont.numeric(24, maximumScale: 1)
+        valueLabel.textColor = RDColor.warmWhite
+        valueLabel.textAlignment = .center
+        let minus = makeButton("minus") { [weak self] in self?.adjust(by: -1) }
+        let plus = makeButton("plus") { [weak self] in self?.adjust(by: 1) }
+        let stack = UIStackView(axis: .horizontal, spacing: 4, arrangedSubviews: [minus, valueLabel, plus])
+        stack.alignment = .center
+        stack.translatesAutoresizingMaskIntoConstraints = true
+        stack.frame = bounds
+        stack.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        addSubview(stack)
+        isAccessibilityElement = true
+        accessibilityLabel = label.rdLocalized
+        accessibilityTraits = .adjustable
+        render()
+    }
+
+    required init?(coder: NSCoder) { nil }
+
+    override func accessibilityIncrement() { adjust(by: 1) }
+    override func accessibilityDecrement() { adjust(by: -1) }
+
+    private func makeButton(_ symbol: String, action: @escaping () -> Void) -> UIButton {
+        var configuration = UIButton.Configuration.filled()
+        configuration.image = UIImage(systemName: symbol, withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .heavy))
+        configuration.cornerStyle = .capsule
+        configuration.baseBackgroundColor = RDColor.surfaceSecondary
+        configuration.baseForegroundColor = RDColor.warmWhite
+        let button = UIButton(configuration: configuration, primaryAction: UIAction { _ in action() })
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.widthAnchor.constraint(equalToConstant: 36).isActive = true
+        button.heightAnchor.constraint(equalToConstant: 36).isActive = true
+        return button
+    }
+
+    private func adjust(by direction: Int) {
+        let next = min(range.upperBound, max(range.lowerBound, value + direction * step))
+        guard next != value else { return }
+        value = next
+        render()
+        onChange(next)
+    }
+
+    private func render() {
+        valueLabel.text = String(value)
+        accessibilityValue = String(value)
     }
 }

@@ -1,2 +1,3 @@
 "CFBundleDisplayName" = "RepDuo";
 "NSCameraUsageDescription" = "RepDuoはこのiPhoneのカメラを使ってスクワットとプッシュアップの回数を数えます。動画は保存もアップロードもされません。";
+"NSPhotoLibraryAddUsageDescription" = "RepDuoは選択した記録カードを写真ライブラリに保存します。それ以外にはアクセスしません。";

@@ -11,6 +11,14 @@ public enum ExerciseType: String, Codable, CaseIterable, Sendable {
         }
     }
 
+    /// Untranslated label for condensed scoreboard captions.
+    var scoreboardName: String {
+        switch self {
+        case .squat: return "SQUAT"
+        case .pushUp: return "PUSH-UP"
+        }
+    }
+
     var shortInstruction: String {
         switch self {
         case .squat: return "Head, hips, knees and ankles in frame.".rdLocalized

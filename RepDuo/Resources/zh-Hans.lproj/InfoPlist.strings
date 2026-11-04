@@ -1,2 +1,3 @@
 "CFBundleDisplayName" = "RepDuo";
 "NSCameraUsageDescription" = "RepDuo 使用这台 iPhone 的相机来计算深蹲和俯卧撑次数。视频不会被保存或上传。";
+"NSPhotoLibraryAddUsageDescription" = "RepDuo 只会把你选择的成绩卡片保存到相册，不会读取其他内容。";

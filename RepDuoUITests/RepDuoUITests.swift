@@ -39,15 +39,13 @@ final class RepDuoUITests: XCTestCase {
     func testSettingsPreservesTrainingNeonAndPrivacyControls() {
         app.launch()
         reachChoose()
-        let settings = app.navigationBars.buttons.matching(
-            NSPredicate(format: "label IN %@", ["Settings", "设置", "設定"])
-        ).firstMatch
+        let settings = app.buttons["choose.settings"]
         XCTAssertTrue(settings.waitForExistence(timeout: 3))
         settings.tap()
 
         let table = app.tables.firstMatch
         XCTAssertTrue(table.waitForExistence(timeout: 3))
-        XCTAssertEqual(table.cells.count, 8)
+        XCTAssertEqual(table.cells.count, 10)
         XCTAssertEqual(table.switches.count, 4)
         XCTAssertEqual(table.sliders.count, 1)
 
@@ -95,12 +93,7 @@ final class RepDuoUITests: XCTestCase {
         app.launchArguments.append("-simulateCameraDenied")
         app.launch()
 
-        let getStarted = app.buttons["onboarding.getStarted"]
-        XCTAssertTrue(getStarted.waitForExistence(timeout: 5))
-        getStarted.tap()
-        let cameraContinue = app.buttons["cameraPermission.continue"]
-        XCTAssertTrue(cameraContinue.waitForExistence(timeout: 3))
-        cameraContinue.tap()
+        skipOnboardingIntro()
         XCTAssertTrue(app.buttons["cameraPermission.settings"].waitForExistence(timeout: 3))
     }
 
@@ -110,9 +103,13 @@ final class RepDuoUITests: XCTestCase {
             "UICTContentSizeCategoryAccessibilityExtraExtraExtraLarge"
         ]
         app.launch()
+        let next = app.buttons["onboarding.next"]
+        XCTAssertTrue(next.waitForExistence(timeout: 5))
+        XCTAssertTrue(next.isHittable)
+        next.tap()
+        next.tap()
         let getStarted = app.buttons["onboarding.getStarted"]
-        XCTAssertTrue(getStarted.waitForExistence(timeout: 5))
-        if !getStarted.isHittable { app.swipeUp() }
+        XCTAssertTrue(getStarted.waitForExistence(timeout: 3))
         XCTAssertTrue(getStarted.isHittable)
     }
 
@@ -120,10 +117,7 @@ final class RepDuoUITests: XCTestCase {
         addTeardownBlock { XCUIDevice.shared.orientation = .portrait }
         app.launch()
 
-        app.buttons["onboarding.getStarted"].tap()
-        let cameraContinue = app.buttons["cameraPermission.continue"]
-        XCTAssertTrue(cameraContinue.waitForExistence(timeout: 3))
-        cameraContinue.tap()
+        skipOnboardingIntro()
 
         let gearContinue = app.buttons["gear.continue"]
         XCTAssertTrue(gearContinue.waitForExistence(timeout: 4))
@@ -199,14 +193,18 @@ final class RepDuoUITests: XCTestCase {
         XCTAssertTrue(app.otherElements["workout.coachScale"].exists)
     }
 
-    private func reachChoose() {
+    /// Skips to the final onboarding page, whose button requests camera access.
+    private func skipOnboardingIntro() {
+        let skip = app.buttons["onboarding.skip"]
+        XCTAssertTrue(skip.waitForExistence(timeout: 5))
+        skip.tap()
         let getStarted = app.buttons["onboarding.getStarted"]
-        XCTAssertTrue(getStarted.waitForExistence(timeout: 5))
+        XCTAssertTrue(getStarted.waitForExistence(timeout: 3))
         getStarted.tap()
+    }
 
-        let cameraContinue = app.buttons["cameraPermission.continue"]
-        XCTAssertTrue(cameraContinue.waitForExistence(timeout: 3))
-        cameraContinue.tap()
+    private func reachChoose() {
+        skipOnboardingIntro()
 
         let gearContinue = app.buttons["gear.continue"]
         XCTAssertTrue(gearContinue.waitForExistence(timeout: 4))

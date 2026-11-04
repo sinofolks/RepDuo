@@ -4,30 +4,12 @@ final class GearCheckViewController: RDBaseViewController {
     private let watchService: WatchStatusService
     private let audioService: AudioRouteService
     private let preferences: AppPreferences
-    private let watchCard = RDDeviceStatusCard(symbol: "applewatch", title: "Apple Watch")
+    private let watchCard = RDDeviceStatusCard(symbol: "applewatch", title: "Apple Watch", iconTint: RDColor.ember)
     private let audioCard = RDDeviceStatusCard(symbol: "headphones", title: "Audio output")
-    private let stateLabel = UILabel()
+    private let cameraCard = RDDeviceStatusCard(symbol: "camera", title: "Camera counting", iconTint: RDColor.neonGreen)
     private let refreshButton = RDPrimaryButton(title: "SCAN AGAIN", style: .secondary)
-    private let continueButton = RDPrimaryButton(title: "READY TO TRAIN", symbolName: "arrow.right")
-    private lazy var actionsStack: UIStackView = {
-        let stack = UIStackView(
-            axis: .vertical,
-            spacing: RDSpacing.sm,
-            arrangedSubviews: [refreshButton, continueButton]
-        )
-        stack.distribution = .fillEqually
-        stack.isLayoutMarginsRelativeArrangement = true
-        stack.directionalLayoutMargins = NSDirectionalEdgeInsets(
-            top: RDSpacing.sm,
-            leading: RDSpacing.lg,
-            bottom: RDSpacing.sm,
-            trailing: RDSpacing.lg
-        )
-        stack.backgroundColor = RDColor.background
-        return stack
-    }()
+    private let continueButton = RDPrimaryButton(title: "CONTINUE", symbolName: "arrow.right")
     private var didFinishInitialRefresh = false
-    private var usesCompactHeightLayout = false
 
     var onContinue: (() -> Void)?
 
@@ -43,53 +25,35 @@ final class GearCheckViewController: RDBaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.hidesBackButton = true
-        let (_, stack) = makeScrollableContent(pinnedFooter: actionsStack)
-        let wordmark = RDWordmarkView()
-        let eyebrow = makeLabel(text: "PRE-WORKOUT CHECK", font: RDFont.caption(), color: RDColor.neonGreen)
+        let footer = makeFooter([refreshButton, continueButton])
+        footer.distribution = .fill
+        continueButton.widthAnchor.constraint(equalTo: refreshButton.widthAnchor, multiplier: 1.4).isActive = true
+        let (_, stack) = makeScrollableContent(pinnedFooter: footer)
+        let eyebrow = makeEyebrow("PRE-WORKOUT · OPTIONAL", color: RDColor.neonGreen)
         let title = makeLabel(text: "GEAR\nCHECK.", font: RDFont.display(44))
         title.accessibilityTraits = .header
         let body = makeLabel(
-            text: "Optional devices add heart-rate tracking and private audio cues. They never block your workout.",
+            text: "Pair a Watch for heart rate and wear headphones for voice cues. Neither is required to train.",
             font: RDFont.body(),
             color: RDColor.textSecondary
         )
-        stateLabel.font = RDFont.caption()
-        stateLabel.textColor = RDColor.neonGreen
-        stateLabel.numberOfLines = 0
-        stateLabel.adjustsFontForContentSizeCategory = true
         refreshButton.addAction(UIAction { [weak self] _ in self?.refresh() }, for: .touchUpInside)
         continueButton.accessibilityIdentifier = "gear.continue"
         continueButton.addAction(UIAction { [weak self] _ in self?.onContinue?() }, for: .touchUpInside)
-        [wordmark, eyebrow, title, body, watchCard, audioCard, stateLabel].forEach(stack.addArrangedSubview)
-        stack.setCustomSpacing(2, after: eyebrow)
+        let cards = UIStackView(axis: .vertical, spacing: 10, arrangedSubviews: [watchCard, audioCard, cameraCard])
+        [RDWordmarkView(), eyebrow, title, body, cards].forEach(stack.addArrangedSubview)
+        stack.setCustomSpacing(8, after: eyebrow)
+        stack.setCustomSpacing(12, after: title)
 
         watchService.onChange = { [weak self] status in self?.render(watch: status) }
         audioService.onChange = { [weak self] status in self?.render(audio: status) }
         refresh()
     }
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        updateResponsiveLayout()
-    }
-
-    private func updateResponsiveLayout() {
-        let shouldUseCompactHeightLayout = view.bounds.width > view.bounds.height
-        guard shouldUseCompactHeightLayout != usesCompactHeightLayout else { return }
-        usesCompactHeightLayout = shouldUseCompactHeightLayout
-        actionsStack.axis = shouldUseCompactHeightLayout ? .horizontal : .vertical
-        actionsStack.directionalLayoutMargins = NSDirectionalEdgeInsets(
-            top: RDSpacing.sm,
-            leading: shouldUseCompactHeightLayout ? RDSpacing.md : RDSpacing.lg,
-            bottom: RDSpacing.sm,
-            trailing: shouldUseCompactHeightLayout ? RDSpacing.md : RDSpacing.lg
-        )
-    }
-
     private func refresh() {
         refreshButton.isEnabled = false
         continueButton.isEnabled = false
-        stateLabel.text = "●  CHECKING CURRENT DEVICE STATUS…".rdLocalized
+        cameraCard.update(status: "Checking", detail: "Checking current device status…", connected: false)
         watchCard.update(status: "Checking", detail: "Reading paired Watch state", connected: false)
         audioCard.update(status: "Checking", detail: "Reading current system audio route", connected: false)
         watchService.refresh()
@@ -100,7 +64,7 @@ final class GearCheckViewController: RDBaseViewController {
             self.render(audio: self.audioService.currentStatus)
             self.refreshButton.isEnabled = true
             self.continueButton.isEnabled = true
-            self.stateLabel.text = "●  CORE TRAINING IS READY".rdLocalized
+            self.cameraCard.update(status: "Ready", detail: "Core training is ready", connected: true)
         }
     }
 
@@ -114,7 +78,7 @@ final class GearCheckViewController: RDBaseViewController {
         case .companionNotInstalled:
             watchCard.update(status: "Paired", detail: "Companion not installed · optional", connected: true)
         case .notPaired:
-            watchCard.update(status: "Unavailable", detail: "Optional — continue without heart rate", connected: false)
+            watchCard.update(status: "Not paired", detail: "Optional — continue without heart rate", connected: false)
         }
     }
 

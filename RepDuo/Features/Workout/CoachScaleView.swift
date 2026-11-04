@@ -1,35 +1,35 @@
 import UIKit
 
+/// Live AI form score: the overall score followed by range, tempo, and symmetry bars in one row.
 final class CoachScaleView: UIView {
-    private let headerLabel = UILabel()
-    private let rangeRow = CoachMetricRow(title: "RANGE")
-    private let tempoRow = CoachMetricRow(title: "TEMPO")
-    private let symmetryRow = CoachMetricRow(title: "SYMMETRY")
-    private let contentStack: UIStackView
+    private let scoreLabel = UILabel()
+    private let rangeRow = CoachMetricColumn(title: "RANGE")
+    private let tempoRow = CoachMetricColumn(title: "TEMPO")
+    private let symmetryRow = CoachMetricColumn(title: "SYMMETRY")
+    private let contentStack = UIStackView(axis: .horizontal, spacing: 14)
 
     override init(frame: CGRect) {
-        contentStack = UIStackView()
         super.init(frame: frame)
 
         translatesAutoresizingMaskIntoConstraints = false
-        backgroundColor = RDColor.backgroundDeep.withAlphaComponent(0.88)
-        layer.cornerRadius = 22
-        layer.borderWidth = 1
-        layer.borderColor = RDColor.separatorOnDark.withAlphaComponent(0.72).cgColor
-        clipsToBounds = true
+        backgroundColor = RDColor.surface.withAlphaComponent(0.94)
+        layer.cornerRadius = RDCornerRadius.medium
 
-        headerLabel.text = "AI · —".rdLocalized
-        headerLabel.textColor = RDColor.neonGreen
-        headerLabel.font = .systemFont(ofSize: 19, weight: .black)
-        headerLabel.adjustsFontSizeToFitWidth = true
-        headerLabel.minimumScaleFactor = 0.72
+        let caption = UILabel()
+        caption.setEyebrow("AI SCORE".rdLocalized, kern: 1.5)
+        caption.font = RDFont.eyebrow(12)
+        scoreLabel.font = RDFont.numeric(36, maximumScale: 1.1)
+        scoreLabel.textColor = RDColor.warmWhite
+        scoreLabel.adjustsFontSizeToFitWidth = true
+        scoreLabel.minimumScaleFactor = 0.7
+        let score = UIStackView(axis: .vertical, spacing: 0, arrangedSubviews: [caption, scoreLabel])
+        score.widthAnchor.constraint(equalToConstant: 58).isActive = true
 
-        contentStack.axis = .vertical
-        contentStack.spacing = 15
-        contentStack.translatesAutoresizingMaskIntoConstraints = false
-        [headerLabel, rangeRow, separator(), tempoRow, separator(), symmetryRow]
-            .forEach(contentStack.addArrangedSubview)
-        directionalLayoutMargins = NSDirectionalEdgeInsets(top: 18, leading: 14, bottom: 18, trailing: 14)
+        let metrics = UIStackView(axis: .horizontal, spacing: 12, arrangedSubviews: [rangeRow, tempoRow, symmetryRow])
+        metrics.distribution = .fillEqually
+        [score, metrics].forEach(contentStack.addArrangedSubview)
+        contentStack.alignment = .center
+        directionalLayoutMargins = NSDirectionalEdgeInsets(top: 12, leading: 14, bottom: 12, trailing: 14)
         addSubview(contentStack)
         NSLayoutConstraint.activate([
             contentStack.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
@@ -46,17 +46,18 @@ final class CoachScaleView: UIView {
     required init?(coder: NSCoder) { nil }
 
     func setCompactLayout(_ compact: Bool) {
-        contentStack.spacing = compact ? 7 : 15
         directionalLayoutMargins = compact
-            ? NSDirectionalEdgeInsets(top: 10, leading: 11, bottom: 10, trailing: 11)
-            : NSDirectionalEdgeInsets(top: 18, leading: 14, bottom: 18, trailing: 14)
-        headerLabel.font = .systemFont(ofSize: compact ? 15 : 19, weight: .black)
-        [rangeRow, tempoRow, symmetryRow].forEach { $0.setCompactLayout(compact) }
+            ? NSDirectionalEdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12)
+            : NSDirectionalEdgeInsets(top: 12, leading: 14, bottom: 12, trailing: 14)
     }
+
+    /// Latest overall score, or nil before the first scored rep.
+    private(set) var currentScore: Int?
 
     func render(_ result: RepCoachingResult?) {
         guard let result else {
-            headerLabel.text = "AI · —".rdLocalized
+            currentScore = nil
+            scoreLabel.text = "—"
             rangeRow.render(score: nil)
             tempoRow.render(score: nil)
             symmetryRow.render(score: nil)
@@ -64,11 +65,8 @@ final class CoachScaleView: UIView {
             return
         }
 
-        if let score = result.score {
-            headerLabel.text = "AI · %d".rdLocalizedFormat(score)
-        } else {
-            headerLabel.text = "AI · —".rdLocalized
-        }
+        currentScore = result.score
+        scoreLabel.text = result.score.map { String($0) } ?? "—"
         rangeRow.render(score: result.rangeScore)
         tempoRow.render(score: result.tempoScore)
         symmetryRow.render(score: result.symmetryScore)
@@ -89,64 +87,45 @@ final class CoachScaleView: UIView {
             )
         }
     }
-
-    private func separator() -> UIView {
-        let value = UIView()
-        value.backgroundColor = RDColor.separatorOnDark.withAlphaComponent(0.72)
-        value.heightAnchor.constraint(equalToConstant: 1).isActive = true
-        return value
-    }
 }
 
-private final class CoachMetricRow: UIView {
+private final class CoachMetricColumn: UIView {
     private let titleLabel = UILabel()
     private let scoreLabel = UILabel()
     private let track = UIView()
     private let fill = UIView()
     private var fillWidth: NSLayoutConstraint?
-    private let labelsStack: UIStackView
-    private let contentStack: UIStackView
 
     init(title: String) {
-        labelsStack = UIStackView()
-        contentStack = UIStackView()
         super.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
 
         titleLabel.text = title.rdLocalized
-        titleLabel.textColor = RDColor.textSecondary
-        titleLabel.font = .systemFont(ofSize: 10, weight: .bold)
+        titleLabel.textColor = RDColor.textBody
+        titleLabel.font = .systemFont(ofSize: 12, weight: .bold)
         titleLabel.adjustsFontSizeToFitWidth = true
         titleLabel.minimumScaleFactor = 0.72
-
-        scoreLabel.textColor = RDColor.neonGreen
-        scoreLabel.font = .monospacedDigitSystemFont(ofSize: 23, weight: .black)
-        scoreLabel.adjustsFontSizeToFitWidth = true
-        scoreLabel.minimumScaleFactor = 0.72
+        scoreLabel.font = RDFont.numeric(16, weight: .heavy, italic: false, maximumScale: 1.1)
+        scoreLabel.textAlignment = .right
+        scoreLabel.setContentHuggingPriority(.required, for: .horizontal)
 
         track.backgroundColor = RDColor.separatorOnDark
-        track.layer.cornerRadius = 3
+        track.layer.cornerRadius = 2
         track.translatesAutoresizingMaskIntoConstraints = false
-        fill.backgroundColor = RDColor.neonGreen
-        fill.layer.cornerRadius = 3
+        fill.layer.cornerRadius = 2
         fill.translatesAutoresizingMaskIntoConstraints = false
         track.addSubview(fill)
 
-        labelsStack.axis = .vertical
-        labelsStack.spacing = 2
-        labelsStack.translatesAutoresizingMaskIntoConstraints = false
-        [titleLabel, scoreLabel].forEach(labelsStack.addArrangedSubview)
-        contentStack.axis = .vertical
-        contentStack.spacing = 8
-        contentStack.translatesAutoresizingMaskIntoConstraints = false
-        [labelsStack, track].forEach(contentStack.addArrangedSubview)
-        addSubview(contentStack)
-        contentStack.pinEdges(to: self)
+        let header = UIStackView(axis: .horizontal, spacing: 4, arrangedSubviews: [titleLabel, scoreLabel])
+        header.alignment = .firstBaseline
+        let stack = UIStackView(axis: .vertical, spacing: 6, arrangedSubviews: [header, track])
+        addSubview(stack)
+        stack.pinEdges(to: self)
 
         let width = fill.widthAnchor.constraint(equalTo: track.widthAnchor, multiplier: 0.01)
         fillWidth = width
         NSLayoutConstraint.activate([
-            track.heightAnchor.constraint(equalToConstant: 6),
+            track.heightAnchor.constraint(equalToConstant: 4),
             fill.leadingAnchor.constraint(equalTo: track.leadingAnchor),
             fill.topAnchor.constraint(equalTo: track.topAnchor),
             fill.bottomAnchor.constraint(equalTo: track.bottomAnchor),
@@ -156,16 +135,10 @@ private final class CoachMetricRow: UIView {
 
     required init?(coder: NSCoder) { nil }
 
-    func setCompactLayout(_ compact: Bool) {
-        contentStack.spacing = compact ? 4 : 8
-        labelsStack.spacing = compact ? 0 : 2
-        scoreLabel.font = .monospacedDigitSystemFont(ofSize: compact ? 17 : 23, weight: .black)
-    }
-
     func render(score: Int?) {
         scoreLabel.text = score.map { String($0) } ?? "—"
         let color = (score ?? 100) < 80 ? RDColor.warning : RDColor.neonGreen
-        scoreLabel.textColor = score == nil ? RDColor.textMuted : color
+        scoreLabel.textColor = score == nil ? RDColor.textMuted : ((score ?? 100) < 80 ? RDColor.warning : RDColor.warmWhite)
         fill.backgroundColor = color
 
         fillWidth?.isActive = false

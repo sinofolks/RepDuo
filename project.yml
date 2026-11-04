@@ -36,6 +36,7 @@ targets:
               - UISceneConfigurationName: Default Configuration
                 UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).SceneDelegate
         NSCameraUsageDescription: RepDuo uses the camera to count squats and push-ups on this iPhone. Video is not saved or uploaded.
+        NSPhotoLibraryAddUsageDescription: RepDuo saves the result card you choose to your photo library. Nothing else is accessed.
         UIRequiresFullScreen: true
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait

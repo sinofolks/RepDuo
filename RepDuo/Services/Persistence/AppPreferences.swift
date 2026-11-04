@@ -14,6 +14,8 @@ final class AppPreferences {
         static let bodyTrackingMode = "bodyTrackingMode"
         static let neonIntensity = "neonIntensity"
         static let lastExercise = "lastExercise"
+        static let dailyRepGoal = "dailyRepGoal"
+        static let setRepTarget = "setRepTarget"
         static let movementBaselinePrefix = "movementBaseline"
     }
 
@@ -32,7 +34,9 @@ final class AppPreferences {
             Key.mirrorFrontCamera: true,
             Key.cameraFramingMode: true,
             Key.bodyTrackingMode: BodyTrackingMode.fullBody.rawValue,
-            Key.neonIntensity: 0.85
+            Key.neonIntensity: 0.85,
+            Key.dailyRepGoal: Self.defaultDailyRepGoal,
+            Key.setRepTarget: Self.defaultSetRepTarget
         ])
         if arguments.contains("-disableCountdown") { defaults.set(false, forKey: Key.countdownEnabled) }
         if arguments.contains("-uiTesting") {
@@ -87,6 +91,21 @@ final class AppPreferences {
         set { defaults.set(newValue.rawValue, forKey: Key.lastExercise) }
     }
 
+    static let defaultDailyRepGoal = 50
+    static let defaultSetRepTarget = 20
+    static let dailyRepGoalRange = 10...500
+    static let setRepTargetRange = 5...100
+
+    var dailyRepGoal: Int {
+        get { Self.dailyRepGoalRange.clamped(defaults.integer(forKey: Key.dailyRepGoal)) }
+        set { defaults.set(Self.dailyRepGoalRange.clamped(newValue), forKey: Key.dailyRepGoal) }
+    }
+
+    var setRepTarget: Int {
+        get { Self.setRepTargetRange.clamped(defaults.integer(forKey: Key.setRepTarget)) }
+        set { defaults.set(Self.setRepTargetRange.clamped(newValue), forKey: Key.setRepTarget) }
+    }
+
     func movementBaseline(
         for exercise: ExerciseType,
         trackingMode: BodyTrackingMode
@@ -107,4 +126,8 @@ final class AppPreferences {
     private func baselineKey(_ exercise: ExerciseType, _ trackingMode: BodyTrackingMode) -> String {
         "\(Key.movementBaselinePrefix).\(exercise.rawValue).\(trackingMode.rawValue)"
     }
+}
+
+private extension ClosedRange where Bound == Int {
+    func clamped(_ value: Int) -> Int { Swift.min(upperBound, Swift.max(lowerBound, value)) }
 }

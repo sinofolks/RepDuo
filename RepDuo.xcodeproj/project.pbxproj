@@ -58,6 +58,9 @@
 		F5CF74C4595680069B6A1628 /* WorkoutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D46976B03465640FA67934 /* WorkoutViewController.swift */; };
 		FC6B25F82E4772191F52EF91 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = F502E8B91729AF58B30F1311 /* InfoPlist.strings */; };
 		FCEBDCCA2EB39B38D75C975A /* HistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32661948B60866F198705076 /* HistoryViewController.swift */; };
+		675440D10E9C4B7A3B183FD3 /* WorkoutStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DB713A45080EE3BFACE4EFC /* WorkoutStats.swift */; };
+		0F688A61B74B20E34BD257AE /* WorkoutStatsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA9D6A0C1A195EFAC1D92A83 /* WorkoutStatsTests.swift */; };
+		47663B833DFB8A0FA3F7DFF1 /* ShareCardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50423962952738B5F3272F3 /* ShareCardViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -136,6 +139,9 @@
 		F65958C75BC10BD9538498BE /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		FA1AB53F3B88CBF5DF39FFD8 /* RepFixtureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepFixtureTests.swift; sourceTree = "<group>"; };
 		FF91F452D6F27FA750403EFA /* DependencyContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DependencyContainer.swift; sourceTree = "<group>"; };
+		8DB713A45080EE3BFACE4EFC /* WorkoutStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutStats.swift; sourceTree = "<group>"; };
+		EA9D6A0C1A195EFAC1D92A83 /* WorkoutStatsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutStatsTests.swift; sourceTree = "<group>"; };
+		B50423962952738B5F3272F3 /* ShareCardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCardViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -198,6 +204,7 @@
 			isa = PBXGroup;
 			children = (
 				24EED3D10EBE5360DDFE9ADC /* CompleteViewController.swift */,
+				B50423962952738B5F3272F3 /* ShareCardViewController.swift */,
 			);
 			path = Summary;
 			sourceTree = "<group>";
@@ -259,6 +266,7 @@
 			isa = PBXGroup;
 			children = (
 				EF924B1624351FB3428E6F7A /* WorkoutSession.swift */,
+				8DB713A45080EE3BFACE4EFC /* WorkoutStats.swift */,
 			);
 			path = WorkoutSession;
 			sourceTree = "<group>";
@@ -468,6 +476,7 @@
 				621CB49CA7B2C9A44C767853 /* RepDetectionEngineTests.swift */,
 				FA1AB53F3B88CBF5DF39FFD8 /* RepFixtureTests.swift */,
 				504318BB0FAB956187354FB1 /* WorkoutSessionTests.swift */,
+				EA9D6A0C1A195EFAC1D92A83 /* WorkoutStatsTests.swift */,
 				274940552AE593D29ABCFB1B /* Fixtures */,
 			);
 			path = Domain;
@@ -628,6 +637,7 @@
 				30CB77B11CF9056831E1D0D4 /* RepFixtureTests.swift in Sources */,
 				23FBCE5D26AE5E28BF7C904D /* WorkoutPersistenceStoreTests.swift in Sources */,
 				9092368D2C9AA4A288973F19 /* WorkoutSessionTests.swift in Sources */,
+				0F688A61B74B20E34BD257AE /* WorkoutStatsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -647,6 +657,7 @@
 				E2A117A0449811293057229A /* ChooseViewController.swift in Sources */,
 				6427CC6EA7522E7DB642F8ED /* CoachScaleView.swift in Sources */,
 				2848B5C4CE177209F1433A4A /* CompleteViewController.swift in Sources */,
+				47663B833DFB8A0FA3F7DFF1 /* ShareCardViewController.swift in Sources */,
 				CF00CC34A8D3F65859F8C8E6 /* CountdownViewController.swift in Sources */,
 				E018C1DADE1915E063CA5FB2 /* DependencyContainer.swift in Sources */,
 				D29E7EE9E09043C2985EBAF2 /* ExerciseModels.swift in Sources */,
@@ -670,6 +681,7 @@
 				123C4E268AF3F18C66011F6C /* WatchStatusService.swift in Sources */,
 				1E05FC41C42A33AA7080338D /* WorkoutPersistenceStore.swift in Sources */,
 				94191592371A371D214F0C9C /* WorkoutSession.swift in Sources */,
+				675440D10E9C4B7A3B183FD3 /* WorkoutStats.swift in Sources */,
 				F5CF74C4595680069B6A1628 /* WorkoutViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -11,21 +11,38 @@ final class WorkoutViewController: RDBaseViewController {
     private let audioService: AudioRouteService
     private let cameraView = NeonCameraView()
     private let fallbackImageView = UIImageView()
+    private let setTarget: Int
+    private let personalBest: Int
     private let exerciseLabel = UILabel()
-    private let repLabel = UILabel()
-    private let phaseLabel = UILabel()
+    private let repLabel = RDNumberLabel()
+    private let phaseTag = RDTag(background: RDColor.warmWhite)
+    private let recordTag = RDTag(text: "NEW RECORD", background: RDColor.ember)
+    private let segmentBar = RDSegmentBar()
+    private let targetLabel = UILabel()
+    private let plusOneLabel = UILabel()
+    private let flashRing = CAShapeLayer()
     private let promptLabel = UILabel()
-    private let qualityPill = UILabel()
+    private let qualityPill = RDStatusPill(text: "TRACKING")
     private let coachScaleView = CoachScaleView()
     private let heartRateLabel = UILabel()
     private let audioRouteLabel = UILabel()
-    private let pauseButton = RDPrimaryButton(title: "PAUSE", style: .secondary)
-    private let finishButton = RDPrimaryButton(title: "FINISH SET", style: .secondary)
+    private let pauseButton = RDIconButton(
+        symbolName: "pause.fill",
+        accessibilityLabel: "PAUSE",
+        diameter: 64,
+        background: RDColor.surfaceSecondary
+    )
+    private let finishButton = RDPrimaryButton(title: "FINISH SET", symbolName: "checkmark")
     private let pausedPanel = UIView()
+    private let pausedRepsTile = RDStatTile(caption: "Completed", valueColor: RDColor.neonGreen, filled: false)
+    private let pausedRemainingTile = RDStatTile(caption: "To target", filled: false)
+    private let pausedScoreTile = RDStatTile(caption: "AI score", filled: false)
     private var topStack: UIStackView!
-    private var countStack: UIStackView!
+    private var countStack: UIView!
+    private var infoStack: UIStackView!
     private var controlsStack: UIStackView!
     private var actionButtonsStack: UIStackView!
+    private let countAreaGuide = UILayoutGuide()
     private var portraitConstraints: [NSLayoutConstraint] = []
     private var landscapeConstraints: [NSLayoutConstraint] = []
     private var lastUsesLandscapeLayout: Bool?
@@ -54,8 +71,11 @@ final class WorkoutViewController: RDBaseViewController {
         cameraAccess: CameraAuthorizationService,
         feedback: FeedbackService,
         preferences: AppPreferences,
-        audioService: AudioRouteService
+        audioService: AudioRouteService,
+        personalBest: Int = 0
     ) {
+        self.setTarget = preferences.setRepTarget
+        self.personalBest = personalBest
         self.session = session
         self.pipeline = pipeline
         self.cameraAccess = cameraAccess
@@ -160,24 +180,28 @@ final class WorkoutViewController: RDBaseViewController {
     }
 
     private func configureOverlay() {
-        exerciseLabel.text = session.exercise.displayName
-        exerciseLabel.textColor = RDColor.warmWhite
-        exerciseLabel.font = RDFont.body(weight: .black)
-        exerciseLabel.adjustsFontForContentSizeCategory = true
-        repLabel.textColor = RDColor.warmWhite
-        repLabel.font = RDFont.display(92)
-        repLabel.adjustsFontForContentSizeCategory = true
+        exerciseLabel.setEyebrow(session.exercise.displayName, color: RDColor.textSecondary)
+        repLabel.textColor = RDColor.neonGreen
+        repLabel.textAlignment = .center
         repLabel.adjustsFontSizeToFitWidth = true
+        repLabel.minimumScaleFactor = 0.4
         repLabel.accessibilityIdentifier = "workout.repCount"
-        phaseLabel.textColor = RDColor.neonGreen
-        phaseLabel.font = .systemFont(ofSize: 14, weight: .black)
-        phaseLabel.textAlignment = .center
-        qualityPill.textColor = RDColor.neonGreen
-        qualityPill.font = .systemFont(ofSize: 11, weight: .bold)
-        qualityPill.numberOfLines = 2
-        qualityPill.textAlignment = .right
-        heartRateLabel.textColor = RDColor.warmWhite
-        heartRateLabel.font = .monospacedDigitSystemFont(ofSize: 14, weight: .bold)
+        repLabel.layer.shadowColor = RDColor.neonGreen.cgColor
+        repLabel.layer.shadowRadius = 22
+        repLabel.layer.shadowOpacity = 0.4
+        repLabel.layer.shadowOffset = .zero
+        plusOneLabel.text = "+1"
+        plusOneLabel.font = RDFont.numeric(34, maximumScale: 1)
+        plusOneLabel.textColor = RDColor.warmWhite
+        plusOneLabel.alpha = 0
+        plusOneLabel.isAccessibilityElement = false
+        plusOneLabel.translatesAutoresizingMaskIntoConstraints = false
+        flashRing.fillColor = UIColor.clear.cgColor
+        flashRing.lineWidth = 3
+        flashRing.opacity = 0
+
+        heartRateLabel.textColor = RDColor.ember
+        heartRateLabel.font = RDFont.numeric(20, weight: .bold, italic: false)
         heartRateLabel.textAlignment = .right
         heartRateLabel.isHidden = true
         audioRouteLabel.textColor = RDColor.warmWhite
@@ -187,83 +211,114 @@ final class WorkoutViewController: RDBaseViewController {
         audioRouteLabel.isHidden = true
 
         promptLabel.textColor = RDColor.warmWhite
-        promptLabel.backgroundColor = .clear
-        promptLabel.font = RDFont.body(weight: .bold)
+        promptLabel.font = UIFontMetrics(forTextStyle: .headline).scaledFont(
+            for: .systemFont(ofSize: 18, weight: .black),
+            maximumPointSize: 26
+        )
         promptLabel.textAlignment = .center
         promptLabel.numberOfLines = 0
         promptLabel.adjustsFontForContentSizeCategory = true
+        promptLabel.layer.shadowColor = UIColor.black.cgColor
+        promptLabel.layer.shadowRadius = 6
+        promptLabel.layer.shadowOpacity = 0.9
+        promptLabel.layer.shadowOffset = .zero
         promptLabel.setContentCompressionResistancePriority(.required, for: .vertical)
 
-        let topRight = UIStackView(axis: .vertical, spacing: 4, arrangedSubviews: [qualityPill, heartRateLabel, audioRouteLabel])
+        let topRight = UIStackView(axis: .vertical, spacing: 4, arrangedSubviews: [exerciseLabel, heartRateLabel, audioRouteLabel])
         topRight.alignment = .trailing
-        topStack = UIStackView(axis: .horizontal, spacing: 12, arrangedSubviews: [exerciseLabel, topRight])
-        topStack.distribution = .equalSpacing
+        qualityPill.setContentHuggingPriority(.required, for: .horizontal)
+        topStack = UIStackView(axis: .horizontal, spacing: 12, arrangedSubviews: [qualityPill, UIView(), topRight])
+        topStack.alignment = .top
+
+        let count = UIView()
+        count.translatesAutoresizingMaskIntoConstraints = false
+        count.layer.addSublayer(flashRing)
+        repLabel.translatesAutoresizingMaskIntoConstraints = false
+        count.addSubview(repLabel)
+        count.addSubview(plusOneLabel)
+        NSLayoutConstraint.activate([
+            repLabel.leadingAnchor.constraint(equalTo: count.leadingAnchor),
+            repLabel.trailingAnchor.constraint(equalTo: count.trailingAnchor),
+            repLabel.topAnchor.constraint(equalTo: count.topAnchor),
+            repLabel.bottomAnchor.constraint(equalTo: count.bottomAnchor),
+            plusOneLabel.trailingAnchor.constraint(equalTo: count.trailingAnchor, constant: -12),
+            plusOneLabel.topAnchor.constraint(equalTo: count.topAnchor, constant: 18)
+        ])
+        countStack = count
 
         let countCaption = UILabel()
-        countCaption.text = "REPS".rdLocalized
-        countCaption.textColor = RDColor.textSecondary
-        countCaption.font = .systemFont(ofSize: 11, weight: .bold)
-        countCaption.textAlignment = .center
-        countStack = UIStackView(axis: .vertical, spacing: 1, arrangedSubviews: [repLabel, countCaption, phaseLabel])
-        countStack.alignment = .center
+        countCaption.setEyebrow("REPS".rdLocalized, kern: 3)
+        countCaption.isAccessibilityElement = false
+        recordTag.isHidden = true
+        let tags = UIStackView(axis: .horizontal, spacing: 10, arrangedSubviews: [countCaption, phaseTag, recordTag])
+        tags.alignment = .center
+        targetLabel.font = RDFont.caption(weight: .medium)
+        targetLabel.textColor = RDColor.textBody
+        targetLabel.adjustsFontForContentSizeCategory = true
+        targetLabel.textAlignment = .center
+        infoStack = UIStackView(axis: .vertical, spacing: 10, arrangedSubviews: [tags, segmentBar, targetLabel])
+        infoStack.alignment = .center
+        segmentBar.widthAnchor.constraint(equalToConstant: 280).isActive = true
+
+        view.addLayoutGuide(countAreaGuide)
         view.addSubview(topStack)
         view.addSubview(countStack)
-        view.addSubview(coachScaleView)
+        view.addSubview(infoStack)
 
         pauseButton.accessibilityIdentifier = "workout.pause"
-        pauseButton.configuration?.baseBackgroundColor = RDColor.surface.withAlphaComponent(0.58)
         pauseButton.addAction(UIAction { [weak self] _ in self?.togglePause() }, for: .touchUpInside)
         finishButton.accessibilityIdentifier = "workout.finish"
-        finishButton.configuration?.baseBackgroundColor = RDColor.surface.withAlphaComponent(0.58)
-        finishButton.configuration?.baseForegroundColor = RDColor.neonGreen
         finishButton.addAction(UIAction { [weak self] _ in self?.confirmFinish() }, for: .touchUpInside)
         actionButtonsStack = UIStackView(axis: .horizontal, spacing: 10, arrangedSubviews: [pauseButton, finishButton])
-        actionButtonsStack.distribution = .fillEqually
-        controlsStack = UIStackView(axis: .vertical, spacing: 10, arrangedSubviews: [promptLabel, actionButtonsStack])
+        actionButtonsStack.alignment = .center
+        controlsStack = UIStackView(axis: .vertical, spacing: 12, arrangedSubviews: [coachScaleView, promptLabel, actionButtonsStack])
         view.addSubview(controlsStack)
 
         NSLayoutConstraint.activate([
-            topStack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: RDSpacing.lg),
-            topStack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -RDSpacing.lg),
+            topStack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: RDLayout.screenMargin),
+            topStack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -RDLayout.screenMargin),
             topStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
-            repLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 106),
-            coachScaleView.widthAnchor.constraint(equalToConstant: 112),
+            countStack.centerXAnchor.constraint(equalTo: countAreaGuide.centerXAnchor),
+            countStack.widthAnchor.constraint(lessThanOrEqualTo: countAreaGuide.widthAnchor),
+            infoStack.centerXAnchor.constraint(equalTo: countAreaGuide.centerXAnchor),
+            infoStack.topAnchor.constraint(equalTo: countStack.bottomAnchor, constant: 6),
+            infoStack.widthAnchor.constraint(lessThanOrEqualTo: countAreaGuide.widthAnchor),
+            countAreaGuide.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: RDLayout.screenMargin),
+            countAreaGuide.topAnchor.constraint(equalTo: topStack.bottomAnchor),
+            finishButton.heightAnchor.constraint(equalToConstant: 64),
             controlsStack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -RDSpacing.md)
         ])
 
         portraitConstraints = [
-            countStack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: RDSpacing.lg),
-            countStack.topAnchor.constraint(equalTo: topStack.bottomAnchor, constant: RDSpacing.md),
-            countStack.trailingAnchor.constraint(lessThanOrEqualTo: coachScaleView.leadingAnchor, constant: -12),
-            coachScaleView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: 10),
-            coachScaleView.topAnchor.constraint(equalTo: topStack.bottomAnchor, constant: RDSpacing.md),
-            coachScaleView.bottomAnchor.constraint(lessThanOrEqualTo: controlsStack.topAnchor, constant: -12),
-            controlsStack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: RDSpacing.lg),
-            controlsStack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -RDSpacing.lg)
+            countAreaGuide.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -RDLayout.screenMargin),
+            countAreaGuide.bottomAnchor.constraint(equalTo: controlsStack.topAnchor),
+            countStack.topAnchor.constraint(equalTo: topStack.bottomAnchor, constant: 8),
+            controlsStack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: RDSpacing.md),
+            controlsStack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -RDSpacing.md)
         ]
         landscapeConstraints = [
-            countStack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: RDSpacing.lg),
-            countStack.topAnchor.constraint(equalTo: topStack.bottomAnchor, constant: 4),
-            countStack.trailingAnchor.constraint(lessThanOrEqualTo: coachScaleView.leadingAnchor, constant: -12),
-            coachScaleView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: 10),
-            coachScaleView.topAnchor.constraint(equalTo: topStack.bottomAnchor, constant: 4),
-            coachScaleView.bottomAnchor.constraint(lessThanOrEqualTo: controlsStack.topAnchor, constant: -8),
-            controlsStack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -RDSpacing.lg),
-            controlsStack.widthAnchor.constraint(equalToConstant: 360)
+            countAreaGuide.trailingAnchor.constraint(equalTo: controlsStack.leadingAnchor, constant: -RDSpacing.md),
+            countAreaGuide.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            countStack.centerYAnchor.constraint(equalTo: countAreaGuide.centerYAnchor, constant: -30),
+            controlsStack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -RDLayout.screenMargin),
+            controlsStack.widthAnchor.constraint(equalToConstant: 380)
         ]
 
         #if DEBUG && targetEnvironment(simulator)
-        if ProcessInfo.processInfo.arguments.contains("-uiTesting") {
-            let demo = RDPrimaryButton(title: "SIMULATE REP", style: .secondary, symbolName: "plus")
+        if ProcessInfo.processInfo.arguments.contains("-uiTesting") || cameraAccess.state != .authorized {
+            let demo = RDPrimaryButton(title: "+1", style: .secondary)
             demo.accessibilityIdentifier = "workout.simulateRep"
+            demo.accessibilityLabel = "SIMULATE REP".rdLocalized
             demo.addAction(UIAction { [weak self] _ in self?.session.registerDebugRep() }, for: .touchUpInside)
-            controlsStack.insertArrangedSubview(demo, at: 1)
+            demo.widthAnchor.constraint(equalToConstant: 72).isActive = true
+            demo.heightAnchor.constraint(equalToConstant: 64).isActive = true
+            actionButtonsStack.insertArrangedSubview(demo, at: 1)
         }
         #endif
 
+        configurePausedPanel()
         updateAdaptiveLayoutIfNeeded(force: true)
 
-        configurePausedPanel()
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-showDebugMetrics") {
             configureDebugPanel()
@@ -272,38 +327,64 @@ final class WorkoutViewController: RDBaseViewController {
     }
 
     private func configurePausedPanel() {
-        pausedPanel.backgroundColor = RDColor.background.withAlphaComponent(0.9)
+        pausedPanel.backgroundColor = RDColor.surface
         pausedPanel.layer.cornerRadius = RDCornerRadius.large
         pausedPanel.translatesAutoresizingMaskIntoConstraints = false
         pausedPanel.isHidden = true
         pausedPanel.accessibilityIdentifier = "workout.pausedPanel"
-        pausedPanel.isAccessibilityElement = true
+        pausedPanel.accessibilityContainerType = .semanticGroup
         pausedPanel.accessibilityLabel = "Set paused. Tracking is frozen.".rdLocalized
-        let icon = UIImageView(image: UIImage(systemName: "pause.circle.fill"))
-        icon.tintColor = RDColor.neonGreen
-        icon.contentMode = .scaleAspectFit
-        icon.heightAnchor.constraint(equalToConstant: 52).isActive = true
+        let icon = UIImageView(image: UIImage(
+            systemName: "pause.fill",
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 16, weight: .bold)
+        ))
+        icon.tintColor = RDColor.warmWhite
+        icon.backgroundColor = RDColor.surfaceSecondary
+        icon.contentMode = .center
+        icon.layer.cornerRadius = 22
+        icon.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            icon.widthAnchor.constraint(equalToConstant: 44),
+            icon.heightAnchor.constraint(equalToConstant: 44)
+        ])
         let title = UILabel()
         title.text = "SET PAUSED".rdLocalized
         title.textColor = RDColor.warmWhite
         title.font = RDFont.title(24)
-        title.textAlignment = .center
+        title.adjustsFontForContentSizeCategory = true
         let message = UILabel()
         message.text = "Tracking is frozen. Resume when you are in position.".rdLocalized
         message.textColor = RDColor.textSecondary
-        message.font = RDFont.body()
+        message.font = RDFont.caption(weight: .regular)
         message.numberOfLines = 0
-        message.textAlignment = .center
-        let stack = UIStackView(axis: .vertical, spacing: 12, arrangedSubviews: [icon, title, message])
+        message.adjustsFontForContentSizeCategory = true
+        let titles = UIStackView(axis: .vertical, spacing: 2, arrangedSubviews: [title, message])
+        let header = UIStackView(axis: .horizontal, spacing: 12, arrangedSubviews: [icon, titles])
+        header.alignment = .center
+        let tiles = UIStackView(axis: .horizontal, spacing: 8, arrangedSubviews: [
+            pausedRepsTile,
+            pausedRemainingTile,
+            pausedScoreTile
+        ].map(wrapTile))
+        tiles.distribution = .fillEqually
+        let stack = UIStackView(axis: .vertical, spacing: 16, arrangedSubviews: [header, tiles])
         pausedPanel.addSubview(stack)
-        stack.pinEdges(to: pausedPanel, insets: NSDirectionalEdgeInsets(top: 24, leading: 22, bottom: 24, trailing: 22))
+        stack.pinEdges(to: pausedPanel, insets: NSDirectionalEdgeInsets(top: 18, leading: 16, bottom: 16, trailing: 16))
         view.addSubview(pausedPanel)
         NSLayoutConstraint.activate([
-            pausedPanel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            pausedPanel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            pausedPanel.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: RDSpacing.lg),
-            pausedPanel.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -RDSpacing.lg)
+            pausedPanel.leadingAnchor.constraint(equalTo: controlsStack.leadingAnchor),
+            pausedPanel.trailingAnchor.constraint(equalTo: controlsStack.trailingAnchor),
+            pausedPanel.bottomAnchor.constraint(equalTo: actionButtonsStack.topAnchor, constant: -12)
         ])
+    }
+
+    private func wrapTile(_ tile: RDStatTile) -> UIView {
+        let container = UIView()
+        container.backgroundColor = RDColor.background
+        container.layer.cornerRadius = RDCornerRadius.small
+        container.addSubview(tile)
+        tile.pinEdges(to: container, insets: NSDirectionalEdgeInsets(top: 10, leading: 12, bottom: 10, trailing: 12))
+        return container
     }
 
     private func bindSession() {
@@ -335,20 +416,30 @@ final class WorkoutViewController: RDBaseViewController {
     }
 
     private func render(_ state: WorkoutViewState) {
+        let isRecord = personalBest > 0 && state.repCount > personalBest
+        let tone = isRecord ? RDColor.ember : RDColor.neonGreen
         repLabel.text = String(state.repCount)
-        phaseLabel.text = state.phase.displayName
-        renderPrompt(state.coachingMessage ?? state.poseQuality.message)
+        repLabel.textColor = tone
+        repLabel.layer.shadowColor = tone.cgColor
+        phaseTag.text = state.phase.displayName
+        recordTag.isHidden = !isRecord
+        segmentBar.render(filled: state.repCount, total: setTarget, color: tone)
+        targetLabel.text = targetText(for: state.repCount)
+        promptLabel.text = state.coachingMessage ?? state.poseQuality.message
         coachScaleView.render(state.lastRepCoaching)
         let qualityText: String
         switch state.poseQuality {
-        case .excellent: qualityText = "● TRACKING LOCKED".rdLocalized
-        case .usable: qualityText = "● TRACKING".rdLocalized
-        case .unstable: qualityText = "● LOW CONFIDENCE".rdLocalized
-        case .missingRequiredJoints: qualityText = "● BODY MISSING".rdLocalized
-        case .multiplePeople: qualityText = "● MULTIPLE PEOPLE".rdLocalized
+        case .excellent: qualityText = "TRACKING LOCKED".rdLocalized
+        case .usable: qualityText = "TRACKING".rdLocalized
+        case .unstable: qualityText = "LOW CONFIDENCE".rdLocalized
+        case .missingRequiredJoints: qualityText = "BODY MISSING".rdLocalized
+        case .multiplePeople: qualityText = "MULTIPLE PEOPLE".rdLocalized
         }
-        qualityPill.text = qualityText
-        qualityPill.textColor = state.poseQuality.permitsCounting ? RDColor.neonGreen : RDColor.warning
+        if state.isPaused {
+            qualityPill.update(text: "TRACKING STOPPED".rdLocalized, tone: RDColor.warning)
+        } else {
+            qualityPill.update(text: qualityText, tone: state.poseQuality.permitsCounting ? RDColor.neonGreen : RDColor.warning)
+        }
         switch state.rendererQuality {
         case .high: cameraView.intensity = preferences.neonIntensity
         case .balanced: cameraView.intensity = preferences.neonIntensity * 0.9
@@ -364,7 +455,18 @@ final class WorkoutViewController: RDBaseViewController {
             heartRateLabel.isHidden = true
         }
         pausedPanel.isHidden = !state.isPaused
-        pauseButton.configuration?.title = (state.isPaused ? "RESUME" : "PAUSE").rdLocalized
+        coachScaleView.alpha = state.isPaused ? 0 : 1
+        promptLabel.alpha = state.isPaused ? 0 : 1
+        countStack.alpha = state.isPaused ? 0.35 : 1
+        if state.isPaused {
+            pausedRepsTile.update(value: String(state.repCount))
+            pausedRemainingTile.update(value: String(max(0, setTarget - state.repCount)))
+            pausedScoreTile.update(value: coachScaleView.currentScore.map { String($0) } ?? "—")
+        }
+        pauseButton.setSymbol(state.isPaused ? "play.fill" : "pause.fill")
+        pauseButton.accessibilityLabel = (state.isPaused ? "RESUME" : "PAUSE").rdLocalized
+        pauseButton.configuration?.baseBackgroundColor = state.isPaused ? RDColor.neonGreen : RDColor.surfaceSecondary
+        pauseButton.configuration?.baseForegroundColor = state.isPaused ? RDColor.background : RDColor.warmWhite
         if state.repCount > lastAnnouncedRep {
             lastAnnouncedRep = state.repCount
             UIAccessibility.post(notification: .announcement, argument: "%d reps".rdLocalizedFormat(state.repCount))
@@ -374,27 +476,17 @@ final class WorkoutViewController: RDBaseViewController {
         #endif
     }
 
-    private func renderPrompt(_ message: String) {
-        let prefix = "MAIN ADVICE".rdLocalized.uppercased() + "  "
-        let value = NSMutableAttributedString(
-            string: prefix,
-            attributes: [
-                .font: UIFont.systemFont(ofSize: 11, weight: .black),
-                .foregroundColor: RDColor.neonGreen
-            ]
-        )
-        value.append(NSAttributedString(
-            string: message,
-            attributes: [
-                .font: RDFont.body(weight: .bold),
-                .foregroundColor: RDColor.warmWhite
-            ]
-        ))
-        promptLabel.attributedText = value
-        promptLabel.accessibilityLabel = "%1$@, %2$@".rdLocalizedFormat(
-            "Main advice".rdLocalized,
-            message
-        )
+    private func targetText(for reps: Int) -> String {
+        if reps < setTarget {
+            return "Target %1$d · %2$d to go".rdLocalizedFormat(setTarget, setTarget - reps)
+        }
+        if personalBest > 0 && reps <= personalBest {
+            return "Target hit · %d more for a record".rdLocalizedFormat(personalBest - reps + 1)
+        }
+        if personalBest > 0 {
+            return "New record · %d past your best".rdLocalizedFormat(reps - personalBest)
+        }
+        return "Target hit · keep going".rdLocalized
     }
 
     private func updateAdaptiveLayoutIfNeeded(force: Bool = false) {
@@ -405,7 +497,7 @@ final class WorkoutViewController: RDBaseViewController {
         NSLayoutConstraint.deactivate(useLandscape ? portraitConstraints : landscapeConstraints)
         NSLayoutConstraint.activate(useLandscape ? landscapeConstraints : portraitConstraints)
         coachScaleView.setCompactLayout(useLandscape)
-        repLabel.font = RDFont.display(useLandscape ? 76 : 108)
+        repLabel.font = RDFont.numeric(useLandscape ? 150 : 240, maximumScale: 1)
         view.layoutIfNeeded()
     }
 
@@ -434,11 +526,56 @@ final class WorkoutViewController: RDBaseViewController {
     }
 
     private func pulseCounter() {
-        repLabel.transform = CGAffineTransform(scaleX: 1.16, y: 1.16)
-        repLabel.textColor = RDColor.neonBright
-        UIView.animate(withDuration: UIAccessibility.isReduceMotionEnabled ? 0.01 : 0.2) {
+        let tone = repLabel.textColor ?? RDColor.neonGreen
+        repLabel.textColor = RDColor.warmWhite
+        guard !UIAccessibility.isReduceMotionEnabled else {
+            UIView.transition(with: repLabel, duration: 0.2, options: .transitionCrossDissolve) {
+                self.repLabel.textColor = tone
+            }
+            return
+        }
+        repLabel.transform = CGAffineTransform(scaleX: 1.28, y: 1.28)
+        UIView.animate(
+            withDuration: 0.42,
+            delay: 0,
+            usingSpringWithDamping: 0.55,
+            initialSpringVelocity: 0.8,
+            options: [.allowUserInteraction, .beginFromCurrentState]
+        ) {
             self.repLabel.transform = .identity
-            self.repLabel.textColor = RDColor.warmWhite
+        }
+        UIView.transition(with: repLabel, duration: 0.3, options: [.transitionCrossDissolve, .allowUserInteraction]) {
+            self.repLabel.textColor = tone
+        }
+
+        let bounds = countStack.bounds
+        let diameter = min(bounds.width, bounds.height) * 0.95
+        flashRing.frame = bounds
+        flashRing.path = UIBezierPath(ovalIn: CGRect(
+            x: bounds.midX - diameter / 2,
+            y: bounds.midY - diameter / 2,
+            width: diameter,
+            height: diameter
+        )).cgPath
+        flashRing.strokeColor = tone.cgColor
+        let scale = CABasicAnimation(keyPath: "transform.scale")
+        scale.fromValue = 0.6
+        scale.toValue = 1.45
+        let fade = CABasicAnimation(keyPath: "opacity")
+        fade.fromValue = 0.9
+        fade.toValue = 0
+        let ring = CAAnimationGroup()
+        ring.animations = [scale, fade]
+        ring.duration = 0.6
+        ring.timingFunction = CAMediaTimingFunction(name: .easeOut)
+        flashRing.add(ring, forKey: "flash")
+
+        plusOneLabel.layer.removeAllAnimations()
+        plusOneLabel.transform = CGAffineTransform(translationX: 0, y: 10)
+        plusOneLabel.alpha = 1
+        UIView.animate(withDuration: 0.8, delay: 0, options: [.curveEaseOut, .allowUserInteraction]) {
+            self.plusOneLabel.transform = CGAffineTransform(translationX: 0, y: -40)
+            self.plusOneLabel.alpha = 0
         }
     }
 

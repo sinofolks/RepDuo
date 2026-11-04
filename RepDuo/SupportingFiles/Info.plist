@@ -22,6 +22,8 @@
 	<string>1</string>
 	<key>NSCameraUsageDescription</key>
 	<string>RepDuo uses the camera to count squats and push-ups on this iPhone. Video is not saved or uploaded.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>RepDuo saves the result card you choose to your photo library. Nothing else is accessed.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
