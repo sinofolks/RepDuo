@@ -63,6 +63,11 @@
 		47663B833DFB8A0FA3F7DFF1 /* ShareCardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50423962952738B5F3272F3 /* ShareCardViewController.swift */; };
 		8B97E0E886338FF848BB62CB /* TargetPersonTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE2AB6D12A455E9C37FA3757 /* TargetPersonTracker.swift */; };
 		11E4AE5ADC5F39DC8449F28C /* TargetPersonTrackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B08228B3F5E0C05DB0A09A31 /* TargetPersonTrackerTests.swift */; };
+		70622BD39C686F007FCDC6DC /* SkinnedSilhouette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C053A995DAD2D1D0E1337CB /* SkinnedSilhouette.swift */; };
+		D43598ACDE8FE235078D8E7E /* SilhouetteMeshRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADF4137DB02D6285ED0BF217 /* SilhouetteMeshRenderer.swift */; };
+		3BD2A3CB30763BAFBF1A9BCA /* SkinnedSilhouetteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB475BAAE59EA1C3D9182F5A /* SkinnedSilhouetteTests.swift */; };
+		72EB228A012836DB24F91A80 /* SilhouetteWarp.metal in Sources */ = {isa = PBXBuildFile; fileRef = 3A2FDFA582F6BEB18CBA4136 /* SilhouetteWarp.metal */; };
+		D4C1CC7B3B6EC21B9EB3A196 /* BodyStageCompositor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B85341702517C29E4D49E909 /* BodyStageCompositor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -146,6 +151,11 @@
 		B50423962952738B5F3272F3 /* ShareCardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCardViewController.swift; sourceTree = "<group>"; };
 		EE2AB6D12A455E9C37FA3757 /* TargetPersonTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TargetPersonTracker.swift; sourceTree = "<group>"; };
 		B08228B3F5E0C05DB0A09A31 /* TargetPersonTrackerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TargetPersonTrackerTests.swift; sourceTree = "<group>"; };
+		7C053A995DAD2D1D0E1337CB /* SkinnedSilhouette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkinnedSilhouette.swift; sourceTree = "<group>"; };
+		ADF4137DB02D6285ED0BF217 /* SilhouetteMeshRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilhouetteMeshRenderer.swift; sourceTree = "<group>"; };
+		CB475BAAE59EA1C3D9182F5A /* SkinnedSilhouetteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkinnedSilhouetteTests.swift; sourceTree = "<group>"; };
+		3A2FDFA582F6BEB18CBA4136 /* SilhouetteWarp.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = SilhouetteWarp.metal; sourceTree = "<group>"; };
+		B85341702517C29E4D49E909 /* BodyStageCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyStageCompositor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -321,6 +331,7 @@
 			children = (
 				B485669151946777093033EB /* PoseProcessing.swift */,
 				EE2AB6D12A455E9C37FA3757 /* TargetPersonTracker.swift */,
+				7C053A995DAD2D1D0E1337CB /* SkinnedSilhouette.swift */,
 			);
 			path = PoseProcessing;
 			sourceTree = "<group>";
@@ -377,6 +388,9 @@
 			isa = PBXGroup;
 			children = (
 				35F6742AB1634B704E84482E /* NeonCameraView.swift */,
+				B85341702517C29E4D49E909 /* BodyStageCompositor.swift */,
+				3A2FDFA582F6BEB18CBA4136 /* SilhouetteWarp.metal */,
+				ADF4137DB02D6285ED0BF217 /* SilhouetteMeshRenderer.swift */,
 			);
 			path = Metal;
 			sourceTree = "<group>";
@@ -483,6 +497,7 @@
 				504318BB0FAB956187354FB1 /* WorkoutSessionTests.swift */,
 				EA9D6A0C1A195EFAC1D92A83 /* WorkoutStatsTests.swift */,
 				B08228B3F5E0C05DB0A09A31 /* TargetPersonTrackerTests.swift */,
+				CB475BAAE59EA1C3D9182F5A /* SkinnedSilhouetteTests.swift */,
 				274940552AE593D29ABCFB1B /* Fixtures */,
 			);
 			path = Domain;
@@ -645,6 +660,7 @@
 				9092368D2C9AA4A288973F19 /* WorkoutSessionTests.swift in Sources */,
 				0F688A61B74B20E34BD257AE /* WorkoutStatsTests.swift in Sources */,
 				11E4AE5ADC5F39DC8449F28C /* TargetPersonTrackerTests.swift in Sources */,
+				3BD2A3CB30763BAFBF1A9BCA /* SkinnedSilhouetteTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -674,11 +690,15 @@
 				76467D581323A84F990B74DF /* Localization.swift in Sources */,
 				0B951F0346C3C61D5A90BA9D /* MovementCoach.swift in Sources */,
 				05C3A19B5A237006531F0F83 /* NeonCameraView.swift in Sources */,
+				D4C1CC7B3B6EC21B9EB3A196 /* BodyStageCompositor.swift in Sources */,
+				72EB228A012836DB24F91A80 /* SilhouetteWarp.metal in Sources */,
+				D43598ACDE8FE235078D8E7E /* SilhouetteMeshRenderer.swift in Sources */,
 				6CCD62208632E5D88EAFFAE7 /* OnboardingViewController.swift in Sources */,
 				905DC8DEA350685B94B0D83B /* PipelinePerformancePolicy.swift in Sources */,
 				ADF413313E8F478C8F0D73EA /* PoseModels.swift in Sources */,
 				911A292EC3B3FD5389957F1E /* PoseProcessing.swift in Sources */,
 				8B97E0E886338FF848BB62CB /* TargetPersonTracker.swift in Sources */,
+				70622BD39C686F007FCDC6DC /* SkinnedSilhouette.swift in Sources */,
 				3B24E51A803981786B15112E /* RDComponents.swift in Sources */,
 				37A672FF0156E04F8CDB9A99 /* RDDesignTokens.swift in Sources */,
 				B8B6EB9DF741E18EC0CBBB83 /* RDGradientOverlayView.swift in Sources */,

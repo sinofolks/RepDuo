@@ -173,7 +173,6 @@ final class WorkoutViewController: RDBaseViewController {
         cameraView.isHidden = false
         fallbackImageView.isHidden = cameraAccess.state == .authorized
         cameraView.intensity = preferences.neonIntensity
-        cameraView.replacesBackground = true
 
         let gradient = RDGradientOverlayView()
         gradient.direction = .both

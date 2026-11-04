@@ -41,6 +41,8 @@ final class CameraVisionPipeline: NSObject {
     private var metricWindowStartedAt = ProcessInfo.processInfo.systemUptime
     private var metricFrameCount = 0
     private var lastVisionLatencyMilliseconds = 0.0
+    private var silhouette: SkinnedSilhouette?
+    private var silhouetteVersion = 0
 
     var onPoseFrame: ((PoseFrame) -> Void)?
     var onError: ((Error) -> Void)?
@@ -68,6 +70,10 @@ final class CameraVisionPipeline: NSObject {
 
     func attach(renderView: NeonCameraView) {
         self.renderView = renderView
+        stateLock.lock()
+        let current = silhouette
+        stateLock.unlock()
+        renderView.setSilhouette(current)
     }
 
     func start(
@@ -104,7 +110,11 @@ final class CameraVisionPipeline: NSObject {
         lastMaskTimestamp = nil
         stateLock.unlock()
         renderView?.clearFrame()
-        analysisQueue.async { [weak self] in self?.analyzer.reset() }
+        // A different framing needs a new outline.
+        analysisQueue.async { [weak self] in
+            self?.analyzer.reset()
+            self?.analyzer.resetCalibration()
+        }
     }
 
     func setFramingMode(
@@ -175,12 +185,21 @@ final class CameraVisionPipeline: NSObject {
             )
             stateLock.lock()
             let shouldPublish = input.generation == generation
+            var silhouetteChanged = false
             if shouldPublish {
                 lastMask = result.personMask
                 lastMaskTimestamp = result.personMask == nil ? nil : input.timestamp
+                if result.silhouetteVersion != silhouetteVersion {
+                    silhouetteVersion = result.silhouetteVersion
+                    silhouette = result.silhouette
+                    silhouetteChanged = true
+                }
             }
+            let renderView = renderView
             stateLock.unlock()
             if shouldPublish {
+                if silhouetteChanged { renderView?.setSilhouette(result.silhouette) }
+                renderView?.updateBody(joints: result.poseFrame.joints, depth: result.depth)
                 DispatchQueue.main.async { [weak self] in self?.onPoseFrame?(result.poseFrame) }
             }
         } catch {

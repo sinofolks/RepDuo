@@ -1,7 +1,6 @@
 import CoreImage
 import CoreMedia
 import MetalKit
-import MetalPerformanceShaders
 import os
 import UIKit
 
@@ -9,15 +8,14 @@ struct MetalRenderMetrics: Equatable {
     let gpuDurationMilliseconds: Double
 }
 
+/// Camera stage for training. The room is dimmed so the trainee stands out,
+/// and their body fills with the accent color as they go deeper into a rep.
+///
+/// Once a calibration outline exists, the body mask comes from that outline
+/// bound to the live skeleton (`SkinnedSilhouette`), which is stable frame to
+/// frame. The live segmentation mask takes over when the bound outline stops
+/// matching, for example when a limb turns toward the camera.
 final class NeonCameraView: MTKView {
-    private struct GlowTextures {
-        let width: Int
-        let height: Int
-        let source: MTLTexture
-        let main: MTLTexture
-        let outer: MTLTexture
-    }
-
     private let imageLock = NSLock()
     private let logger = Logger(subsystem: "com.repduo.ios", category: "metal.renderer")
     private var pendingFrame: CIImage?
@@ -26,22 +24,30 @@ final class NeonCameraView: MTKView {
     private var maskTransitionStartedAt: TimeInterval?
     private var lastMaskIdentity: ObjectIdentifier?
     private var lastMaskSeenAt: TimeInterval?
+    private var silhouette: SkinnedSilhouette?
+    private var silhouetteChanged = false
+    private var targetJoints: [BodyJoint: JointPoint] = [:]
+    private var targetDepth: Double?
+    private var bodySeenAt: TimeInterval?
+
+    // Render-thread state; only touched inside `draw`.
     private var context: CIContext?
     private var commandQueue: MTLCommandQueue?
-    private var glowTextures: GlowTextures?
-    private var balancedBlur: MPSImageGaussianBlur?
-    private var lowPowerBlur: MPSImageGaussianBlur?
-    private var outerBlur: MPSImageGaussianBlur?
+    private var meshRenderer: SilhouetteMeshRenderer?
+    private var smoothedJoints: [BodyJoint: JointPoint] = [:]
+    private var depthLevel: Double = 0
+    private var flash: Double = 0
+    private var lastDrawAt: TimeInterval?
+    private var pulseRequested = false
+
     private let renderingColorSpace = CGColorSpaceCreateDeviceRGB()
     private let maskFadeDuration: TimeInterval = 0.28
-    /// Glows are blurred at this fraction of camera resolution; a wide blur
-    /// removes the detail a full-resolution pass would preserve.
-    private let glowScale: CGFloat = 0.5
-    private var pulseEndsAt: TimeInterval = 0
+    private let bodyTimeout: TimeInterval = 0.5
+    private let compositor = BodyStageCompositor()
 
+    /// Strength of the fill and outline, from Settings.
     var intensity: Float = 0.85
     var trackingConfidence: Float = 1
-    var replacesBackground = true
     var rendererQuality: RendererQuality = .balanced {
         didSet {
             guard rendererQuality != oldValue else { return }
@@ -63,22 +69,15 @@ final class NeonCameraView: MTKView {
         backgroundColor = RDColor.camera
         contentMode = .scaleAspectFill
         if let metalDevice {
-            // The glow is already blurred in 8-bit textures, so an 8-bit, gamma-space
-            // pipeline halves bandwidth without visible banding. Frames are never
-            // re-rendered, so caching intermediates only costs memory.
+            // Frames are never re-rendered, so caching intermediates only costs memory.
             context = CIContext(mtlDevice: metalDevice, options: [
                 .workingFormat: CIFormat.RGBA8,
                 .workingColorSpace: CGColorSpace(name: CGColorSpace.sRGB) as Any,
                 .cacheIntermediates: false
             ])
             commandQueue = metalDevice.makeCommandQueue()
-            // Sigmas are in glow-texture pixels, which are `glowScale` of camera pixels.
-            balancedBlur = MPSImageGaussianBlur(device: metalDevice, sigma: Float(12 * glowScale))
-            lowPowerBlur = MPSImageGaussianBlur(device: metalDevice, sigma: Float(7 * glowScale))
-            outerBlur = MPSImageGaussianBlur(device: metalDevice, sigma: Float(24 * glowScale))
-            balancedBlur?.edgeMode = .clamp
-            lowPowerBlur?.edgeMode = .clamp
-            outerBlur?.edgeMode = .clamp
+            meshRenderer = SilhouetteMeshRenderer(device: metalDevice, library: metalDevice.makeDefaultLibrary())
+            if meshRenderer == nil { logger.error("Silhouette mesh pipeline is unavailable") }
         } else {
             logger.fault("No Metal device is available")
         }
@@ -93,9 +92,8 @@ final class NeonCameraView: MTKView {
         if let mask {
             let identity = ObjectIdentifier(mask)
             if identity != lastMaskIdentity {
-                let current = CIImage(cvPixelBuffer: mask)
                 previousMask = pendingMask
-                pendingMask = current
+                pendingMask = CIImage(cvPixelBuffer: mask)
                 maskTransitionStartedAt = now
                 lastMaskIdentity = identity
             }
@@ -111,6 +109,23 @@ final class NeonCameraView: MTKView {
         DispatchQueue.main.async { [weak self] in self?.setNeedsDisplay() }
     }
 
+    /// Calibrated outline to bind to the skeleton; `nil` falls back to live segmentation.
+    func setSilhouette(_ silhouette: SkinnedSilhouette?) {
+        imageLock.lock()
+        self.silhouette = silhouette
+        silhouetteChanged = true
+        imageLock.unlock()
+    }
+
+    /// Latest tracked pose and rep depth (0 at the top, 1 at the bottom).
+    func updateBody(joints: [BodyJoint: JointPoint], depth: Double?) {
+        imageLock.lock()
+        targetJoints = joints
+        targetDepth = depth
+        bodySeenAt = ProcessInfo.processInfo.systemUptime
+        imageLock.unlock()
+    }
+
     func clearFrame() {
         imageLock.lock()
         pendingFrame = nil
@@ -119,12 +134,15 @@ final class NeonCameraView: MTKView {
         maskTransitionStartedAt = nil
         lastMaskIdentity = nil
         lastMaskSeenAt = nil
+        targetJoints = [:]
+        targetDepth = nil
+        bodySeenAt = nil
         imageLock.unlock()
         DispatchQueue.main.async { [weak self] in self?.setNeedsDisplay() }
     }
 
     func triggerCompletionPulse() {
-        pulseEndsAt = ProcessInfo.processInfo.systemUptime + 0.2
+        pulseRequested = true
         setNeedsDisplay()
     }
 
@@ -132,226 +150,179 @@ final class NeonCameraView: MTKView {
         guard let context,
               let drawable = currentDrawable,
               let commandBuffer = commandQueue?.makeCommandBuffer() else { return }
+        let now = ProcessInfo.processInfo.systemUptime
         imageLock.lock()
         let camera = pendingFrame
         let currentMask = pendingMask
         let previousMask = previousMask
         let transitionStartedAt = maskTransitionStartedAt
         let maskSeenAt = lastMaskSeenAt
+        let joints = targetJoints
+        let depth = targetDepth
+        let bodyFresh = bodySeenAt.map { now - $0 < bodyTimeout } ?? false
+        let silhouette = silhouette
+        if silhouetteChanged {
+            meshRenderer?.setSilhouette(silhouette)
+            silhouetteChanged = false
+        }
         imageLock.unlock()
+
         guard let camera else {
-            if let renderPass = currentRenderPassDescriptor {
-                renderPass.colorAttachments[0].loadAction = .clear
-                renderPass.colorAttachments[0].clearColor = MTLClearColor(
-                    red: 0.063,
-                    green: 0.075,
-                    blue: 0.09,
-                    alpha: 1
-                )
-                commandBuffer.makeRenderCommandEncoder(descriptor: renderPass)?.endEncoding()
-            }
-            commandBuffer.present(drawable)
-            commandBuffer.commit()
+            clear(drawable: drawable, commandBuffer: commandBuffer)
             return
         }
+        let extent = camera.extent
+        let dt = min(0.1, max(0, now - (lastDrawAt ?? now)))
+        lastDrawAt = now
+        advanceAnimation(joints: bodyFresh ? joints : [:], depth: bodyFresh ? depth : nil, dt: dt)
 
-        let stageBackground = CIImage(
-            color: CIColor(red: 0.063, green: 0.075, blue: 0.09, alpha: 1)
-        ).cropped(to: camera.extent)
-        var composite = replacesBackground ? stageBackground : camera
-        let now = ProcessInfo.processInfo.systemUptime
-        let fade = maskSeenAt.map { max(0, min(1, 1 - (now - $0) / maskFadeDuration)) } ?? 0
-        let mask: CIImage?
-        if let currentMask,
-           let previousMask,
-           previousMask.extent == currentMask.extent,
-           let transitionStartedAt {
-            let progress = max(0, min(1, (now - transitionStartedAt) / 0.12))
-            mask = currentMask.applyingFilter(
-                "CIDissolveTransition",
-                parameters: [
-                    kCIInputTargetImageKey: previousMask,
-                    kCIInputTimeKey: 1 - progress
-                ]
-            ).cropped(to: currentMask.extent)
-        } else {
-            mask = currentMask
-        }
-        if let mask, fade > 0 {
-            let maskScale = CGAffineTransform(
-                scaleX: camera.extent.width / max(mask.extent.width, 1),
-                y: camera.extent.height / max(mask.extent.height, 1)
-            )
-            // Close small holes at the segmentation's own resolution, which is a
-            // fraction of the camera's, then upscale once. Bilinear upscaling
-            // also gives the blend mask its soft edge.
-            let closingRadius = max(1, (2 / maskScale.a).rounded())
-            let fullMask = mask
-                .applyingFilter("CIMorphologyMaximum", parameters: [kCIInputRadiusKey: closingRadius])
-                .applyingFilter("CIMorphologyMinimum", parameters: [kCIInputRadiusKey: closingRadius])
-                .cropped(to: mask.extent)
-                .clampedToExtent()
-                .transformed(by: maskScale)
-                .cropped(to: camera.extent)
-            let softenedPersonMask = fullMask
-            let isolatedPerson = camera.applyingFilter(
-                "CIBlendWithMask",
-                parameters: [
-                    kCIInputBackgroundImageKey: stageBackground,
-                    kCIInputMaskImageKey: softenedPersonMask
-                ]
-            ).cropped(to: camera.extent)
-            let cameraBase: CIImage
-            if replacesBackground {
-                // If segmentation momentarily disappears, fade the isolated
-                // person into the black stage without ever revealing the room.
-                cameraBase = fade >= 0.999
-                    ? isolatedPerson
-                    : isolatedPerson.applyingFilter(
-                        "CIDissolveTransition",
-                        parameters: [
-                            kCIInputTargetImageKey: stageBackground,
-                            kCIInputTimeKey: 1 - fade
-                        ]
-                    ).cropped(to: camera.extent)
+        let liveMask = self.liveMask(current: currentMask, previous: previousMask, transitionStartedAt: transitionStartedAt, now: now, extent: extent)
+        let liveFade = maskSeenAt.map { max(0, min(1, 1 - (now - $0) / maskFadeDuration)) } ?? 0
+        let boundMask = self.boundMask(silhouette: silhouette, extent: extent, commandBuffer: commandBuffer)
+
+        var bodyMask: CIImage?
+        if let bound = boundMask.image {
+            if let liveMask, liveFade > 0, boundMask.liveWeight > 0.01 {
+                bodyMask = bound.applyingFilter("CIDissolveTransition", parameters: [
+                    kCIInputTargetImageKey: liveMask,
+                    kCIInputTimeKey: boundMask.liveWeight
+                ]).cropped(to: extent)
             } else {
-                cameraBase = camera
+                bodyMask = bound
             }
-            let edge = fullMask
-                .applyingFilter("CIEdges", parameters: [kCIInputIntensityKey: 8.0])
-                .cropped(to: camera.extent)
-            let clear = CIColor(red: 0, green: 0, blue: 0, alpha: 0)
-            let pulse: Float = now < pulseEndsAt && !UIAccessibility.isReduceMotionEnabled ? 1.3 : 1
-            let effectiveIntensity = CGFloat(min(1, intensity * trackingConfidence * Float(fade) * pulse))
-            let green = CIColor(red: 0.19, green: 0.82, blue: 0.35, alpha: effectiveIntensity)
-            let bright = CIColor(red: 0.55, green: 0.93, blue: 0.62, alpha: effectiveIntensity)
-            let colorized = edge
-                .applyingFilter("CIFalseColor", parameters: ["inputColor0": clear, "inputColor1": green])
-            let inner = edge.applyingFilter(
-                "CIFalseColor",
-                parameters: ["inputColor0": clear, "inputColor1": bright]
+        } else if let liveMask, liveFade > 0 {
+            bodyMask = liveFade >= 0.999 ? liveMask : liveMask.applyingFilter("CIColorMatrix", parameters: [
+                "inputRVector": CIVector(x: liveFade, y: 0, z: 0, w: 0),
+                "inputGVector": CIVector(x: 0, y: liveFade, z: 0, w: 0),
+                "inputBVector": CIVector(x: 0, y: 0, z: liveFade, w: 0)
+            ])
+        }
+
+        var composite = camera
+        if let bodyMask {
+            composite = compositor.compose(
+                camera: camera,
+                bodyMask: bodyMask,
+                joints: smoothedJoints,
+                depth: depthLevel,
+                flash: flash,
+                strength: Double(min(1, intensity * trackingConfidence)),
+                quality: rendererQuality
             )
-            switch rendererQuality {
-            case .high:
-                let glows = makeMPSGlows(
-                    colorized: colorized,
-                    extent: camera.extent,
-                    context: context,
-                    commandBuffer: commandBuffer,
-                    includeOuter: true
-                )
-                let mainGlow = glows?.main ?? fallbackGlow(colorized, radius: 12, extent: camera.extent)
-                let outerGlow = glows?.outer ?? fallbackGlow(colorized, radius: 24, extent: camera.extent)
-                composite = inner.composited(
-                    over: mainGlow.composited(over: outerGlow.composited(over: cameraBase))
-                )
-            case .balanced, .lowPower:
-                let radius: Float = rendererQuality == .lowPower ? 7 : 12
-                let mainGlow = makeMPSGlows(
-                    colorized: colorized,
-                    extent: camera.extent,
-                    context: context,
-                    commandBuffer: commandBuffer,
-                    includeOuter: false
-                )?.main ?? fallbackGlow(colorized, radius: radius, extent: camera.extent)
-                composite = inner.composited(over: mainGlow.composited(over: cameraBase))
-            case .thermalSafe:
-                composite = inner.composited(over: cameraBase)
-            }
         }
 
         let target = CGRect(origin: .zero, size: drawableSize)
-        let scale = max(target.width / composite.extent.width, target.height / composite.extent.height)
+        let scale = max(target.width / extent.width, target.height / extent.height)
         var rendered = composite.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
         rendered = rendered.transformed(by: CGAffineTransform(
             translationX: target.midX - rendered.extent.midX,
             y: target.midY - rendered.extent.midY
         ))
-        context.render(
-            rendered,
-            to: drawable.texture,
-            commandBuffer: commandBuffer,
-            bounds: target,
-            colorSpace: renderingColorSpace
-        )
+        context.render(rendered, to: drawable.texture, commandBuffer: commandBuffer, bounds: target, colorSpace: renderingColorSpace)
         observeCompletion(of: commandBuffer)
         commandBuffer.present(drawable)
         commandBuffer.commit()
     }
 
-    private func makeMPSGlows(
-        colorized: CIImage,
-        extent: CGRect,
-        context: CIContext,
-        commandBuffer: MTLCommandBuffer,
-        includeOuter: Bool
-    ) -> (main: CIImage, outer: CIImage?)? {
-        let downscale = CGAffineTransform(scaleX: glowScale, y: glowScale)
-        let glowExtent = extent.applying(downscale)
-        let width = Int(glowExtent.width.rounded(.up))
-        let height = Int(glowExtent.height.rounded(.up))
-        guard let textures = textures(width: width, height: height) else { return nil }
-        context.render(
-            colorized.transformed(by: downscale),
-            to: textures.source,
-            commandBuffer: commandBuffer,
-            bounds: CGRect(x: glowExtent.minX, y: glowExtent.minY, width: CGFloat(width), height: CGFloat(height)),
-            colorSpace: renderingColorSpace
-        )
-        let blur = rendererQuality == .lowPower ? lowPowerBlur : balancedBlur
-        guard let blur else { return nil }
-        blur.encode(
-            commandBuffer: commandBuffer,
-            sourceTexture: textures.source,
-            destinationTexture: textures.main
-        )
-        if includeOuter {
-            outerBlur?.encode(
-                commandBuffer: commandBuffer,
-                sourceTexture: textures.source,
-                destinationTexture: textures.outer
+    // MARK: Animation
+
+    private func advanceAnimation(joints: [BodyJoint: JointPoint], depth: Double?, dt: TimeInterval) {
+        // Vision updates ~15 times a second; ease toward each sample so the
+        // outline glides at display rate instead of stepping.
+        let follow = 1 - exp(-dt / 0.06)
+        var next: [BodyJoint: JointPoint] = [:]
+        for (joint, target) in joints {
+            guard let previous = smoothedJoints[joint] else {
+                next[joint] = target
+                continue
+            }
+            next[joint] = JointPoint(
+                x: previous.x + (target.x - previous.x) * follow,
+                y: previous.y + (target.y - previous.y) * follow,
+                confidence: target.confidence
             )
         }
+        smoothedJoints = next
 
-        let options: [CIImageOption: Any] = [.colorSpace: renderingColorSpace]
-        // Textures start at the origin; move them back to the extent at camera scale.
-        let upscale = CGAffineTransform(scaleX: 1 / glowScale, y: 1 / glowScale)
-            .translatedBy(x: glowExtent.minX, y: glowExtent.minY)
-        func restore(_ texture: MTLTexture) -> CIImage? {
-            CIImage(mtlTexture: texture, options: options)?.transformed(by: upscale).cropped(to: extent)
+        let previousLevel = depthLevel
+        let goal = depth ?? 0
+        depthLevel += (goal - depthLevel) * (1 - exp(-dt / 0.08))
+        let reduceMotion = UIAccessibility.isReduceMotionEnabled
+        if !reduceMotion, previousLevel < 0.95, depthLevel >= 0.95 { flash = 1 }
+        if pulseRequested {
+            pulseRequested = false
+            if !reduceMotion { flash = max(flash, 0.8) }
         }
-        guard let main = restore(textures.main) else { return nil }
-        return (main, includeOuter ? restore(textures.outer) : nil)
+        flash *= exp(-dt / 0.25)
     }
 
-    private func textures(width: Int, height: Int) -> GlowTextures? {
-        if let glowTextures,
-           glowTextures.width == width,
-           glowTextures.height == height {
-            return glowTextures
+    // MARK: Masks
+
+    private func liveMask(
+        current: CIImage?,
+        previous: CIImage?,
+        transitionStartedAt: TimeInterval?,
+        now: TimeInterval,
+        extent: CGRect
+    ) -> CIImage? {
+        guard let current else { return nil }
+        var mask = current
+        if let previous, previous.extent == current.extent, let transitionStartedAt {
+            let progress = max(0, min(1, (now - transitionStartedAt) / 0.12))
+            mask = current.applyingFilter("CIDissolveTransition", parameters: [
+                kCIInputTargetImageKey: previous,
+                kCIInputTimeKey: 1 - progress
+            ]).cropped(to: current.extent)
         }
-        guard let device, width > 0, height > 0 else { return nil }
-        let descriptor = MTLTextureDescriptor.texture2DDescriptor(
-            pixelFormat: .rgba8Unorm,
-            width: width,
-            height: height,
-            mipmapped: false
+        let scale = CGAffineTransform(
+            scaleX: extent.width / max(mask.extent.width, 1),
+            y: extent.height / max(mask.extent.height, 1)
         )
-        descriptor.storageMode = .private
-        descriptor.usage = [.shaderRead, .shaderWrite, .renderTarget]
-        guard let source = device.makeTexture(descriptor: descriptor),
-              let main = device.makeTexture(descriptor: descriptor),
-              let outer = device.makeTexture(descriptor: descriptor) else { return nil }
-        let textures = GlowTextures(width: width, height: height, source: source, main: main, outer: outer)
-        glowTextures = textures
-        return textures
+        // Close small holes at the segmentation's own resolution, then upscale once.
+        let closingRadius = max(1, (2 / scale.a).rounded())
+        return mask
+            .applyingFilter("CIMorphologyMaximum", parameters: [kCIInputRadiusKey: closingRadius])
+            .applyingFilter("CIMorphologyMinimum", parameters: [kCIInputRadiusKey: closingRadius])
+            .cropped(to: mask.extent)
+            .clampedToExtent()
+            .transformed(by: scale)
+            .cropped(to: extent)
     }
 
-    private func fallbackGlow(_ image: CIImage, radius: Float, extent: CGRect) -> CIImage {
-        image
-            .clampedToExtent()
-            .applyingFilter("CIGaussianBlur", parameters: [kCIInputRadiusKey: radius])
+    /// The calibrated outline deformed to the current pose, and how much the
+    /// live mask should replace it because the bound outline no longer fits.
+    private func boundMask(
+        silhouette: SkinnedSilhouette?,
+        extent: CGRect,
+        commandBuffer: MTLCommandBuffer
+    ) -> (image: CIImage?, liveWeight: Double) {
+        guard let silhouette,
+              let meshRenderer,
+              meshRenderer.hasSilhouette,
+              let positions = silhouette.deform(to: smoothedJoints),
+              let texture = meshRenderer.render(positions: positions, commandBuffer: commandBuffer),
+              let image = CIImage(mtlTexture: texture, options: [.colorSpace: renderingColorSpace]) else {
+            return (nil, 1)
+        }
+        let fit = silhouette.fit(to: smoothedJoints)
+        let scaled = image
+            .transformed(by: CGAffineTransform(
+                scaleX: extent.width / CGFloat(texture.width),
+                y: extent.height / CGFloat(texture.height)
+            ))
             .cropped(to: extent)
+        // Full trust above 0.8 fit, hand over to the live mask by 0.4.
+        return (scaled, min(1, max(0, (0.8 - fit) / 0.4)))
+    }
+
+    private func clear(drawable: CAMetalDrawable, commandBuffer: MTLCommandBuffer) {
+        if let renderPass = currentRenderPassDescriptor {
+            renderPass.colorAttachments[0].loadAction = .clear
+            renderPass.colorAttachments[0].clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 1)
+            commandBuffer.makeRenderCommandEncoder(descriptor: renderPass)?.endEncoding()
+        }
+        commandBuffer.present(drawable)
+        commandBuffer.commit()
     }
 
     private func observeCompletion(of commandBuffer: MTLCommandBuffer) {

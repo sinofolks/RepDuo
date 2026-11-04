@@ -6,10 +6,31 @@ import Vision
 struct VisionAnalysisResult {
     let poseFrame: PoseFrame
     let personMask: CVPixelBuffer?
+    /// The trainee's calibrated outline, if one has been captured.
+    let silhouette: SkinnedSilhouette?
+    /// Changes whenever `silhouette` is replaced or dropped.
+    let silhouetteVersion: Int
+    /// 0 at the trainee's calibrated top of the rep, 1 at the bottom.
+    let depth: Double?
+
+    init(
+        poseFrame: PoseFrame,
+        personMask: CVPixelBuffer?,
+        silhouette: SkinnedSilhouette? = nil,
+        silhouetteVersion: Int = 0,
+        depth: Double? = nil
+    ) {
+        self.poseFrame = poseFrame
+        self.personMask = personMask
+        self.silhouette = silhouette
+        self.silhouetteVersion = silhouetteVersion
+        self.depth = depth
+    }
 }
 
 final class VisionPoseAnalyzer {
     private let segmentationLogger = Logger(subsystem: "com.repduo.ios", category: "vision.segmentation")
+    private let calibrationLogger = Logger(subsystem: "com.repduo.ios", category: "vision.calibration")
     private let poseRequest = VNDetectHumanBodyPoseRequest()
     private let smoother = PoseSmoother()
     private let tracker = TargetPersonTracker()
@@ -23,6 +44,11 @@ final class VisionPoseAnalyzer {
         return request
     }()
     private let instanceMaskRequest = VNGeneratePersonInstanceMaskRequest()
+    private let calibrator = SilhouetteCalibrator()
+    private var silhouette: SkinnedSilhouette?
+    private var silhouetteVersion = 0
+    private var poorFitSince: TimeInterval?
+    private var needsSilhouetteValidation = false
 
     func analyze(
         pixelBuffer: CVPixelBuffer,
@@ -40,6 +66,8 @@ final class VisionPoseAnalyzer {
         if tracking.trackID != currentTrackID {
             // A different person was acquired; don't blend their joints with the last one's.
             currentTrackID = tracking.trackID
+            calibrator.reset()
+            needsSilhouetteValidation = silhouette != nil
             smoother.reset()
             pushUpMotionEstimator.reset()
         }
@@ -96,7 +124,27 @@ final class VisionPoseAnalyzer {
             isFormAcceptable: measurement.formAcceptable,
             bystanderCount: tracking.bystanderCount
         )
-        return VisionAnalysisResult(poseFrame: frame, personMask: personMask)
+        updateSilhouette(
+            imageAspect: Float(CVPixelBufferGetWidth(pixelBuffer)) / Float(max(CVPixelBufferGetHeight(pixelBuffer), 1)),
+            target: target,
+            joints: joints,
+            mask: personMask,
+            angle: measurement.angle,
+            quality: quality,
+            exercise: exercise,
+            timestamp: timestamp
+        )
+        return VisionAnalysisResult(
+            poseFrame: frame,
+            personMask: personMask,
+            silhouette: silhouette,
+            silhouetteVersion: silhouetteVersion,
+            depth: RepDepthProgress.value(
+                angle: measurement.angle,
+                referenceAngle: silhouette?.calibration.referenceAngle,
+                exercise: exercise
+            )
+        )
     }
 
     /// With one person in view the cheaper whole-scene segmentation is enough.
@@ -147,7 +195,106 @@ final class VisionPoseAnalyzer {
         return votes.max { $0.value < $1.value }?.key
     }
 
+    /// Drops the calibrated outline, for example when the framing changes.
+    func resetCalibration() {
+        calibrator.reset()
+        replaceSilhouette(nil)
+    }
+
+    /// Captures the trainee's outline while they hold the top of the rep, keeps
+    /// it while it matches them, and recaptures when it stops fitting.
+    private func updateSilhouette(
+        imageAspect: Float,
+        target: PoseCandidate,
+        joints: [BodyJoint: JointPoint],
+        mask: CVPixelBuffer?,
+        angle: Double?,
+        quality: PoseQuality,
+        exercise: ExerciseType,
+        timestamp: TimeInterval
+    ) {
+        if let current = silhouette, current.calibration.exercise != exercise {
+            replaceSilhouette(nil)
+        }
+        if needsSilhouetteValidation, let current = silhouette {
+            needsSilhouetteValidation = false
+            // A newly acquired person keeps the outline only if they are the same size.
+            let ratio = max(target.scale, current.calibration.bodyScale) / max(min(target.scale, current.calibration.bodyScale), 1e-6)
+            if ratio > 1.3 { replaceSilhouette(nil) }
+        }
+        let configuration: RepDetectionConfiguration = exercise == .squat ? .squat : .pushUp
+        let atTop = (angle ?? 0) >= configuration.topAngle - 12
+        if let current = silhouette {
+            if current.fit(to: joints) < 0.45 {
+                let since = poorFitSince ?? timestamp
+                poorFitSince = since
+                if timestamp - since > 3, atTop {
+                    calibrationLogger.info("Recapturing silhouette after a sustained poor fit")
+                    replaceSilhouette(nil)
+                }
+            } else {
+                poorFitSince = nil
+            }
+            return
+        }
+        guard quality.permitsCounting, atTop, let mask, let image = Self.grayImage(from: mask, maximumWidth: 160) else {
+            calibrator.reset()
+            return
+        }
+        guard let calibration = calibrator.add(mask: image, joints: joints, angle: angle, exercise: exercise, imageAspect: imageAspect) else { return }
+        if let bound = SkinnedSilhouette(calibration: calibration) {
+            calibrationLogger.info("Silhouette calibrated: \(bound.restPositions.count, privacy: .public) vertices")
+            replaceSilhouette(bound)
+        }
+    }
+
+    private func replaceSilhouette(_ next: SkinnedSilhouette?) {
+        guard next != nil || silhouette != nil else { return }
+        silhouette = next
+        silhouetteVersion += 1
+        poorFitSince = nil
+        needsSilhouetteValidation = false
+    }
+
+    /// Box-downsamples an 8-bit or float person mask to at most `maximumWidth`.
+    private static func grayImage(from buffer: CVPixelBuffer, maximumWidth: Int) -> GrayImage? {
+        CVPixelBufferLockBaseAddress(buffer, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(buffer, .readOnly) }
+        guard let base = CVPixelBufferGetBaseAddress(buffer) else { return nil }
+        let width = CVPixelBufferGetWidth(buffer)
+        let height = CVPixelBufferGetHeight(buffer)
+        let rowBytes = CVPixelBufferGetBytesPerRow(buffer)
+        let format = CVPixelBufferGetPixelFormatType(buffer)
+        let isFloat = format == kCVPixelFormatType_OneComponent32Float
+        guard isFloat || format == kCVPixelFormatType_OneComponent8, width > 0, height > 0 else { return nil }
+        let factor = max(1, Int((Double(width) / Double(maximumWidth)).rounded(.up)))
+        let outWidth = width / factor, outHeight = height / factor
+        guard outWidth > 8, outHeight > 8 else { return nil }
+        var pixels = [Float](repeating: 0, count: outWidth * outHeight)
+        let area = Float(factor * factor)
+        for y in 0..<outHeight {
+            for x in 0..<outWidth {
+                var total: Float = 0
+                for sy in 0..<factor {
+                    let row = base.advanced(by: (y * factor + sy) * rowBytes)
+                    for sx in 0..<factor {
+                        let column = x * factor + sx
+                        total += isFloat
+                            ? row.load(fromByteOffset: column * 4, as: Float.self)
+                            : Float(row.load(fromByteOffset: column, as: UInt8.self)) / 255
+                    }
+                }
+                pixels[y * outWidth + x] = total / area
+            }
+        }
+        return GrayImage(width: outWidth, height: outHeight, pixels: pixels)
+    }
+
+    /// Starts a new tracking session. The calibrated outline is kept and
+    /// re-validated against whoever is acquired next.
     func reset() {
+        calibrator.reset()
+        poorFitSince = nil
         tracker.reset()
         smoother.reset()
         pushUpMotionEstimator.reset()
