@@ -33,8 +33,8 @@ final class OnboardingViewController: RDBaseViewController {
     private let titleLabel = UILabel()
     private let bodyLabel = UILabel()
     private let skipButton = UIButton(type: .system)
-    private let nextButton = RDPrimaryButton(title: "NEXT", style: .inverse, symbolName: "arrow.right")
-    private let getStartedButton = RDPrimaryButton(title: "ALLOW CAMERA & TRAIN", symbolName: "arrow.right")
+    private let nextButton = RDPrimaryButton(title: "NEXT", style: .inverse)
+    private let getStartedButton = RDPrimaryButton(title: "ALLOW CAMERA & TRAIN")
 
     var onContinue: (() -> Void)?
 
@@ -61,8 +61,8 @@ final class OnboardingViewController: RDBaseViewController {
         stack.spacing = RDSpacing.md
 
         skipButton.setTitle("SKIP".rdLocalized, for: .normal)
-        skipButton.setTitleColor(RDColor.textSecondary, for: .normal)
-        skipButton.titleLabel?.font = RDFont.body(weight: .bold)
+        skipButton.setTitleColor(RDColor.accent, for: .normal)
+        skipButton.titleLabel?.font = RDFont.body(weight: .regular)
         skipButton.titleLabel?.adjustsFontForContentSizeCategory = true
         skipButton.accessibilityIdentifier = "onboarding.skip"
         skipButton.heightAnchor.constraint(greaterThanOrEqualToConstant: 44).isActive = true
@@ -88,13 +88,13 @@ final class OnboardingViewController: RDBaseViewController {
 
         dotsStack.alignment = .center
         eyebrowLabel.numberOfLines = 0
-        titleLabel.font = RDFont.display(42)
-        titleLabel.textColor = RDColor.warmWhite
+        titleLabel.font = RDFont.title(34)
+        titleLabel.textColor = RDColor.label
         titleLabel.numberOfLines = 0
         titleLabel.adjustsFontForContentSizeCategory = true
         titleLabel.accessibilityTraits = .header
         bodyLabel.font = RDFont.body()
-        bodyLabel.textColor = RDColor.textSecondary
+        bodyLabel.textColor = RDColor.secondaryLabel
         bodyLabel.numberOfLines = 0
         bodyLabel.adjustsFontForContentSizeCategory = true
 
@@ -122,7 +122,7 @@ final class OnboardingViewController: RDBaseViewController {
         let content = pages[target]
         let isLast = target == pages.count - 1
         let apply = {
-            self.eyebrowLabel.setEyebrow(content.eyebrow, color: RDColor.neonGreen, kern: 3)
+            self.eyebrowLabel.setEyebrow(content.eyebrow.rdLocalized)
             self.titleLabel.text = content.title.rdLocalized
             self.bodyLabel.text = content.body.rdLocalized
             for (index, visual) in self.visuals.enumerated() { visual.alpha = index == target ? 1 : 0 }
@@ -144,7 +144,7 @@ final class OnboardingViewController: RDBaseViewController {
         dotsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         for index in pages.indices {
             let dot = UIView()
-            dot.backgroundColor = index == pageIndex ? RDColor.neonGreen : RDColor.separatorStrong
+            dot.backgroundColor = index == pageIndex ? RDColor.accent : RDColor.separator
             dot.layer.cornerRadius = 3
             dot.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
@@ -167,9 +167,9 @@ final class OnboardingViewController: RDBaseViewController {
         let count = RDNumberLabel()
         count.text = "12"
         count.font = RDFont.numeric(120, maximumScale: 1)
-        count.textColor = RDColor.warmWhite
+        count.textColor = RDColor.label
         count.translatesAutoresizingMaskIntoConstraints = false
-        let tag = RDTag(text: "+1 AUTO COUNT", background: RDColor.neonGreen)
+        let tag = RDTag(text: "+1 AUTO COUNT")
         [figure, count, tag].forEach(container.addSubview)
         NSLayoutConstraint.activate([
             container.heightAnchor.constraint(equalToConstant: 320),
@@ -192,7 +192,7 @@ final class OnboardingViewController: RDBaseViewController {
         let score = RDNumberLabel()
         score.text = "86"
         score.font = RDFont.numeric(84, maximumScale: 1)
-        score.textColor = RDColor.warmWhite
+        score.textColor = RDColor.label
         let caption = UILabel()
         caption.setEyebrow("AI SCORE")
         let center = UIStackView(axis: .vertical, spacing: 0, arrangedSubviews: [score, caption])
@@ -206,9 +206,9 @@ final class OnboardingViewController: RDBaseViewController {
             center.centerYAnchor.constraint(equalTo: ring.centerYAnchor)
         ])
         let metrics = UIStackView(axis: .horizontal, spacing: 8, arrangedSubviews: [
-            metricTile("RANGE", value: 0.92, tone: RDColor.neonGreen),
-            metricTile("TEMPO", value: 0.78, tone: RDColor.warning),
-            metricTile("SYMMETRY", value: 0.86, tone: RDColor.neonGreen)
+            metricTile("RANGE", value: 0.92, tone: RDColor.accent),
+            metricTile("TEMPO", value: 0.78, tone: RDColor.accent),
+            metricTile("SYMMETRY", value: 0.86, tone: RDColor.accent)
         ])
         metrics.distribution = .fillEqually
         let stack = UIStackView(axis: .vertical, spacing: 24, arrangedSubviews: [ring, metrics])
@@ -220,9 +220,9 @@ final class OnboardingViewController: RDBaseViewController {
 
     private func metricTile(_ title: String, value: CGFloat, tone: UIColor) -> UIView {
         let tile = makeCard()
-        let label = makeLabel(text: title, font: RDFont.caption(weight: .medium), color: RDColor.textBody)
+        let label = makeLabel(text: title, font: RDFont.caption(weight: .medium), color: RDColor.label)
         let track = UIView()
-        track.backgroundColor = RDColor.separatorOnDark
+        track.backgroundColor = RDColor.fill
         track.layer.cornerRadius = 2
         let fill = UIView()
         fill.backgroundColor = tone
@@ -247,16 +247,12 @@ final class OnboardingViewController: RDBaseViewController {
             systemName: "lock.shield",
             withConfiguration: UIImage.SymbolConfiguration(pointSize: 120, weight: .thin)
         ))
-        shield.tintColor = RDColor.neonGreen
+        shield.tintColor = RDColor.accent
         shield.contentMode = .scaleAspectFit
-        shield.layer.shadowColor = RDColor.neonGreen.cgColor
-        shield.layer.shadowRadius = 14
-        shield.layer.shadowOpacity = 0.45
-        shield.layer.shadowOffset = .zero
         let facts = UIStackView(axis: .horizontal, spacing: 8, arrangedSubviews: [
             RDStatTile(value: "0", caption: "Video saved"),
             RDStatTile(value: "0", caption: "Uploads"),
-            RDStatTile(value: "100%", caption: "On-device", valueColor: RDColor.neonGreen)
+            RDStatTile(value: "100%", caption: "On-device", valueColor: RDColor.accent)
         ])
         facts.distribution = .fillEqually
         let stack = UIStackView(axis: .vertical, spacing: 28, arrangedSubviews: [shield, facts])
@@ -266,7 +262,7 @@ final class OnboardingViewController: RDBaseViewController {
     }
 }
 
-/// Stylized glowing skeleton in a squat, drawn for onboarding where no camera runs yet.
+/// Stylized skeleton in a squat, drawn for onboarding where no camera runs yet.
 final class RDNeonFigureView: UIView {
     private let bones = CAShapeLayer()
     private let joints = CAShapeLayer()
@@ -276,19 +272,20 @@ final class RDNeonFigureView: UIView {
         translatesAutoresizingMaskIntoConstraints = false
         isUserInteractionEnabled = false
         bones.fillColor = UIColor.clear.cgColor
-        bones.strokeColor = RDColor.neonGreen.cgColor
         bones.lineWidth = 5
         bones.lineCap = .round
         bones.lineJoin = .round
-        bones.shadowColor = RDColor.neonGreen.cgColor
-        bones.shadowRadius = 10
-        bones.shadowOpacity = 0.8
-        bones.shadowOffset = .zero
-        joints.fillColor = RDColor.background.cgColor
-        joints.strokeColor = RDColor.warmWhite.cgColor
         joints.lineWidth = 3
         layer.addSublayer(bones)
         layer.addSublayer(joints)
+        updateColors()
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _) in view.updateColors() }
+    }
+
+    private func updateColors() {
+        bones.strokeColor = RDColor.accent.resolvedColor(with: traitCollection).cgColor
+        joints.fillColor = RDColor.background.resolvedColor(with: traitCollection).cgColor
+        joints.strokeColor = RDColor.label.resolvedColor(with: traitCollection).cgColor
     }
 
     required init?(coder: NSCoder) { nil }

@@ -29,9 +29,9 @@ final class RDGradientOverlayView: UIView {
     }
 
     private func updateColors() {
-        let opaque = RDColor.backgroundDeep.withAlphaComponent(0.96).cgColor
+        let opaque = RDColor.camera.withAlphaComponent(0.96).cgColor
         let clearAlpha: CGFloat = UIAccessibility.isReduceTransparencyEnabled ? 0.58 : 0
-        let clear = RDColor.backgroundDeep.withAlphaComponent(clearAlpha).cgColor
+        let clear = RDColor.camera.withAlphaComponent(clearAlpha).cgColor
         switch direction {
         case .top:
             gradient.colors = [opaque, clear]

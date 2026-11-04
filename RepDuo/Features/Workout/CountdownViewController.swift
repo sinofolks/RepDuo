@@ -35,10 +35,7 @@ final class CountdownViewController: RDBaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.hidesBackButton = true
-        let clearBar = UINavigationBarAppearance()
-        clearBar.configureWithTransparentBackground()
-        navigationItem.standardAppearance = clearBar
-        navigationItem.scrollEdgeAppearance = clearBar
+        useCameraStageAppearance()
         fallbackImageView.image = UIImage(named: exercise.demoImageName)
         fallbackImageView.contentMode = .scaleAspectFill
         fallbackImageView.clipsToBounds = true
@@ -52,26 +49,26 @@ final class CountdownViewController: RDBaseViewController {
         else { bodyAvailable = true }
 
         let shade = UIView()
-        shade.backgroundColor = RDColor.backgroundDeep.withAlphaComponent(0.62)
+        shade.backgroundColor = RDColor.camera.withAlphaComponent(0.62)
         view.addSubview(shade)
         shade.pinEdges(to: view)
 
         numberLabel.text = String(remaining)
-        numberLabel.textColor = RDColor.neonGreen
-        numberLabel.font = RDFont.numeric(220, maximumScale: 1)
+        numberLabel.textColor = RDColor.accent
+        numberLabel.font = RDFont.numeric(180, maximumScale: 1)
         numberLabel.adjustsFontSizeToFitWidth = true
         numberLabel.minimumScaleFactor = 0.5
         numberLabel.textAlignment = .center
         numberLabel.translatesAutoresizingMaskIntoConstraints = false
         numberLabel.accessibilityIdentifier = "countdown.number"
-        numberLabel.layer.shadowColor = RDColor.neonGreen.cgColor
+        numberLabel.layer.shadowColor = RDColor.accent.cgColor
         numberLabel.layer.shadowRadius = 24
         numberLabel.layer.shadowOpacity = 0.55
         numberLabel.layer.shadowOffset = .zero
         ring.lineWidth = 10
         ring.setProgress(1, animated: false)
         statusLabel.text = "HOLD YOUR POSITION".rdLocalized
-        statusLabel.textColor = RDColor.warmWhite
+        statusLabel.textColor = RDColor.label
         statusLabel.font = RDFont.title(22)
         statusLabel.numberOfLines = 0
         statusLabel.textAlignment = .center
@@ -80,7 +77,7 @@ final class CountdownViewController: RDBaseViewController {
         let hint = makeLabel(
             text: "Leaving the frame pauses the countdown",
             font: RDFont.caption(weight: .regular),
-            color: RDColor.textSecondary
+            color: RDColor.secondaryLabel
         )
         hint.textAlignment = .center
         let title = makeEyebrow("GET READY · %@".rdLocalizedFormat(exercise.displayName))
@@ -90,8 +87,8 @@ final class CountdownViewController: RDBaseViewController {
         var skipConfiguration = UIButton.Configuration.filled()
         skipConfiguration.title = "SKIP COUNTDOWN".rdLocalized
         skipConfiguration.cornerStyle = .capsule
-        skipConfiguration.baseBackgroundColor = RDColor.warmWhite.withAlphaComponent(0.08)
-        skipConfiguration.baseForegroundColor = RDColor.warmWhite
+        skipConfiguration.baseBackgroundColor = RDColor.label.withAlphaComponent(0.08)
+        skipConfiguration.baseForegroundColor = RDColor.label
         skipConfiguration.contentInsets = NSDirectionalEdgeInsets(top: 14, leading: 22, bottom: 14, trailing: 22)
         skip.configuration = skipConfiguration
         skip.accessibilityIdentifier = "countdown.skip"

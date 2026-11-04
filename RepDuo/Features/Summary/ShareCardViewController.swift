@@ -11,7 +11,7 @@ struct ShareCardContent {
 final class ShareCardViewController: RDBaseViewController {
     private let content: ShareCardContent
     private let card: ShareCardView
-    private var themeButtons: [UIButton] = []
+    private let themeControl = UISegmentedControl()
 
     init(content: ShareCardContent) {
         self.content = content
@@ -23,21 +23,28 @@ final class ShareCardViewController: RDBaseViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = RDColor.backgroundDeep
+        view.backgroundColor = RDColor.background
 
         let close = RDIconButton(symbolName: "xmark", accessibilityLabel: "Close")
         close.accessibilityIdentifier = "share.close"
         close.addAction(UIAction { [weak self] _ in self?.dismiss(animated: true) }, for: .touchUpInside)
-        let title = makeLabel(text: "Share result", font: RDFont.body(weight: .black))
+        let title = makeLabel(text: "Share result", font: RDFont.body(weight: .semibold))
         title.textAlignment = .center
         let spacer = UIView()
         spacer.widthAnchor.constraint(equalToConstant: 44).isActive = true
         let header = UIStackView(axis: .horizontal, spacing: 8, arrangedSubviews: [close, title, spacer])
         header.alignment = .center
 
-        let themes = UIStackView(axis: .horizontal, spacing: 8, arrangedSubviews: ShareCardView.Theme.allCases.map(makeThemeButton))
-        let themesRow = UIStackView(axis: .horizontal, spacing: 0, arrangedSubviews: [UIView(), themes, UIView()])
-        themesRow.distribution = .equalCentering
+        for (index, theme) in ShareCardView.Theme.allCases.enumerated() {
+            themeControl.insertSegment(
+                action: UIAction(title: theme.title.rdLocalized) { [weak self] _ in self?.card.theme = theme },
+                at: index,
+                animated: false
+            )
+        }
+        themeControl.selectedSegmentIndex = 0
+        themeControl.accessibilityIdentifier = "share.theme"
+        let themesRow = themeControl
 
         let save = RDPrimaryButton(title: "Save to Photos", style: .secondary)
         save.accessibilityIdentifier = "share.save"
@@ -62,38 +69,14 @@ final class ShareCardViewController: RDBaseViewController {
             card.widthAnchor.constraint(equalTo: card.heightAnchor, multiplier: ShareCardView.aspectRatio),
             card.widthAnchor.constraint(lessThanOrEqualTo: guide.widthAnchor, constant: -2 * RDLayout.screenMargin),
             card.widthAnchor.constraint(equalTo: guide.widthAnchor, constant: -2 * RDLayout.screenMargin).withPriority(.defaultHigh),
-            themesRow.topAnchor.constraint(equalTo: card.bottomAnchor, constant: 14),
-            themesRow.leadingAnchor.constraint(equalTo: guide.leadingAnchor),
-            themesRow.trailingAnchor.constraint(equalTo: guide.trailingAnchor),
+            themesRow.topAnchor.constraint(equalTo: card.bottomAnchor, constant: 16),
+            themesRow.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: RDLayout.screenMargin),
+            themesRow.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -RDLayout.screenMargin),
             actions.topAnchor.constraint(greaterThanOrEqualTo: themesRow.bottomAnchor, constant: 16),
             actions.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: RDLayout.screenMargin),
             actions.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -RDLayout.screenMargin),
             actions.bottomAnchor.constraint(equalTo: guide.bottomAnchor, constant: -RDSpacing.md)
         ])
-        select(.neon)
-    }
-
-    private func makeThemeButton(_ theme: ShareCardView.Theme) -> UIButton {
-        let button = UIButton(type: .system)
-        var configuration = UIButton.Configuration.filled()
-        configuration.title = theme.title.rdLocalized
-        configuration.cornerStyle = .capsule
-        configuration.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
-        button.configuration = configuration
-        button.tag = ShareCardView.Theme.allCases.firstIndex(of: theme) ?? 0
-        button.addAction(UIAction { [weak self] _ in self?.select(theme) }, for: .touchUpInside)
-        themeButtons.append(button)
-        return button
-    }
-
-    private func select(_ theme: ShareCardView.Theme) {
-        card.theme = theme
-        for button in themeButtons {
-            let isSelected = ShareCardView.Theme.allCases[button.tag] == theme
-            button.configuration?.baseBackgroundColor = isSelected ? RDColor.warmWhite : RDColor.surfaceSecondary
-            button.configuration?.baseForegroundColor = isSelected ? RDColor.background : RDColor.textBody
-            button.accessibilityTraits = isSelected ? [.button, .selected] : .button
-        }
     }
 
     private func renderImage() -> UIImage {
@@ -125,49 +108,57 @@ final class ShareCardViewController: RDBaseViewController {
 }
 
 final class ShareCardView: UIView {
+    /// Exported images keep these colors whatever appearance the phone is in.
     enum Theme: CaseIterable {
-        case neon
-        case night
-        case blaze
+        case accent
+        case light
+        case dark
 
         var title: String {
             switch self {
-            case .neon: return "Neon"
-            case .night: return "Night"
-            case .blaze: return "Blaze"
+            case .accent: return "Green"
+            case .light: return "Light"
+            case .dark: return "Dark"
             }
+        }
+
+        private var traits: UITraitCollection {
+            UITraitCollection(userInterfaceStyle: self == .dark ? .dark : .light)
         }
 
         var background: UIColor {
             switch self {
-            case .neon: return RDColor.neonGreen
-            case .night: return RDColor.surface
-            case .blaze: return RDColor.ember
+            case .accent: return RDColor.accent.resolvedColor(with: traits)
+            case .light, .dark: return RDColor.card.resolvedColor(with: traits)
             }
         }
 
-        var ink: UIColor { self == .night ? RDColor.warmWhite : RDColor.background }
-        var accent: UIColor { self == .night ? RDColor.neonGreen : RDColor.background }
+        var ink: UIColor {
+            self == .accent ? RDColor.onAccent.resolvedColor(with: traits) : RDColor.label.resolvedColor(with: traits)
+        }
+
+        var highlight: UIColor {
+            self == .accent ? ink : RDColor.accent.resolvedColor(with: traits)
+        }
     }
 
     static let aspectRatio: CGFloat = 0.6
 
     private let content: ShareCardContent
-    private let cutMask = CAShapeLayer()
     private let watermark = UILabel()
-    private let headlineTag = RDTag(background: RDColor.background, foreground: RDColor.ember)
+    private let headlineTag = RDTag()
     private var inkLabels: [UILabel] = []
     private var accentLabels: [UILabel] = []
     private let divider = UIView()
     private var wordmarkHost = UIView()
 
-    var theme: Theme = .neon { didSet { applyTheme() } }
+    var theme: Theme = .accent { didSet { applyTheme() } }
 
     init(content: ShareCardContent) {
         self.content = content
         super.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
-        layer.mask = cutMask
+        setContinuousCorners(28)
         clipsToBounds = true
         isAccessibilityElement = true
         accessibilityLabel = "%1$@, %2$d reps".rdLocalizedFormat(content.summary.exercise.displayName, content.summary.repCount)
@@ -179,18 +170,9 @@ final class ShareCardView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        let cut: CGFloat = 24
-        let path = UIBezierPath()
-        path.move(to: .zero)
-        path.addLine(to: CGPoint(x: bounds.maxX, y: 0))
-        path.addLine(to: CGPoint(x: bounds.maxX, y: bounds.maxY - cut))
-        path.addLine(to: CGPoint(x: bounds.maxX - cut, y: bounds.maxY))
-        path.addLine(to: CGPoint(x: 0, y: bounds.maxY))
-        path.close()
-        cutMask.path = path.cgPath
         // Type scales with the card so the exported poster matches the preview.
         let scale = bounds.width / 330
-        countLabel.font = RDFont.numeric(190 * scale, maximumScale: 1)
+        countLabel.font = RDFont.numeric(170 * scale, maximumScale: 1)
         watermark.font = RDFont.numeric(250 * scale, maximumScale: 1)
     }
 
@@ -203,7 +185,7 @@ final class ShareCardView: UIView {
         watermark.isAccessibilityElement = false
         addSubview(watermark)
 
-        let date = label(summary.startedAt.formatted(.dateTime.year().month(.twoDigits).day(.twoDigits)), font: RDFont.numeric(14, weight: .heavy, italic: false))
+        let date = label(summary.startedAt.formatted(.dateTime.year().month(.twoDigits).day(.twoDigits)), font: RDFont.numeric(14, weight: .semibold))
         let top = UIStackView(axis: .horizontal, spacing: 8, arrangedSubviews: [wordmarkHost, UIView(), date])
         top.alignment = .center
 
@@ -216,7 +198,7 @@ final class ShareCardView: UIView {
         countLabel.adjustsFontSizeToFitWidth = true
         countLabel.minimumScaleFactor = 0.4
         inkLabels.append(countLabel)
-        let unit = label("REPS_UNIT".rdLocalized, font: RDFont.title(24))
+        let unit = label("REPS_UNIT".rdLocalized, font: RDFont.title(22))
         let countRow = UIStackView(axis: .horizontal, spacing: 8, arrangedSubviews: [countLabel, unit, UIView()])
         countRow.alignment = .lastBaseline
         let tagline = label(
@@ -226,7 +208,7 @@ final class ShareCardView: UIView {
         tagline.numberOfLines = 2
 
         divider.translatesAutoresizingMaskIntoConstraints = false
-        divider.heightAnchor.constraint(equalToConstant: 2).isActive = true
+        divider.heightAnchor.constraint(equalToConstant: 1).isActive = true
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = [.minute, .second]
         formatter.zeroFormattingBehavior = .pad
@@ -251,7 +233,7 @@ final class ShareCardView: UIView {
 
     private func stat(_ value: String, _ caption: String) -> UIView {
         let valueLabel = label(value, font: RDFont.numeric(30, maximumScale: 1))
-        let captionLabel = label(caption.rdLocalized, font: .systemFont(ofSize: 12, weight: .bold))
+        let captionLabel = label(caption.rdLocalized, font: .systemFont(ofSize: 12, weight: .medium))
         return UIStackView(axis: .vertical, spacing: 2, arrangedSubviews: [valueLabel, captionLabel])
     }
 
@@ -266,20 +248,18 @@ final class ShareCardView: UIView {
     private func applyTheme() {
         backgroundColor = theme.background
         inkLabels.forEach { $0.textColor = theme.ink }
-        countLabel.textColor = theme.accent == RDColor.neonGreen ? RDColor.neonGreen : theme.ink
-        divider.backgroundColor = theme.ink
+        countLabel.textColor = theme.highlight
+        divider.backgroundColor = theme.ink.withAlphaComponent(0.2)
         watermark.textColor = .clear
         watermark.attributedText = NSAttributedString(string: watermark.text ?? "", attributes: [
-            .strokeColor: theme.ink.withAlphaComponent(0.16),
+            .strokeColor: theme.ink.withAlphaComponent(0.1),
             .strokeWidth: 3,
             .font: watermark.font as Any
         ])
-        headlineTag.setColors(
-            background: theme == .night ? RDColor.neonGreen : RDColor.background,
-            foreground: theme == .night ? RDColor.background : (theme == .blaze ? RDColor.warmWhite : RDColor.ember)
-        )
+        headlineTag.setColors(background: theme.highlight.withAlphaComponent(0.16), foreground: theme.highlight)
         wordmarkHost.subviews.forEach { $0.removeFromSuperview() }
-        let wordmark = RDWordmarkView(surface: theme == .night ? .dark : .neon, size: 20)
+        let wordmark = RDWordmarkView(surface: theme == .accent ? .neon : .dark, size: 20)
+        wordmark.overrideUserInterfaceStyle = theme == .dark ? .dark : .light
         wordmarkHost.addSubview(wordmark)
         wordmark.pinEdges(to: wordmarkHost)
     }

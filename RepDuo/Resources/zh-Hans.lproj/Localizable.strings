@@ -382,3 +382,19 @@
 /* Multi-person tracking */
 "Someone else is in view. Still counting only you." = "画面中有其他人，仍只为你计数。";
 "Several people look alike to the camera. Step apart so RepDuo can lock onto you." = "画面中有多人难以区分，请和他人拉开距离，以便锁定你。";
+
+/* Native redesign */
+"Today" = "今天";
+"Pick your move" = "选择动作";
+"%d to go" = "还差 %d 次";
+"Goal reached" = "已达成目标";
+"This week" = "本周";
+"History" = "训练记录";
+"All" = "全部";
+"%@ · set complete" = "%@ · 本组完成";
+"New record · +%d" = "新纪录 · 多 %d 次";
+"Green" = "绿色";
+"Light" = "浅色";
+"Dark" = "深色";
+"%@ vs last week" = "较上周 %@";
+"SETUP" = "摆放手机";

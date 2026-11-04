@@ -46,11 +46,7 @@ final class CameraSetupViewController: RDBaseViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = RDColor.backgroundDeep
-        let clearBar = UINavigationBarAppearance()
-        clearBar.configureWithTransparentBackground()
-        navigationItem.standardAppearance = clearBar
-        navigationItem.scrollEdgeAppearance = clearBar
+        useCameraStageAppearance()
         framingMode = CameraFramingMode.resolved(
             requested: preferences.prefersWideCamera ? .wide : .standard,
             isWideAvailable: pipeline.isWideFramingAvailable
@@ -108,20 +104,20 @@ final class CameraSetupViewController: RDBaseViewController {
     private func configureOverlay() {
         configureFramingButton()
         configureTrackingModeControl()
-        eyebrowLabel.setEyebrow("SETUP", kern: 3)
-        titleLabel.font = RDFont.display(30)
-        titleLabel.textColor = RDColor.warmWhite
+        eyebrowLabel.setEyebrow("SETUP".rdLocalized)
+        titleLabel.font = RDFont.title(28)
+        titleLabel.textColor = RDColor.label
         titleLabel.numberOfLines = 0
         titleLabel.adjustsFontForContentSizeCategory = true
         titleLabel.accessibilityTraits = .header
         renderTrackingMode()
-        statusLabel.textColor = RDColor.textBody
+        statusLabel.textColor = RDColor.label
         statusLabel.font = RDFont.body(weight: .medium)
         statusLabel.numberOfLines = 0
         statusLabel.adjustsFontForContentSizeCategory = true
         statusLabel.text = trackingMode.instruction(for: exercise)
-        progressView.trackTintColor = RDColor.surfaceSecondary
-        progressView.progressTintColor = RDColor.neonGreen
+        progressView.trackTintColor = RDColor.fill
+        progressView.progressTintColor = RDColor.accent
         progressView.layer.cornerRadius = 2
         progressView.clipsToBounds = true
         continueButton.isEnabled = false
@@ -131,7 +127,7 @@ final class CameraSetupViewController: RDBaseViewController {
 
         let manual = UIButton(type: .system)
         manual.setTitle("CONTINUE ANYWAY".rdLocalized, for: .normal)
-        manual.setTitleColor(RDColor.textSecondary, for: .normal)
+        manual.setTitleColor(RDColor.secondaryLabel, for: .normal)
         manual.titleLabel?.font = .systemFont(ofSize: 13, weight: .bold)
         manual.heightAnchor.constraint(greaterThanOrEqualToConstant: 44).isActive = true
         manual.accessibilityHint = "Skips the position check and may reduce counting accuracy.".rdLocalized
@@ -144,18 +140,18 @@ final class CameraSetupViewController: RDBaseViewController {
         view.addSubview(top)
 
         let hand = UIImageView(image: UIImage(systemName: "hand.raised"))
-        hand.tintColor = RDColor.neonGreen
+        hand.tintColor = RDColor.accent
         hand.setContentHuggingPriority(.required, for: .horizontal)
         let gestureHint = makeLabel(
             text: "Raise one hand and hold for a second to start hands-free",
             font: RDFont.caption(weight: .regular),
-            color: RDColor.textSecondary
+            color: RDColor.secondaryLabel
         )
         let hintRow = UIStackView(axis: .horizontal, spacing: 10, arrangedSubviews: [hand, gestureHint])
         hintRow.alignment = .center
         let panel = UIView()
         panel.translatesAutoresizingMaskIntoConstraints = false
-        panel.backgroundColor = RDColor.surface.withAlphaComponent(0.94)
+        panel.backgroundColor = RDColor.card.withAlphaComponent(0.94)
         panel.layer.cornerRadius = RDCornerRadius.medium
         let bottom = UIStackView(
             axis: .vertical,
@@ -181,15 +177,15 @@ final class CameraSetupViewController: RDBaseViewController {
         trackingModeControl.accessibilityIdentifier = "setup.trackingMode"
         trackingModeControl.accessibilityLabel = "Body tracking mode".rdLocalized
         trackingModeControl.accessibilityHint = "Choose accurate full-body tracking or rough partial-body tracking.".rdLocalized
-        trackingModeControl.selectedSegmentTintColor = RDColor.neonGreen
+        trackingModeControl.selectedSegmentTintColor = RDColor.accent
         trackingModeControl.backgroundColor = RDColor.background.withAlphaComponent(0.82)
         trackingModeControl.setTitleTextAttributes([
-            .foregroundColor: RDColor.warmWhite,
+            .foregroundColor: RDColor.label,
             .font: UIFont.systemFont(ofSize: 13, weight: .bold)
         ], for: .normal)
         trackingModeControl.setTitleTextAttributes([
             .foregroundColor: RDColor.background,
-            .font: UIFont.systemFont(ofSize: 13, weight: .black)
+            .font: UIFont.systemFont(ofSize: 13, weight: .semibold)
         ], for: .selected)
         trackingModeControl.heightAnchor.constraint(greaterThanOrEqualToConstant: 44).isActive = true
         trackingModeControl.addAction(UIAction { [weak self] _ in
@@ -235,10 +231,10 @@ final class CameraSetupViewController: RDBaseViewController {
         configuration.title = (isAvailable ? "WIDE" : "WIDE · N/A").rdLocalized
         configuration.image = UIImage(systemName: "arrow.up.left.and.arrow.down.right")
         configuration.imagePadding = 6
-        configuration.background.backgroundColor = isWide ? RDColor.neonGreen : .clear
-        configuration.background.strokeColor = isAvailable ? RDColor.neonGreen : RDColor.separatorStrong
+        configuration.background.backgroundColor = isWide ? RDColor.accent : .clear
+        configuration.background.strokeColor = isAvailable ? RDColor.accent : RDColor.separator
         configuration.background.strokeWidth = 1.5
-        configuration.baseForegroundColor = isWide ? RDColor.background : (isAvailable ? RDColor.neonGreen : RDColor.textMuted)
+        configuration.baseForegroundColor = isWide ? RDColor.background : (isAvailable ? RDColor.accent : RDColor.tertiaryLabel)
         framingButton.configuration = configuration
         framingButton.isEnabled = isAvailable && !isChangingFramingMode
         framingButton.isSelected = isWide
@@ -325,7 +321,7 @@ final class CameraSetupViewController: RDBaseViewController {
         isPositionLocked = true
         continueButton.isEnabled = true
         continueButton.configuration?.title = "POSITION LOCKED · CONTINUE".rdLocalized
-        continueButton.configuration?.image = UIImage(systemName: "arrow.right")
+        continueButton.configuration?.image = nil
         continueButton.configuration?.imagePadding = 8
         statusLabel.text = "Position locked. Raise one hand to continue.".rdLocalized
         UIAccessibility.post(

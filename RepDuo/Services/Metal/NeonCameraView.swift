@@ -60,7 +60,7 @@ final class NeonCameraView: MTKView {
         enableSetNeedsDisplay = true
         isPaused = true
         isOpaque = true
-        backgroundColor = RDColor.backgroundDeep
+        backgroundColor = RDColor.camera
         contentMode = .scaleAspectFill
         if let metalDevice {
             // The glow is already blurred in 8-bit textures, so an 8-bit, gamma-space
@@ -223,8 +223,8 @@ final class NeonCameraView: MTKView {
             let clear = CIColor(red: 0, green: 0, blue: 0, alpha: 0)
             let pulse: Float = now < pulseEndsAt && !UIAccessibility.isReduceMotionEnabled ? 1.3 : 1
             let effectiveIntensity = CGFloat(min(1, intensity * trackingConfidence * Float(fade) * pulse))
-            let green = CIColor(red: 0.71, green: 0.95, blue: 0.04, alpha: effectiveIntensity)
-            let bright = CIColor(red: 0.84, green: 1.0, blue: 0.34, alpha: effectiveIntensity)
+            let green = CIColor(red: 0.19, green: 0.82, blue: 0.35, alpha: effectiveIntensity)
+            let bright = CIColor(red: 0.55, green: 0.93, blue: 0.62, alpha: effectiveIntensity)
             let colorized = edge
                 .applyingFilter("CIFalseColor", parameters: ["inputColor0": clear, "inputColor1": green])
             let inner = edge.applyingFilter(
