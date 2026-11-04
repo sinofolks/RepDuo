@@ -22,6 +22,7 @@ final class WorkoutViewController: RDBaseViewController {
     private let plusOneLabel = UILabel()
     private let flashRing = CAShapeLayer()
     private let promptLabel = UILabel()
+    private var bystandersInView = false
     private let qualityPill = RDStatusPill(text: "TRACKING")
     private let coachScaleView = CoachScaleView()
     private let heartRateLabel = UILabel()
@@ -112,6 +113,7 @@ final class WorkoutViewController: RDBaseViewController {
             self?.debugPoseQuality = frame.quality
             self?.renderDebugPanel()
             #endif
+            self?.bystandersInView = frame.bystanderCount > 0
             self?.session.process(frame)
         }
         pipeline.onRendererQualityChange = { [weak self] quality in self?.session.setRendererQuality(quality) }
@@ -425,7 +427,13 @@ final class WorkoutViewController: RDBaseViewController {
         recordTag.isHidden = !isRecord
         segmentBar.render(filled: state.repCount, total: setTarget, color: tone)
         targetLabel.text = targetText(for: state.repCount)
-        promptLabel.text = state.coachingMessage ?? state.poseQuality.message
+        if let coachingMessage = state.coachingMessage {
+            promptLabel.text = coachingMessage
+        } else if bystandersInView, state.poseQuality.permitsCounting {
+            promptLabel.text = "Someone else is in view. Still counting only you.".rdLocalized
+        } else {
+            promptLabel.text = state.poseQuality.message
+        }
         coachScaleView.render(state.lastRepCoaching)
         let qualityText: String
         switch state.poseQuality {

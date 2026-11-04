@@ -378,3 +378,7 @@
 "Turn on Camera" = "打开「相机」开关";
 "Uploads" = "上传";
 "Video saved" = "视频保存";
+
+/* Multi-person tracking */
+"Someone else is in view. Still counting only you." = "画面中有其他人，仍只为你计数。";
+"Several people look alike to the camera. Step apart so RepDuo can lock onto you." = "画面中有多人难以区分，请和他人拉开距离，以便锁定你。";

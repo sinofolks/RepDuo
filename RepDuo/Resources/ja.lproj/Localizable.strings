@@ -378,3 +378,7 @@
 "Turn on Camera" = "「カメラ」をオンにする";
 "Uploads" = "アップロード";
 "Video saved" = "動画の保存";
+
+/* Multi-person tracking */
+"Someone else is in view. Still counting only you." = "ほかの人が映っていますが、あなただけをカウントしています。";
+"Several people look alike to the camera. Step apart so RepDuo can lock onto you." = "複数の人を区別できません。ほかの人と距離をとってください。";

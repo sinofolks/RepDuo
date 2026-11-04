@@ -97,7 +97,7 @@ enum PoseQuality: Equatable, Sendable {
         case .usable: return "Tracking. Keep the required joints visible.".rdLocalized
         case .unstable: return "Hold steady and improve the light.".rdLocalized
         case .missingRequiredJoints: return "Adjust the phone so the required joints are visible.".rdLocalized
-        case .multiplePeople: return "Only one person can train at a time.".rdLocalized
+        case .multiplePeople: return "Several people look alike to the camera. Step apart so RepDuo can lock onto you.".rdLocalized
         }
     }
 

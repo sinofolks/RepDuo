@@ -378,3 +378,7 @@
 "Turn on Camera" = "Turn on Camera";
 "Uploads" = "Uploads";
 "Video saved" = "Video saved";
+
+/* Multi-person tracking */
+"Someone else is in view. Still counting only you." = "Someone else is in view. Still counting only you.";
+"Several people look alike to the camera. Step apart so RepDuo can lock onto you." = "Several people look alike to the camera. Step apart so RepDuo can lock onto you.";

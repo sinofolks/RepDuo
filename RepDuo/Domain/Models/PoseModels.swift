@@ -34,19 +34,23 @@ struct PoseFrame: Equatable, Sendable {
     let quality: PoseQuality
     let primaryAngle: Double?
     let isFormAcceptable: Bool
+    /// Other people in view who are being ignored while the trainee is tracked.
+    let bystanderCount: Int
 
     init(
         timestamp: TimeInterval,
         joints: [BodyJoint: JointPoint] = [:],
         quality: PoseQuality,
         primaryAngle: Double?,
-        isFormAcceptable: Bool = true
+        isFormAcceptable: Bool = true,
+        bystanderCount: Int = 0
     ) {
         self.timestamp = timestamp
         self.joints = joints
         self.quality = quality
         self.primaryAngle = primaryAngle
         self.isFormAcceptable = isFormAcceptable
+        self.bystanderCount = bystanderCount
     }
 }
 
