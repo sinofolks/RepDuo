@@ -34,6 +34,9 @@ final class NeonCameraView: MTKView {
     private var outerBlur: MPSImageGaussianBlur?
     private let renderingColorSpace = CGColorSpaceCreateDeviceRGB()
     private let maskFadeDuration: TimeInterval = 0.28
+    /// Glows are blurred at this fraction of camera resolution; a wide blur
+    /// removes the detail a full-resolution pass would preserve.
+    private let glowScale: CGFloat = 0.5
     private var pulseEndsAt: TimeInterval = 0
 
     var intensity: Float = 0.85
@@ -60,11 +63,19 @@ final class NeonCameraView: MTKView {
         backgroundColor = RDColor.backgroundDeep
         contentMode = .scaleAspectFill
         if let metalDevice {
-            context = CIContext(mtlDevice: metalDevice)
+            // The glow is already blurred in 8-bit textures, so an 8-bit, gamma-space
+            // pipeline halves bandwidth without visible banding. Frames are never
+            // re-rendered, so caching intermediates only costs memory.
+            context = CIContext(mtlDevice: metalDevice, options: [
+                .workingFormat: CIFormat.RGBA8,
+                .workingColorSpace: CGColorSpace(name: CGColorSpace.sRGB) as Any,
+                .cacheIntermediates: false
+            ])
             commandQueue = metalDevice.makeCommandQueue()
-            balancedBlur = MPSImageGaussianBlur(device: metalDevice, sigma: 12)
-            lowPowerBlur = MPSImageGaussianBlur(device: metalDevice, sigma: 7)
-            outerBlur = MPSImageGaussianBlur(device: metalDevice, sigma: 24)
+            // Sigmas are in glow-texture pixels, which are `glowScale` of camera pixels.
+            balancedBlur = MPSImageGaussianBlur(device: metalDevice, sigma: Float(12 * glowScale))
+            lowPowerBlur = MPSImageGaussianBlur(device: metalDevice, sigma: Float(7 * glowScale))
+            outerBlur = MPSImageGaussianBlur(device: metalDevice, sigma: Float(24 * glowScale))
             balancedBlur?.edgeMode = .clamp
             lowPowerBlur?.edgeMode = .clamp
             outerBlur?.edgeMode = .clamp
@@ -171,15 +182,18 @@ final class NeonCameraView: MTKView {
                 scaleX: camera.extent.width / max(mask.extent.width, 1),
                 y: camera.extent.height / max(mask.extent.height, 1)
             )
+            // Close small holes at the segmentation's own resolution, which is a
+            // fraction of the camera's, then upscale once. Bilinear upscaling
+            // also gives the blend mask its soft edge.
+            let closingRadius = max(1, (2 / maskScale.a).rounded())
             let fullMask = mask
+                .applyingFilter("CIMorphologyMaximum", parameters: [kCIInputRadiusKey: closingRadius])
+                .applyingFilter("CIMorphologyMinimum", parameters: [kCIInputRadiusKey: closingRadius])
+                .cropped(to: mask.extent)
+                .clampedToExtent()
                 .transformed(by: maskScale)
                 .cropped(to: camera.extent)
-                .applyingFilter("CIMorphologyMaximum", parameters: [kCIInputRadiusKey: 2.0])
-                .applyingFilter("CIMorphologyMinimum", parameters: [kCIInputRadiusKey: 2.0])
             let softenedPersonMask = fullMask
-                .clampedToExtent()
-                .applyingFilter("CIGaussianBlur", parameters: [kCIInputRadiusKey: 0.8])
-                .cropped(to: camera.extent)
             let isolatedPerson = camera.applyingFilter(
                 "CIBlendWithMask",
                 parameters: [
@@ -272,14 +286,16 @@ final class NeonCameraView: MTKView {
         commandBuffer: MTLCommandBuffer,
         includeOuter: Bool
     ) -> (main: CIImage, outer: CIImage?)? {
-        let width = Int(extent.width.rounded(.up))
-        let height = Int(extent.height.rounded(.up))
+        let downscale = CGAffineTransform(scaleX: glowScale, y: glowScale)
+        let glowExtent = extent.applying(downscale)
+        let width = Int(glowExtent.width.rounded(.up))
+        let height = Int(glowExtent.height.rounded(.up))
         guard let textures = textures(width: width, height: height) else { return nil }
         context.render(
-            colorized,
+            colorized.transformed(by: downscale),
             to: textures.source,
             commandBuffer: commandBuffer,
-            bounds: extent,
+            bounds: CGRect(x: glowExtent.minX, y: glowExtent.minY, width: CGFloat(width), height: CGFloat(height)),
             colorSpace: renderingColorSpace
         )
         let blur = rendererQuality == .lowPower ? lowPowerBlur : balancedBlur
@@ -298,13 +314,14 @@ final class NeonCameraView: MTKView {
         }
 
         let options: [CIImageOption: Any] = [.colorSpace: renderingColorSpace]
-        guard let main = CIImage(mtlTexture: textures.main, options: options)?.cropped(to: extent) else {
-            return nil
+        // Textures start at the origin; move them back to the extent at camera scale.
+        let upscale = CGAffineTransform(scaleX: 1 / glowScale, y: 1 / glowScale)
+            .translatedBy(x: glowExtent.minX, y: glowExtent.minY)
+        func restore(_ texture: MTLTexture) -> CIImage? {
+            CIImage(mtlTexture: texture, options: options)?.transformed(by: upscale).cropped(to: extent)
         }
-        let outer = includeOuter
-            ? CIImage(mtlTexture: textures.outer, options: options)?.cropped(to: extent)
-            : nil
-        return (main, outer)
+        guard let main = restore(textures.main) else { return nil }
+        return (main, includeOuter ? restore(textures.outer) : nil)
     }
 
     private func textures(width: Int, height: Int) -> GlowTextures? {
