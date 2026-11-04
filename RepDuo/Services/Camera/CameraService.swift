@@ -1,4 +1,5 @@
 import AVFoundation
+import UIKit
 import os
 
 protocol CameraServiceDelegate: AnyObject {
@@ -54,7 +55,9 @@ final class CameraService: NSObject {
     private var cameraPosition: AVCaptureDevice.Position = .unspecified
     private var activeInput: AVCaptureDeviceInput?
     private var activeFramingMode: CameraFramingMode = .standard
-    private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
+    private var fallbackVideoOrientation: AVCaptureVideoOrientation = .portrait
+    // Stored as an untyped object so the service itself remains loadable on iOS 15/16.
+    private var rotationCoordinator: AnyObject?
     private var rotationObservation: NSKeyValueObservation?
 
     var isWideFramingAvailable: Bool {
@@ -66,6 +69,8 @@ final class CameraService: NSObject {
 
     override init() {
         super.init()
+        fallbackVideoOrientation = Self.videoOrientation(for: UIDevice.current.orientation) ?? .portrait
+        UIDevice.current.beginGeneratingDeviceOrientationNotifications()
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(sessionInterrupted(_:)),
@@ -84,10 +89,17 @@ final class CameraService: NSObject {
             name: AVCaptureSession.interruptionEndedNotification,
             object: session
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(deviceOrientationDidChange(_:)),
+            name: UIDevice.orientationDidChangeNotification,
+            object: nil
+        )
     }
 
     deinit {
         rotationObservation?.invalidate()
+        UIDevice.current.endGeneratingDeviceOrientationNotifications()
         NotificationCenter.default.removeObserver(self)
     }
 
@@ -302,36 +314,72 @@ final class CameraService: NSObject {
 
     private func configureRotationCoordinator(for device: AVCaptureDevice) {
         rotationObservation?.invalidate()
+        rotationObservation = nil
 
-        let coordinator = AVCaptureDevice.RotationCoordinator(device: device, previewLayer: nil)
-        rotationCoordinator = coordinator
-        rotationObservation = coordinator.observe(
-            \.videoRotationAngleForHorizonLevelCapture,
-            options: [.new]
-        ) { [weak self] coordinator, _ in
-            let angle = coordinator.videoRotationAngleForHorizonLevelCapture
-            self?.sessionQueue.async { [weak self, weak coordinator] in
-                guard let self,
-                      let coordinator,
-                      self.rotationCoordinator === coordinator else { return }
-                self.updateConnectionConfiguration(rotationAngle: angle)
+        if #available(iOS 17.0, *) {
+            let coordinator = AVCaptureDevice.RotationCoordinator(device: device, previewLayer: nil)
+            rotationCoordinator = coordinator
+            rotationObservation = coordinator.observe(
+                \.videoRotationAngleForHorizonLevelCapture,
+                options: [.new]
+            ) { [weak self] coordinator, _ in
+                let angle = coordinator.videoRotationAngleForHorizonLevelCapture
+                self?.sessionQueue.async { [weak self, weak coordinator] in
+                    guard let self,
+                          let coordinator,
+                          self.rotationCoordinator === coordinator else { return }
+                    self.updateConnectionConfiguration(rotationAngle: angle)
+                }
             }
         }
     }
 
     private func updateConnectionConfiguration(rotationAngle: CGFloat? = nil) {
         guard let connection = output.connection(with: .video) else { return }
-        let resolvedAngle = rotationAngle
-            ?? rotationCoordinator?.videoRotationAngleForHorizonLevelCapture
-            ?? 0
-        if connection.isVideoRotationAngleSupported(resolvedAngle) {
-            connection.videoRotationAngle = resolvedAngle
+        if #available(iOS 17.0, *) {
+            let resolvedAngle = rotationAngle
+                ?? (rotationCoordinator as? AVCaptureDevice.RotationCoordinator)?.videoRotationAngleForHorizonLevelCapture
+                ?? 0
+            if connection.isVideoRotationAngleSupported(resolvedAngle) {
+                connection.videoRotationAngle = resolvedAngle
+            } else {
+                logger.notice("Camera rotation angle is unsupported: \(resolvedAngle, privacy: .public)")
+            }
+        } else if connection.isVideoOrientationSupported {
+            connection.videoOrientation = fallbackVideoOrientation
         } else {
-            logger.notice("Camera rotation angle is unsupported: \(resolvedAngle, privacy: .public)")
+            logger.notice("Camera video orientation is unsupported")
         }
         connection.automaticallyAdjustsVideoMirroring = false
         if connection.isVideoMirroringSupported {
             connection.isVideoMirrored = cameraPosition == .front && mirrorFrontCamera
+        }
+    }
+
+    @objc private func deviceOrientationDidChange(_ notification: Notification) {
+        guard let videoOrientation = Self.videoOrientation(for: UIDevice.current.orientation) else { return }
+        sessionQueue.async { [weak self] in
+            guard let self else { return }
+            self.fallbackVideoOrientation = videoOrientation
+            if #unavailable(iOS 17.0) {
+                self.updateConnectionConfiguration()
+            }
+        }
+    }
+
+    private static func videoOrientation(for deviceOrientation: UIDeviceOrientation) -> AVCaptureVideoOrientation? {
+        switch deviceOrientation {
+        case .portrait:
+            return .portrait
+        case .portraitUpsideDown:
+            return .portraitUpsideDown
+        // Device and video orientation use opposite landscape directions.
+        case .landscapeLeft:
+            return .landscapeRight
+        case .landscapeRight:
+            return .landscapeLeft
+        default:
+            return nil
         }
     }
 

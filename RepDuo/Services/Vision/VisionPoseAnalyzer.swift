@@ -43,7 +43,6 @@ final class VisionPoseAnalyzer {
         request.outputPixelFormat = kCVPixelFormatType_OneComponent8
         return request
     }()
-    private let instanceMaskRequest = VNGeneratePersonInstanceMaskRequest()
     private let calibrator = SilhouetteCalibrator()
     private var silhouette: SkinnedSilhouette?
     private var silhouetteVersion = 0
@@ -148,18 +147,20 @@ final class VisionPoseAnalyzer {
     }
 
     /// With one person in view the cheaper whole-scene segmentation is enough.
-    /// With several, per-instance masks keep the neon glow on the trainee only.
+    /// iOS 17+ can isolate the trainee in a multi-person frame. iOS 15/16 keep
+    /// the background effect with whole-scene segmentation while the tracker
+    /// still prevents another person from advancing the repetition count.
     private func personMask(handler: VNImageRequestHandler, target: PoseCandidate?, isolateTarget: Bool) -> CVPixelBuffer? {
-        if isolateTarget {
-            guard let target else { return nil }
+        if #available(iOS 17.0, *), isolateTarget, let target {
             do {
+                let instanceMaskRequest = VNGeneratePersonInstanceMaskRequest()
                 try handler.perform([instanceMaskRequest])
-                guard let observation = instanceMaskRequest.results?.first,
-                      let instance = Self.instance(containing: target, in: observation.instanceMask) else { return nil }
-                return try observation.generateMask(forInstances: IndexSet(integer: instance))
+                if let observation = instanceMaskRequest.results?.first,
+                   let instance = Self.instance(containing: target, in: observation.instanceMask) {
+                    return try observation.generateMask(forInstances: IndexSet(integer: instance))
+                }
             } catch {
                 segmentationLogger.error("Person instance mask failed: \(error.localizedDescription, privacy: .public)")
-                return nil
             }
         }
         do {

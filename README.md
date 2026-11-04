@@ -5,7 +5,7 @@ Native UIKit iPhone app for camera-based squat and push-up counting. The MVP kee
 ## Requirements
 
 - Xcode 26 or newer, with an iOS Simulator Runtime matching the active SDK
-- iOS 17 or newer
+- iOS 15 or newer
 - XcodeGen (`brew install xcodegen`)
 
 ## Generate and build

@@ -185,10 +185,19 @@ private final class RDLogoMarkView: UIView {
         isOpaque = false
         isUserInteractionEnabled = false
         translatesAutoresizingMaskIntoConstraints = false
-        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _) in view.setNeedsDisplay() }
+        if #available(iOS 17.0, *) {
+            registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _) in view.setNeedsDisplay() }
+        }
     }
 
     required init?(coder: NSCoder) { nil }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if #unavailable(iOS 17.0), traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            setNeedsDisplay()
+        }
+    }
 
     override func draw(_ rect: CGRect) {
         guard let context = UIGraphicsGetCurrentContext(), rect.width > 0, rect.height > 0 else { return }
@@ -365,7 +374,16 @@ final class RDRingView: UIView {
         }
         progressLayer.strokeEnd = 0
         updateColors()
-        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _) in view.updateColors() }
+        if #available(iOS 17.0, *) {
+            registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _) in view.updateColors() }
+        }
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if #unavailable(iOS 17.0), traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            updateColors()
+        }
     }
 
     private func updateColors() {
@@ -454,10 +472,19 @@ final class RDBlockView: UIView {
         isOpaque = false
         backgroundColor = .clear
         contentMode = .redraw
-        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _) in view.setNeedsDisplay() }
+        if #available(iOS 17.0, *) {
+            registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _) in view.setNeedsDisplay() }
+        }
     }
 
     required init?(coder: NSCoder) { nil }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if #unavailable(iOS 17.0), traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            setNeedsDisplay()
+        }
+    }
 
     override func draw(_ rect: CGRect) {
         fillColor.setFill()
@@ -505,10 +532,19 @@ final class RDHeatmapView: UIView {
         grid.distribution = .fillEqually
         addSubview(grid)
         grid.pinEdges(to: self)
-        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _) in view.updateTodayBorder() }
+        if #available(iOS 17.0, *) {
+            registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _) in view.updateTodayBorder() }
+        }
     }
 
     required init?(coder: NSCoder) { nil }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if #unavailable(iOS 17.0), traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            updateTodayBorder()
+        }
+    }
 
     private func updateTodayBorder() {
         todayCell?.layer.borderColor = RDColor.label.resolvedColor(with: traitCollection).cgColor
@@ -680,10 +716,19 @@ final class RDExerciseCard: UIControl {
         accessibilityTraits = .button
         setPersonalBest(0)
         updateAppearance()
-        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _) in view.updateAppearance() }
+        if #available(iOS 17.0, *) {
+            registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _) in view.updateAppearance() }
+        }
     }
 
     required init?(coder: NSCoder) { nil }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if #unavailable(iOS 17.0), traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            updateAppearance()
+        }
+    }
 
     override var isSelected: Bool {
         didSet { updateAppearance() }
