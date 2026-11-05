@@ -383,22 +383,6 @@
 "Someone else is in view. Still counting only you." = "ほかの人が映っていますが、あなただけをカウントしています。";
 "Several people look alike to the camera. Step apart so RepDuo can lock onto you." = "複数の人を区別できません。ほかの人と距離をとってください。";
 
-/* Native redesign */
-"Today" = "今日";
-"Pick your move" = "種目を選ぶ";
-"%d to go" = "あと %d 回";
-"Goal reached" = "目標達成";
-"This week" = "今週";
-"History" = "履歴";
-"All" = "すべて";
-"%@ · set complete" = "%@ · セット完了";
-"New record · +%d" = "自己ベスト更新 · +%d";
-"Green" = "グリーン";
-"Light" = "ライト";
-"Dark" = "ダーク";
-"%@ vs last week" = "先週比 %@";
-"SETUP" = "セットアップ";
-
 /* Rep rewards */
 "Perfect" = "パーフェクト";
 "Great" = "グレート";

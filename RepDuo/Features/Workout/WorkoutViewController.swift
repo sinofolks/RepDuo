@@ -15,9 +15,9 @@ final class WorkoutViewController: RDBaseViewController {
     private let personalBest: Int
     private let exerciseLabel = UILabel()
     private let repLabel = RDNumberLabel()
-    private let phaseTag = RDTag(background: RDColor.fill, foreground: RDColor.label)
-    private let recordTag = RDTag(text: "NEW RECORD", symbolName: "star.fill", background: RDColor.accent, foreground: RDColor.onAccent)
-    private let comboTag = RDTag(background: RDColor.accent, foreground: RDColor.onAccent)
+    private let phaseTag = RDTag(background: RDColor.warmWhite)
+    private let recordTag = RDTag(text: "NEW RECORD", background: RDColor.ember)
+    private let comboTag = RDTag(background: RDColor.neonGreen)
     private let starBar = RDStarProgressView()
     private let targetLabel = UILabel()
     private let ratingLabel = UILabel()
@@ -32,11 +32,11 @@ final class WorkoutViewController: RDBaseViewController {
         symbolName: "pause.fill",
         accessibilityLabel: "PAUSE",
         diameter: 64,
-        background: RDColor.fill
+        background: RDColor.surfaceSecondary
     )
     private let finishButton = RDPrimaryButton(title: "FINISH SET", symbolName: "checkmark")
     private let pausedPanel = UIView()
-    private let pausedRepsTile = RDStatTile(caption: "Completed", filled: false)
+    private let pausedRepsTile = RDStatTile(caption: "Completed", valueColor: RDColor.neonGreen, filled: false)
     private let pausedRemainingTile = RDStatTile(caption: "To target", filled: false)
     private let pausedScoreTile = RDStatTile(caption: "AI score", filled: false)
     private var topStack: UIStackView!
@@ -102,7 +102,7 @@ final class WorkoutViewController: RDBaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.hidesBackButton = true
-        useCameraStageAppearance()
+        view.backgroundColor = RDColor.backgroundDeep
         configureCameraSurface()
         configureOverlay()
         bindSession()
@@ -182,17 +182,17 @@ final class WorkoutViewController: RDBaseViewController {
     }
 
     private func configureOverlay() {
-        exerciseLabel.setEyebrow(session.exercise.displayName, color: RDColor.secondaryLabel)
-        repLabel.textColor = RDColor.accent
+        exerciseLabel.setEyebrow(session.exercise.displayName, color: RDColor.textSecondary)
+        repLabel.textColor = RDColor.neonGreen
         repLabel.textAlignment = .center
         repLabel.adjustsFontSizeToFitWidth = true
         repLabel.minimumScaleFactor = 0.4
         repLabel.accessibilityIdentifier = "workout.repCount"
-        repLabel.layer.shadowColor = UIColor.black.cgColor
-        repLabel.layer.shadowRadius = 12
-        repLabel.layer.shadowOpacity = 0.5
+        repLabel.layer.shadowColor = RDColor.neonGreen.cgColor
+        repLabel.layer.shadowRadius = 22
+        repLabel.layer.shadowOpacity = 0.4
         repLabel.layer.shadowOffset = .zero
-        ratingLabel.font = RDFont.numeric(40, weight: .heavy, maximumScale: 1)
+        ratingLabel.font = RDFont.numeric(48, maximumScale: 1)
         ratingLabel.textAlignment = .center
         ratingLabel.alpha = 0
         ratingLabel.isAccessibilityElement = false
@@ -205,19 +205,19 @@ final class WorkoutViewController: RDBaseViewController {
         flashRing.lineWidth = 3
         flashRing.opacity = 0
 
-        heartRateLabel.textColor = RDColor.accent
-        heartRateLabel.font = RDFont.numeric(17, weight: .semibold)
+        heartRateLabel.textColor = RDColor.ember
+        heartRateLabel.font = RDFont.numeric(20, weight: .bold, italic: false)
         heartRateLabel.textAlignment = .right
         heartRateLabel.isHidden = true
-        audioRouteLabel.textColor = RDColor.label
+        audioRouteLabel.textColor = RDColor.warmWhite
         audioRouteLabel.font = .systemFont(ofSize: 11, weight: .bold)
         audioRouteLabel.textAlignment = .right
         audioRouteLabel.numberOfLines = 2
         audioRouteLabel.isHidden = true
 
-        promptLabel.textColor = RDColor.label
+        promptLabel.textColor = RDColor.warmWhite
         promptLabel.font = UIFontMetrics(forTextStyle: .headline).scaledFont(
-            for: .systemFont(ofSize: 17, weight: .semibold),
+            for: .systemFont(ofSize: 18, weight: .black),
             maximumPointSize: 26
         )
         promptLabel.textAlignment = .center
@@ -253,14 +253,14 @@ final class WorkoutViewController: RDBaseViewController {
         countStack = count
 
         let countCaption = UILabel()
-        countCaption.setEyebrow("REPS".rdLocalized)
+        countCaption.setEyebrow("REPS".rdLocalized, kern: 3)
         countCaption.isAccessibilityElement = false
         recordTag.isHidden = true
         comboTag.isHidden = true
         let tags = UIStackView(axis: .horizontal, spacing: 10, arrangedSubviews: [countCaption, phaseTag, comboTag, recordTag])
         tags.alignment = .center
         targetLabel.font = RDFont.caption(weight: .medium)
-        targetLabel.textColor = RDColor.label
+        targetLabel.textColor = RDColor.textBody
         targetLabel.adjustsFontForContentSizeCategory = true
         targetLabel.textAlignment = .center
         infoStack = UIStackView(axis: .vertical, spacing: 10, arrangedSubviews: [tags, starBar, targetLabel])
@@ -334,7 +334,7 @@ final class WorkoutViewController: RDBaseViewController {
     }
 
     private func configurePausedPanel() {
-        pausedPanel.backgroundColor = RDColor.card
+        pausedPanel.backgroundColor = RDColor.surface
         pausedPanel.layer.cornerRadius = RDCornerRadius.large
         pausedPanel.translatesAutoresizingMaskIntoConstraints = false
         pausedPanel.isHidden = true
@@ -345,8 +345,8 @@ final class WorkoutViewController: RDBaseViewController {
             systemName: "pause.fill",
             withConfiguration: UIImage.SymbolConfiguration(pointSize: 16, weight: .bold)
         ))
-        icon.tintColor = RDColor.label
-        icon.backgroundColor = RDColor.fill
+        icon.tintColor = RDColor.warmWhite
+        icon.backgroundColor = RDColor.surfaceSecondary
         icon.contentMode = .center
         icon.layer.cornerRadius = 22
         icon.translatesAutoresizingMaskIntoConstraints = false
@@ -356,12 +356,12 @@ final class WorkoutViewController: RDBaseViewController {
         ])
         let title = UILabel()
         title.text = "SET PAUSED".rdLocalized
-        title.textColor = RDColor.label
+        title.textColor = RDColor.warmWhite
         title.font = RDFont.title(24)
         title.adjustsFontForContentSizeCategory = true
         let message = UILabel()
         message.text = "Tracking is frozen. Resume when you are in position.".rdLocalized
-        message.textColor = RDColor.secondaryLabel
+        message.textColor = RDColor.textSecondary
         message.font = RDFont.caption(weight: .regular)
         message.numberOfLines = 0
         message.adjustsFontForContentSizeCategory = true
@@ -387,8 +387,8 @@ final class WorkoutViewController: RDBaseViewController {
 
     private func wrapTile(_ tile: RDStatTile) -> UIView {
         let container = UIView()
-        container.backgroundColor = RDColor.fill
-        container.setContinuousCorners(RDCornerRadius.small)
+        container.backgroundColor = RDColor.background
+        container.layer.cornerRadius = RDCornerRadius.small
         container.addSubview(tile)
         tile.pinEdges(to: container, insets: NSDirectionalEdgeInsets(top: 10, leading: 12, bottom: 10, trailing: 12))
         return container
@@ -422,18 +422,16 @@ final class WorkoutViewController: RDBaseViewController {
 
     private func render(_ state: WorkoutViewState) {
         let isRecord = personalBest > 0 && state.repCount > personalBest
-        let tone = isRecord ? RDColor.accent : RDColor.label
+        let tone = isRecord ? RDColor.ember : RDColor.neonGreen
         repLabel.text = String(state.repCount)
         repLabel.textColor = tone
-        repLabel.layer.shadowColor = UIColor.black.cgColor
+        repLabel.layer.shadowColor = tone.cgColor
         phaseTag.text = state.phase.displayName
         recordTag.isHidden = !isRecord
         starBar.render(progress: state.starProgress, animated: true)
         let combo = state.reward?.combo ?? 0
         if combo >= 2 { comboTag.text = "×%d combo".rdLocalizedFormat(combo) }
-        if comboTag.isHidden != (combo < 2) {
-            UIView.animate(withDuration: 0.2) { self.comboTag.isHidden = combo < 2 }
-        }
+        comboTag.isHidden = combo < 2
         targetLabel.text = targetText(for: state.repCount)
         if let coachingMessage = state.coachingMessage {
             promptLabel.text = coachingMessage
@@ -454,7 +452,7 @@ final class WorkoutViewController: RDBaseViewController {
         if state.isPaused {
             qualityPill.update(text: "TRACKING STOPPED".rdLocalized, tone: RDColor.warning)
         } else {
-            qualityPill.update(text: qualityText, tone: state.poseQuality.permitsCounting ? RDColor.accent : RDColor.warning)
+            qualityPill.update(text: qualityText, tone: state.poseQuality.permitsCounting ? RDColor.neonGreen : RDColor.warning)
         }
         switch state.rendererQuality {
         case .high: cameraView.intensity = preferences.neonIntensity
@@ -481,8 +479,8 @@ final class WorkoutViewController: RDBaseViewController {
         }
         pauseButton.setSymbol(state.isPaused ? "play.fill" : "pause.fill")
         pauseButton.accessibilityLabel = (state.isPaused ? "RESUME" : "PAUSE").rdLocalized
-        pauseButton.configuration?.baseBackgroundColor = state.isPaused ? RDColor.accent : RDColor.fill
-        pauseButton.configuration?.baseForegroundColor = state.isPaused ? RDColor.background : RDColor.label
+        pauseButton.configuration?.baseBackgroundColor = state.isPaused ? RDColor.neonGreen : RDColor.surfaceSecondary
+        pauseButton.configuration?.baseForegroundColor = state.isPaused ? RDColor.background : RDColor.warmWhite
         if state.repCount > lastAnnouncedRep {
             lastAnnouncedRep = state.repCount
             UIAccessibility.post(notification: .announcement, argument: "%d reps".rdLocalizedFormat(state.repCount))
@@ -513,7 +511,7 @@ final class WorkoutViewController: RDBaseViewController {
         NSLayoutConstraint.deactivate(useLandscape ? portraitConstraints : landscapeConstraints)
         NSLayoutConstraint.activate(useLandscape ? landscapeConstraints : portraitConstraints)
         coachScaleView.setCompactLayout(useLandscape)
-        repLabel.font = RDFont.numeric(useLandscape ? 120 : 160, maximumScale: 1)
+        repLabel.font = RDFont.numeric(useLandscape ? 150 : 240, maximumScale: 1)
         view.layoutIfNeeded()
     }
 
@@ -547,7 +545,7 @@ final class WorkoutViewController: RDBaseViewController {
         let isGold = reward?.isGold ?? false
         feedback.repCompleted(isGold: isGold)
         cameraView.triggerCompletionPulse(gold: isGold)
-        pulseCounter(highlight: isGold ? RDColor.reward : RDColor.accent)
+        pulseCounter(highlight: isGold ? RDColor.reward : RDColor.warmWhite)
         if let reward { showRating(reward) }
         if reward?.earnedStar == true, let stars = reward?.stars {
             UIAccessibility.post(notification: .announcement, argument: "%d of 5 stars".rdLocalizedFormat(stars))
@@ -563,7 +561,7 @@ final class WorkoutViewController: RDBaseViewController {
         if reward.isGold {
             ratingLabel.textColor = RDColor.reward
         } else {
-            ratingLabel.textColor = reward.rating == .good ? RDColor.label : RDColor.accent
+            ratingLabel.textColor = reward.rating == .good ? RDColor.warmWhite : RDColor.neonGreen
         }
         ratingLabel.layer.removeAllAnimations()
         guard !UIAccessibility.isReduceMotionEnabled else {
@@ -600,7 +598,7 @@ final class WorkoutViewController: RDBaseViewController {
     }
 
     private func pulseCounter(highlight: UIColor) {
-        let tone = repLabel.textColor ?? RDColor.label
+        let tone = repLabel.textColor ?? RDColor.neonGreen
         repLabel.textColor = highlight
         guard !UIAccessibility.isReduceMotionEnabled else {
             UIView.transition(with: repLabel, duration: 0.2, options: .transitionCrossDissolve) {
@@ -673,7 +671,7 @@ final class WorkoutViewController: RDBaseViewController {
     #if DEBUG
     private func configureDebugPanel() {
         debugLabel.font = .monospacedSystemFont(ofSize: 9, weight: .medium)
-        debugLabel.textColor = RDColor.accent
+        debugLabel.textColor = RDColor.neonBright
         debugLabel.backgroundColor = RDColor.background.withAlphaComponent(0.78)
         debugLabel.numberOfLines = 0
         debugLabel.layer.cornerRadius = 8

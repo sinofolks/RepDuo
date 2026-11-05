@@ -4,11 +4,11 @@ final class GearCheckViewController: RDBaseViewController {
     private let watchService: WatchStatusService
     private let audioService: AudioRouteService
     private let preferences: AppPreferences
-    private let watchCard = RDDeviceStatusCard(symbol: "applewatch", title: "Apple Watch", iconTint: RDColor.accent)
+    private let watchCard = RDDeviceStatusCard(symbol: "applewatch", title: "Apple Watch", iconTint: RDColor.ember)
     private let audioCard = RDDeviceStatusCard(symbol: "headphones", title: "Audio output")
-    private let cameraCard = RDDeviceStatusCard(symbol: "camera", title: "Camera counting", iconTint: RDColor.accent)
+    private let cameraCard = RDDeviceStatusCard(symbol: "camera", title: "Camera counting", iconTint: RDColor.neonGreen)
     private let refreshButton = RDPrimaryButton(title: "SCAN AGAIN", style: .secondary)
-    private let continueButton = RDPrimaryButton(title: "CONTINUE")
+    private let continueButton = RDPrimaryButton(title: "CONTINUE", symbolName: "arrow.right")
     private var didFinishInitialRefresh = false
 
     var onContinue: (() -> Void)?
@@ -29,13 +29,13 @@ final class GearCheckViewController: RDBaseViewController {
         footer.distribution = .fill
         continueButton.widthAnchor.constraint(equalTo: refreshButton.widthAnchor, multiplier: 1.4).isActive = true
         let (_, stack) = makeScrollableContent(pinnedFooter: footer)
-        let eyebrow = makeEyebrow("PRE-WORKOUT · OPTIONAL")
-        let title = makeLabel(text: "GEAR\nCHECK.", font: RDFont.title(34))
+        let eyebrow = makeEyebrow("PRE-WORKOUT · OPTIONAL", color: RDColor.neonGreen)
+        let title = makeLabel(text: "GEAR\nCHECK.", font: RDFont.display(44))
         title.accessibilityTraits = .header
         let body = makeLabel(
             text: "Pair a Watch for heart rate and wear headphones for voice cues. Neither is required to train.",
             font: RDFont.body(),
-            color: RDColor.secondaryLabel
+            color: RDColor.textSecondary
         )
         refreshButton.addAction(UIAction { [weak self] _ in self?.refresh() }, for: .touchUpInside)
         continueButton.accessibilityIdentifier = "gear.continue"

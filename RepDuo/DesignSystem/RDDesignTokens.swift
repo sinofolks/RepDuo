@@ -1,34 +1,28 @@
 import UIKit
 
 enum RDColor {
-    /// Grouped screen background.
-    static let background = dynamic(light: 0xF2F2F7, dark: 0x000000)
-    /// Cards and grouped rows on `background`.
-    static let card = dynamic(light: 0xFFFFFF, dark: 0x1C1C1E)
-    /// Tracks, unfilled bars, and inset controls.
-    static let fill = dynamic(light: 0xE5E5EA, dark: 0x2C2C2E)
-    static let label = dynamic(light: 0x000000, dark: 0xFFFFFF)
-    static let secondaryLabel = dynamic(light: 0x6C6C70, dark: 0x98989F)
-    /// Non-essential text only; it does not meet 4.5:1 on cards.
-    static let tertiaryLabel = dynamic(light: 0x8A8A8E, dark: 0x7C7C82)
-    static let separator = dynamic(light: 0xC6C6C8, dark: 0x38383A)
-    /// The app's one accent: primary actions, progress, active state.
-    static let accent = dynamic(light: 0x248A3D, dark: 0x30D158)
-    /// Text and symbols drawn on `accent`.
-    static let onAccent = dynamic(light: 0xFFFFFF, dark: 0x000000)
-    static let accentTint = UIColor { traits in
-        accent.resolvedColor(with: traits).withAlphaComponent(traits.userInterfaceStyle == .dark ? 0.2 : 0.12)
-    }
-    /// Camera stages stay black in either appearance.
-    static let camera = UIColor(hex: 0x000000)
+    static let background = UIColor(hex: 0x07080A)
+    /// Camera stages: pure black so the neon body reads as the only light source.
+    static let backgroundDeep = UIColor(hex: 0x000000)
+    static let surface = UIColor(hex: 0x111317)
+    static let surfaceRaised = UIColor(hex: 0x15171B)
+    static let surfaceSecondary = UIColor(hex: 0x1E2126)
+    static let neonGreen = UIColor(hex: 0xC8FF1F)
+    static let neonBright = UIColor(hex: 0xE2FF7A)
+    /// Selected-card fill behind lime content.
+    static let neonTint = UIColor(hex: 0x12160A)
+    /// Streaks, personal bests, and heart rate.
+    static let ember = UIColor(hex: 0xFF6A2B)
+    static let warmWhite = UIColor(hex: 0xF5F6F2)
+    static let textBody = UIColor(hex: 0xC9CCD1)
+    static let textSecondary = UIColor(hex: 0x9CA1A9)
+    static let textMuted = UIColor(hex: 0x80868F)
+    static let separatorOnDark = UIColor(hex: 0x262A31)
+    static let separatorStrong = UIColor(hex: 0x3A3F47)
     /// Reward moments only: gold reps and earned stars.
-    static let reward = dynamic(light: 0xB07D00, dark: 0xFFD60A)
-    static let warning = dynamic(light: 0xC75300, dark: 0xFF9F0A)
-    static let destructive = dynamic(light: 0xD70015, dark: 0xFF453A)
-
-    private static func dynamic(light: UInt32, dark: UInt32) -> UIColor {
-        UIColor { $0.userInterfaceStyle == .dark ? UIColor(hex: dark) : UIColor(hex: light) }
-    }
+    static let reward = UIColor(hex: 0xFFD60A)
+    static let warning = UIColor(hex: 0xFFB020)
+    static let destructive = UIColor(hex: 0xFF7A7A)
 }
 
 enum RDSpacing {
@@ -40,48 +34,57 @@ enum RDSpacing {
     static let xxl: CGFloat = 48
 }
 
-/// Shape rule: cards and grouped sections 12, buttons 14, inner tiles 8,
-/// tags and pills are capsules. All corners are continuous.
 enum RDCornerRadius {
-    static let small: CGFloat = 8
-    static let medium: CGFloat = 12
-    static let large: CGFloat = 14
+    static let small: CGFloat = 4
+    static let medium: CGFloat = 6
+    static let large: CGFloat = 8
 }
 
 enum RDLayout {
-    static let screenMargin: CGFloat = 16
+    static let screenMargin: CGFloat = 20
+    /// Horizontal run of the parallelogram cut on primary buttons and tags.
+    static let slant: CGFloat = 12
 }
 
 enum RDFont {
-    /// SF Pro Rounded with tabular digits for counts, scores, and times.
+    /// Condensed, italic system numerals for counts, scores, and scoreboard-style labels.
     static func numeric(
         _ size: CGFloat,
-        weight: UIFont.Weight = .bold,
+        weight: UIFont.Weight = .black,
+        italic: Bool = true,
         maximumScale: CGFloat = 1.25
     ) -> UIFont {
+        // UIFontMetrics.scaledFont drops the width trait, so scale the size and build the font directly.
         let scaled = min(UIFontMetrics(forTextStyle: .largeTitle).scaledValue(for: size), size * maximumScale)
-        let base = UIFont.systemFont(ofSize: scaled, weight: weight)
-        var descriptor = base.fontDescriptor.withDesign(.rounded) ?? base.fontDescriptor
-        descriptor = descriptor.addingAttributes([
-            .featureSettings: [[
-                UIFontDescriptor.FeatureKey.type: kNumberSpacingType,
-                UIFontDescriptor.FeatureKey.selector: kMonospacedNumbersSelector
-            ]]
-        ])
-        return UIFont(descriptor: descriptor, size: scaled)
+        return condensedSystemFont(ofSize: scaled, weight: weight, italic: italic)
     }
 
-    /// Section header above grouped content, such as "Pick your move".
-    static func eyebrow(_ size: CGFloat = 13) -> UIFont {
-        UIFontMetrics(forTextStyle: .footnote).scaledFont(
-            for: .systemFont(ofSize: size, weight: .regular),
-            maximumPointSize: size * 1.6
-        )
+    /// Letter-spaced condensed caption above headings, such as "PICK YOUR MOVE".
+    static func eyebrow(_ size: CGFloat = 14) -> UIFont {
+        let scaled = min(UIFontMetrics(forTextStyle: .caption1).scaledValue(for: size), size * 1.4)
+        return condensedSystemFont(ofSize: scaled, weight: .heavy, italic: false)
+    }
+
+    private static func condensedSystemFont(ofSize size: CGFloat, weight: UIFont.Weight, italic: Bool) -> UIFont {
+        let base: UIFont
+        if #available(iOS 16.0, *) {
+            base = UIFont.systemFont(ofSize: size, weight: weight, width: .condensed)
+        } else {
+            // iOS 15 has no width parameter; the condensed trait picks the same face.
+            let regular = UIFont.systemFont(ofSize: size, weight: weight)
+            base = regular.fontDescriptor.withSymbolicTraits(.traitCondensed)
+                .map { UIFont(descriptor: $0, size: size) } ?? regular
+        }
+        guard italic else { return base }
+        // Condensed SF has no true italic; rebuilding traits falls back to the regular width,
+        // so lean the condensed face with a shear matrix instead.
+        let shear = CGAffineTransform(a: 1, b: 0, c: tan(.pi / 15), d: 1, tx: 0, ty: 0)
+        return UIFont(descriptor: base.fontDescriptor.addingAttributes([.matrix: shear]), size: size)
     }
 
     static func display(_ size: CGFloat) -> UIFont {
         UIFontMetrics(forTextStyle: .largeTitle).scaledFont(
-            for: .systemFont(ofSize: size, weight: .bold),
+            for: .systemFont(ofSize: size, weight: .black),
             maximumPointSize: size * 1.25
         )
     }
@@ -113,9 +116,24 @@ extension UIColor {
     }
 }
 
+extension UIBezierPath {
+    /// Parallelogram with both vertical edges leaning right, used for the
+    /// competitive "cut" on buttons, tags, and bars.
+    static func rdSlanted(in rect: CGRect, slant: CGFloat = RDLayout.slant) -> UIBezierPath {
+        let inset = min(slant, rect.width / 4)
+        let path = UIBezierPath()
+        path.move(to: CGPoint(x: rect.minX + inset, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX - inset, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.close()
+        return path
+    }
+}
+
 extension UILabel {
-    func setEyebrow(_ text: String, color: UIColor = RDColor.secondaryLabel) {
-        self.text = text
+    func setEyebrow(_ text: String, color: UIColor = RDColor.textSecondary, kern: CGFloat = 2) {
+        attributedText = NSAttributedString(string: text, attributes: [.kern: kern])
         font = RDFont.eyebrow()
         textColor = color
         adjustsFontForContentSizeCategory = true
@@ -132,12 +150,6 @@ extension UIFont {
 }
 
 extension UIView {
-    /// Continuous ("squircle") corners, the shape iOS uses for its own surfaces.
-    func setContinuousCorners(_ radius: CGFloat) {
-        layer.cornerRadius = radius
-        layer.cornerCurve = .continuous
-    }
-
     func pinEdges(to other: UIView, insets: NSDirectionalEdgeInsets = .zero) {
         translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([

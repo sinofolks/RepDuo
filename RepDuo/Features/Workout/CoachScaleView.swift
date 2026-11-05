@@ -12,14 +12,14 @@ final class CoachScaleView: UIView {
         super.init(frame: frame)
 
         translatesAutoresizingMaskIntoConstraints = false
-        backgroundColor = RDColor.card.withAlphaComponent(0.94)
+        backgroundColor = RDColor.surface.withAlphaComponent(0.94)
         layer.cornerRadius = RDCornerRadius.medium
 
         let caption = UILabel()
-        caption.setEyebrow("AI SCORE".rdLocalized)
+        caption.setEyebrow("AI SCORE".rdLocalized, kern: 1.5)
         caption.font = RDFont.eyebrow(12)
-        scoreLabel.font = RDFont.numeric(34, maximumScale: 1.1)
-        scoreLabel.textColor = RDColor.label
+        scoreLabel.font = RDFont.numeric(36, maximumScale: 1.1)
+        scoreLabel.textColor = RDColor.warmWhite
         scoreLabel.adjustsFontSizeToFitWidth = true
         scoreLabel.minimumScaleFactor = 0.7
         let score = UIStackView(axis: .vertical, spacing: 0, arrangedSubviews: [caption, scoreLabel])
@@ -101,15 +101,15 @@ private final class CoachMetricColumn: UIView {
         translatesAutoresizingMaskIntoConstraints = false
 
         titleLabel.text = title.rdLocalized
-        titleLabel.textColor = RDColor.label
+        titleLabel.textColor = RDColor.textBody
         titleLabel.font = .systemFont(ofSize: 12, weight: .bold)
         titleLabel.adjustsFontSizeToFitWidth = true
         titleLabel.minimumScaleFactor = 0.72
-        scoreLabel.font = RDFont.numeric(16, weight: .semibold, maximumScale: 1.1)
+        scoreLabel.font = RDFont.numeric(16, weight: .heavy, italic: false, maximumScale: 1.1)
         scoreLabel.textAlignment = .right
         scoreLabel.setContentHuggingPriority(.required, for: .horizontal)
 
-        track.backgroundColor = RDColor.separator
+        track.backgroundColor = RDColor.separatorOnDark
         track.layer.cornerRadius = 2
         track.translatesAutoresizingMaskIntoConstraints = false
         fill.layer.cornerRadius = 2
@@ -137,8 +137,8 @@ private final class CoachMetricColumn: UIView {
 
     func render(score: Int?) {
         scoreLabel.text = score.map { String($0) } ?? "—"
-        let color = (score ?? 100) < 80 ? RDColor.warning : RDColor.accent
-        scoreLabel.textColor = score == nil ? RDColor.tertiaryLabel : ((score ?? 100) < 80 ? RDColor.warning : RDColor.label)
+        let color = (score ?? 100) < 80 ? RDColor.warning : RDColor.neonGreen
+        scoreLabel.textColor = score == nil ? RDColor.textMuted : ((score ?? 100) < 80 ? RDColor.warning : RDColor.warmWhite)
         fill.backgroundColor = color
 
         fillWidth?.isActive = false

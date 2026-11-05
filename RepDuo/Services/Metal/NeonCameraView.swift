@@ -68,7 +68,7 @@ final class NeonCameraView: MTKView {
         enableSetNeedsDisplay = true
         isPaused = true
         isOpaque = true
-        backgroundColor = RDColor.camera
+        backgroundColor = RDColor.backgroundDeep
         contentMode = .scaleAspectFill
         if let metalDevice {
             // Frames are never re-rendered, so caching intermediates only costs memory.

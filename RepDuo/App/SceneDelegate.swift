@@ -10,10 +10,10 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         options connectionOptions: UIScene.ConnectionOptions
     ) {
         guard let windowScene = scene as? UIWindowScene else { return }
-        let navigationController = RDNavigationController()
+        let navigationController = UINavigationController()
         let window = UIWindow(windowScene: windowScene)
         window.rootViewController = navigationController
-        window.tintColor = RDColor.accent
+        window.tintColor = RDColor.neonGreen
         window.makeKeyAndVisible()
         self.window = window
 

@@ -26,13 +26,13 @@ final class SettingsViewController: RDBaseViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Settings".rdLocalized
-        navigationItem.largeTitleDisplayMode = .always
+        title = "SETTINGS".rdLocalized
         tableView.backgroundColor = RDColor.background
+        tableView.separatorColor = RDColor.surfaceSecondary
+        tableView.sectionHeaderTopPadding = 18
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Setting")
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Stepper")
         tableView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(tableView)
         tableView.pinEdges(to: view)
@@ -41,7 +41,8 @@ final class SettingsViewController: RDBaseViewController {
     private func makeSwitch(isOn: Bool, action: @escaping (Bool) -> Void) -> UISwitch {
         let control = UISwitch()
         control.isOn = isOn
-        control.onTintColor = RDColor.accent
+        control.onTintColor = RDColor.neonGreen
+        control.thumbTintColor = nil
         control.addAction(UIAction { action(($0.sender as? UISwitch)?.isOn ?? false) }, for: .valueChanged)
         return control
     }
@@ -97,36 +98,10 @@ extension SettingsViewController: UITableViewDataSource, UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if indexPath.section == 0, indexPath.row < 2 {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "Stepper", for: indexPath)
-            cell.backgroundColor = RDColor.card
-            cell.selectionStyle = .none
-            if indexPath.row == 0 {
-                configureStepper(
-                    cell,
-                    title: "Daily goal",
-                    value: preferences.dailyRepGoal,
-                    range: AppPreferences.dailyRepGoalRange,
-                    step: 10
-                ) { [weak self] in self?.preferences.dailyRepGoal = $0 }
-            } else {
-                configureStepper(
-                    cell,
-                    title: "Reps per set",
-                    value: preferences.setRepTarget,
-                    range: AppPreferences.setRepTargetRange,
-                    step: 5
-                ) { [weak self] in self?.preferences.setRepTarget = $0 }
-            }
-            return cell
-        }
-
         let cell = tableView.dequeueReusableCell(withIdentifier: "Setting", for: indexPath)
-        cell.backgroundColor = RDColor.card
-        cell.textLabel?.textColor = RDColor.label
-        cell.textLabel?.font = .preferredFont(forTextStyle: .body)
-        cell.textLabel?.adjustsFontForContentSizeCategory = true
-        cell.textLabel?.numberOfLines = 0
+        cell.backgroundColor = RDColor.surface
+        cell.textLabel?.textColor = RDColor.warmWhite
+        cell.textLabel?.font = RDFont.body(weight: .semibold)
         cell.imageView?.image = nil
         cell.accessoryView = nil
         cell.accessoryType = .none
@@ -134,6 +109,22 @@ extension SettingsViewController: UITableViewDataSource, UITableViewDelegate {
 
         if indexPath.section == 0 {
             switch indexPath.row {
+            case 0:
+                cell.textLabel?.text = "Daily goal".rdLocalized
+                cell.accessoryView = RDStepperView(
+                    value: preferences.dailyRepGoal,
+                    range: AppPreferences.dailyRepGoalRange,
+                    step: 10,
+                    label: "Daily goal"
+                ) { [weak self] in self?.preferences.dailyRepGoal = $0 }
+            case 1:
+                cell.textLabel?.text = "Reps per set".rdLocalized
+                cell.accessoryView = RDStepperView(
+                    value: preferences.setRepTarget,
+                    range: AppPreferences.setRepTargetRange,
+                    step: 5,
+                    label: "Reps per set"
+                ) { [weak self] in self?.preferences.setRepTarget = $0 }
             case 2:
                 cell.textLabel?.text = "Audio cues".rdLocalized
                 cell.accessoryView = makeSwitch(isOn: preferences.soundEnabled) { [weak self] in self?.preferences.soundEnabled = $0 }
@@ -153,7 +144,7 @@ extension SettingsViewController: UITableViewDataSource, UITableViewDelegate {
             slider.minimumValue = 0.35
             slider.maximumValue = 1
             slider.value = preferences.neonIntensity
-            slider.minimumTrackTintColor = RDColor.accent
+            slider.minimumTrackTintColor = RDColor.neonGreen
             slider.widthAnchor.constraint(equalToConstant: 145).isActive = true
             slider.addAction(UIAction { [weak self] action in
                 self?.preferences.neonIntensity = (action.sender as? UISlider)?.value ?? 0.85
@@ -161,7 +152,7 @@ extension SettingsViewController: UITableViewDataSource, UITableViewDelegate {
             cell.accessoryView = slider
         } else if indexPath.row == 0 {
             cell.textLabel?.text = "Health data · Not requested".rdLocalized
-            cell.textLabel?.textColor = RDColor.secondaryLabel
+            cell.textLabel?.textColor = RDColor.textSecondary
             cell.accessibilityLabel = "Health data permission, not requested in this version".rdLocalized
         } else if indexPath.row == 1 {
             cell.textLabel?.text = "Privacy details".rdLocalized
@@ -182,42 +173,76 @@ extension SettingsViewController: UITableViewDataSource, UITableViewDelegate {
         }
     }
 
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        guard let header = view as? UITableViewHeaderFooterView else { return }
+        header.textLabel?.textColor = RDColor.neonGreen
+        header.textLabel?.font = RDFont.eyebrow(13)
+    }
+
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         UITableView.automaticDimension
     }
 }
 
-private extension SettingsViewController {
-    /// Title and current value on the left, a system stepper on the right.
-    func configureStepper(
-        _ cell: UITableViewCell,
-        title: String,
-        value: Int,
-        range: ClosedRange<Int>,
-        step: Int,
-        onChange: @escaping (Int) -> Void
-    ) {
-        var content = UIListContentConfiguration.subtitleCell()
-        content.text = title.rdLocalized
-        content.secondaryText = "%d reps".rdLocalizedFormat(value)
-        content.secondaryTextProperties.color = RDColor.secondaryLabel
-        cell.contentConfiguration = content
-        let stepper = UIStepper()
-        stepper.minimumValue = Double(range.lowerBound)
-        stepper.maximumValue = Double(range.upperBound)
-        stepper.stepValue = Double(step)
-        stepper.value = Double(value)
-        stepper.accessibilityLabel = title.rdLocalized
-        let selection = UISelectionFeedbackGenerator()
-        stepper.addAction(UIAction { [weak self, weak cell] action in
-            guard let stepper = action.sender as? UIStepper else { return }
-            let next = Int(stepper.value)
-            onChange(next)
-            if self?.preferences.hapticsEnabled == true { selection.selectionChanged() }
-            guard var content = cell?.contentConfiguration as? UIListContentConfiguration else { return }
-            content.secondaryText = "%d reps".rdLocalizedFormat(next)
-            cell?.contentConfiguration = content
-        }, for: .valueChanged)
-        cell.accessoryView = stepper
+/// Compact −/value/+ control that reads as an adjustable element in VoiceOver.
+private final class RDStepperView: UIView {
+    private let valueLabel = UILabel()
+    private let range: ClosedRange<Int>
+    private let step: Int
+    private let onChange: (Int) -> Void
+    private var value: Int
+
+    init(value: Int, range: ClosedRange<Int>, step: Int, label: String, onChange: @escaping (Int) -> Void) {
+        self.value = value
+        self.range = range
+        self.step = step
+        self.onChange = onChange
+        super.init(frame: CGRect(x: 0, y: 0, width: 128, height: 40))
+        valueLabel.font = RDFont.numeric(24, maximumScale: 1)
+        valueLabel.textColor = RDColor.warmWhite
+        valueLabel.textAlignment = .center
+        let minus = makeButton("minus") { [weak self] in self?.adjust(by: -1) }
+        let plus = makeButton("plus") { [weak self] in self?.adjust(by: 1) }
+        let stack = UIStackView(axis: .horizontal, spacing: 4, arrangedSubviews: [minus, valueLabel, plus])
+        stack.alignment = .center
+        stack.translatesAutoresizingMaskIntoConstraints = true
+        stack.frame = bounds
+        stack.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        addSubview(stack)
+        isAccessibilityElement = true
+        accessibilityLabel = label.rdLocalized
+        accessibilityTraits = .adjustable
+        render()
+    }
+
+    required init?(coder: NSCoder) { nil }
+
+    override func accessibilityIncrement() { adjust(by: 1) }
+    override func accessibilityDecrement() { adjust(by: -1) }
+
+    private func makeButton(_ symbol: String, action: @escaping () -> Void) -> UIButton {
+        var configuration = UIButton.Configuration.filled()
+        configuration.image = UIImage(systemName: symbol, withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .heavy))
+        configuration.cornerStyle = .capsule
+        configuration.baseBackgroundColor = RDColor.surfaceSecondary
+        configuration.baseForegroundColor = RDColor.warmWhite
+        let button = UIButton(configuration: configuration, primaryAction: UIAction { _ in action() })
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.widthAnchor.constraint(equalToConstant: 36).isActive = true
+        button.heightAnchor.constraint(equalToConstant: 36).isActive = true
+        return button
+    }
+
+    private func adjust(by direction: Int) {
+        let next = min(range.upperBound, max(range.lowerBound, value + direction * step))
+        guard next != value else { return }
+        value = next
+        render()
+        onChange(next)
+    }
+
+    private func render() {
+        valueLabel.text = String(value)
+        accessibilityValue = String(value)
     }
 }

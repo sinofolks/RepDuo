@@ -6,7 +6,7 @@ final class HistoryViewController: RDBaseViewController {
 
         var title: String {
             switch self {
-            case .all: return "All".rdLocalized
+            case .all: return "ALL".rdLocalized
             case .squat: return ExerciseType.squat.displayName
             case .pushUp: return ExerciseType.pushUp.displayName
             }
@@ -14,13 +14,13 @@ final class HistoryViewController: RDBaseViewController {
     }
 
     private let store: WorkoutPersistenceStore
-    private let tableView = UITableView(frame: .zero, style: .insetGrouped)
+    private let tableView = UITableView(frame: .zero, style: .plain)
     private let headerContainer = UIView()
-    private let squatBest = RDStatTile(caption: "", valueSize: 34)
-    private let pushUpBest = RDStatTile(caption: "", valueSize: 34)
+    private let squatBest = RDStatTile(caption: "", valueColor: RDColor.neonGreen, valueSize: 44)
+    private let pushUpBest = RDStatTile(caption: "", valueSize: 44)
     private let heatmap = RDHeatmapView()
     private let streakLabel = UILabel()
-    private let filterControl = UISegmentedControl()
+    private var filterButtons: [UIButton] = []
     private var filter: Filter = .all
     private var records: [WorkoutSummary] = []
     private var stats = WorkoutStats(summaries: [])
@@ -34,9 +34,9 @@ final class HistoryViewController: RDBaseViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "History".rdLocalized
-        navigationItem.largeTitleDisplayMode = .always
+        navigationItem.title = nil
         tableView.backgroundColor = RDColor.background
+        tableView.separatorStyle = .none
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(HistoryRecordCell.self, forCellReuseIdentifier: HistoryRecordCell.reuseIdentifier)
@@ -64,54 +64,79 @@ final class HistoryViewController: RDBaseViewController {
     }
 
     private func makeHeader() -> UIView {
+        let title = makeLabel(text: "HISTORY", font: RDFont.display(34))
+        title.accessibilityTraits = .header
+
         let bests = UIStackView(axis: .horizontal, spacing: 8, arrangedSubviews: [squatBest, pushUpBest])
         bests.distribution = .fillEqually
 
         let calendarCard = makeCard()
-        let calendarTitle = makeLabel(text: "Last 4 weeks", font: RDFont.body(weight: .semibold))
-        streakLabel.font = .preferredFont(forTextStyle: .subheadline)
-        streakLabel.adjustsFontForContentSizeCategory = true
-        streakLabel.textColor = RDColor.secondaryLabel
+        let calendarTitle = makeLabel(text: "Last 4 weeks", font: RDFont.body(weight: .black))
+        streakLabel.font = .systemFont(ofSize: 13, weight: .bold)
+        streakLabel.textColor = RDColor.ember
         let calendarHeader = UIStackView(axis: .horizontal, spacing: 8, arrangedSubviews: [calendarTitle, UIView(), streakLabel])
         calendarHeader.alignment = .center
         let legend = UIStackView(axis: .horizontal, spacing: 6)
         legend.addArrangedSubview(UIView())
-        legend.addArrangedSubview(makeLabel(text: "Less", font: .systemFont(ofSize: 12), color: RDColor.secondaryLabel))
+        legend.addArrangedSubview(makeLabel(text: "Less", font: .systemFont(ofSize: 11), color: RDColor.textMuted))
         for shade in RDHeatmapView.shades {
             let swatch = UIView()
             swatch.backgroundColor = shade
-            swatch.setContinuousCorners(2)
             swatch.translatesAutoresizingMaskIntoConstraints = false
             swatch.widthAnchor.constraint(equalToConstant: 10).isActive = true
             swatch.heightAnchor.constraint(equalToConstant: 10).isActive = true
             legend.addArrangedSubview(swatch)
         }
-        legend.addArrangedSubview(makeLabel(text: "More", font: .systemFont(ofSize: 12), color: RDColor.secondaryLabel))
+        legend.addArrangedSubview(makeLabel(text: "More", font: .systemFont(ofSize: 11), color: RDColor.textMuted))
         legend.alignment = .center
         legend.isAccessibilityElement = false
         let calendarStack = UIStackView(axis: .vertical, spacing: 12, arrangedSubviews: [calendarHeader, heatmap, legend])
         calendarStack.setCustomSpacing(8, after: heatmap)
         calendarCard.addSubview(calendarStack)
-        calendarStack.pinEdges(to: calendarCard, insets: NSDirectionalEdgeInsets(top: 14, leading: 16, bottom: 14, trailing: 16))
+        calendarStack.pinEdges(to: calendarCard, insets: NSDirectionalEdgeInsets(top: 14, leading: 14, bottom: 14, trailing: 14))
 
-        for item in Filter.allCases {
-            filterControl.insertSegment(
-                action: UIAction(title: item.title) { [weak self] _ in
-                    self?.filter = item
-                    self?.reloadRows()
-                },
-                at: item.rawValue,
-                animated: false
-            )
-        }
-        filterControl.selectedSegmentIndex = filter.rawValue
-        filterControl.accessibilityIdentifier = "history.filter"
+        let filters = UIStackView(axis: .horizontal, spacing: 8, arrangedSubviews: Filter.allCases.map(makeFilterButton))
+        let filterRow = UIStackView(axis: .horizontal, spacing: 0, arrangedSubviews: [filters, UIView()])
 
-        let stack = UIStackView(axis: .vertical, spacing: 12, arrangedSubviews: [bests, calendarCard, filterControl])
-        stack.setCustomSpacing(20, after: calendarCard)
+        let stack = UIStackView(axis: .vertical, spacing: 8, arrangedSubviews: [title, bests, calendarCard, filterRow])
+        stack.setCustomSpacing(16, after: title)
+        stack.setCustomSpacing(18, after: calendarCard)
         headerContainer.addSubview(stack)
-        stack.pinEdges(to: headerContainer, insets: NSDirectionalEdgeInsets(top: 8, leading: 20, bottom: 4, trailing: 20))
+        stack.pinEdges(to: headerContainer, insets: NSDirectionalEdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
+        renderFilters()
         return headerContainer
+    }
+
+    private func makeFilterButton(_ filter: Filter) -> UIButton {
+        let button = UIButton(type: .system)
+        var configuration = UIButton.Configuration.filled()
+        configuration.title = filter.title
+        configuration.cornerStyle = .capsule
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 9, leading: 16, bottom: 9, trailing: 16)
+        configuration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var outgoing = incoming
+            outgoing.font = UIFont.systemFont(ofSize: 13, weight: .black)
+            return outgoing
+        }
+        button.configuration = configuration
+        button.tag = filter.rawValue
+        button.accessibilityIdentifier = "history.filter.\(filter.rawValue)"
+        button.addAction(UIAction { [weak self] _ in
+            self?.filter = filter
+            self?.renderFilters()
+            self?.reloadRows()
+        }, for: .touchUpInside)
+        filterButtons.append(button)
+        return button
+    }
+
+    private func renderFilters() {
+        for button in filterButtons {
+            let isSelected = button.tag == filter.rawValue
+            button.configuration?.baseBackgroundColor = isSelected ? RDColor.warmWhite : RDColor.surface
+            button.configuration?.baseForegroundColor = isSelected ? RDColor.background : RDColor.textBody
+            button.accessibilityTraits = isSelected ? [.button, .selected] : .button
+        }
     }
 
     /// Reloads rows and shows the empty message under the header when the filter has no sets.
@@ -123,9 +148,8 @@ final class HistoryViewController: RDBaseViewController {
         }
         let label = UILabel()
         label.text = "NO SETS YET\n\nFinish a squat or push-up set to see it here.".rdLocalized
-        label.textColor = RDColor.secondaryLabel
-        label.font = .preferredFont(forTextStyle: .body)
-        label.adjustsFontForContentSizeCategory = true
+        label.textColor = RDColor.textSecondary
+        label.font = RDFont.body(weight: .semibold)
         label.numberOfLines = 0
         label.textAlignment = .center
         let footer = UIView(frame: CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 180))
@@ -188,24 +212,24 @@ private final class HistoryRecordCell: UITableViewCell {
     private let repsLabel = UILabel()
     private let moveLabel = UILabel()
     private let metaLabel = UILabel()
-    private let badge = RDTag(text: "PB")
+    private let badge = RDTag(text: "PB", background: RDColor.ember)
     private let tempoLabel = UILabel()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        backgroundColor = RDColor.card
+        backgroundColor = RDColor.background
         selectionStyle = .none
-        repsLabel.font = RDFont.numeric(28)
-        repsLabel.widthAnchor.constraint(equalToConstant: 44).isActive = true
-        moveLabel.font = RDFont.body(weight: .regular)
-        moveLabel.textColor = RDColor.label
+        repsLabel.font = RDFont.numeric(36)
+        repsLabel.widthAnchor.constraint(equalToConstant: 60).isActive = true
+        moveLabel.font = RDFont.body(weight: .bold)
+        moveLabel.textColor = RDColor.warmWhite
         moveLabel.adjustsFontForContentSizeCategory = true
         metaLabel.font = RDFont.caption(weight: .regular)
-        metaLabel.textColor = RDColor.secondaryLabel
+        metaLabel.textColor = RDColor.textSecondary
         metaLabel.numberOfLines = 0
         metaLabel.adjustsFontForContentSizeCategory = true
-        tempoLabel.font = RDFont.numeric(15, weight: .regular)
-        tempoLabel.textColor = RDColor.secondaryLabel
+        tempoLabel.font = RDFont.numeric(14, weight: .heavy, italic: false)
+        tempoLabel.textColor = RDColor.textSecondary
         badge.setContentHuggingPriority(.required, for: .horizontal)
         tempoLabel.setContentHuggingPriority(.required, for: .horizontal)
         let texts = UIStackView(axis: .vertical, spacing: 2, arrangedSubviews: [moveLabel, metaLabel])
@@ -213,7 +237,17 @@ private final class HistoryRecordCell: UITableViewCell {
         let row = UIStackView(axis: .horizontal, spacing: 14, arrangedSubviews: [repsLabel, texts, badge, tempoLabel])
         row.alignment = .center
         contentView.addSubview(row)
-        row.pinEdges(to: contentView, insets: NSDirectionalEdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
+        row.pinEdges(to: contentView, insets: NSDirectionalEdgeInsets(top: 13, leading: 20, bottom: 13, trailing: 20))
+        let line = UIView()
+        line.backgroundColor = RDColor.surfaceSecondary
+        line.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(line)
+        NSLayoutConstraint.activate([
+            line.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            line.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            line.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            line.heightAnchor.constraint(equalToConstant: 1)
+        ])
         isAccessibilityElement = true
     }
 
@@ -221,7 +255,7 @@ private final class HistoryRecordCell: UITableViewCell {
 
     func render(_ record: WorkoutSummary, isBest: Bool) {
         repsLabel.text = String(record.repCount)
-        repsLabel.textColor = RDColor.label
+        repsLabel.textColor = isBest ? RDColor.neonGreen : RDColor.warmWhite
         moveLabel.text = record.exercise.displayName
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = [.minute, .second]

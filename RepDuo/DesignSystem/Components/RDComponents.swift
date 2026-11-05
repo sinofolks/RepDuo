@@ -2,16 +2,17 @@ import UIKit
 
 final class RDPrimaryButton: UIButton {
     enum Style {
-        /// Filled accent: the one forward action on a screen.
+        /// Lime parallelogram: the one forward action on a screen.
         case primary
-        /// Accent-tinted: forward steps that are not yet the commitment.
+        /// White parallelogram: forward steps that are not yet the commitment.
         case inverse
-        /// Neutral fill for the alternative action.
+        /// Outlined rectangle for the alternative action.
         case secondary
         case destructive
     }
 
     private let style: Style
+    private let slantMask = CAShapeLayer()
 
     init(title: String, style: Style = .primary, symbolName: String? = nil) {
         self.style = style
@@ -19,87 +20,96 @@ final class RDPrimaryButton: UIButton {
         var configuration = UIButton.Configuration.filled()
         configuration.title = title.rdLocalized
         configuration.image = symbolName.flatMap {
-            UIImage(systemName: $0, withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
+            UIImage(systemName: $0, withConfiguration: UIImage.SymbolConfiguration(weight: .heavy))
         }
-        configuration.imagePadding = 8
-        configuration.imagePlacement = .leading
-        configuration.background.cornerRadius = RDCornerRadius.large
+        configuration.imagePadding = 10
+        configuration.imagePlacement = .trailing
+        configuration.background.cornerRadius = isSlanted ? 0 : RDCornerRadius.small
         configuration.cornerStyle = .fixed
-        configuration.contentInsets = NSDirectionalEdgeInsets(top: 14, leading: 20, bottom: 14, trailing: 20)
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 18, leading: 24, bottom: 18, trailing: 24)
         configuration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
             var outgoing = incoming
             outgoing.font = UIFontMetrics(forTextStyle: .headline).scaledFont(
-                for: .systemFont(ofSize: 17, weight: .semibold),
+                for: .systemFont(ofSize: 17, weight: .black),
                 maximumPointSize: 24
             )
             return outgoing
         }
         self.configuration = configuration
         translatesAutoresizingMaskIntoConstraints = false
-        heightAnchor.constraint(greaterThanOrEqualToConstant: 50).isActive = true
+        heightAnchor.constraint(greaterThanOrEqualToConstant: 60).isActive = true
         accessibilityTraits.insert(.button)
+        if isSlanted { layer.mask = slantMask }
         updateColors()
     }
 
     required init?(coder: NSCoder) { nil }
+
+    private var isSlanted: Bool { style == .primary || style == .inverse }
 
     override var isEnabled: Bool {
         didSet { updateColors() }
     }
 
     override var isHighlighted: Bool {
-        didSet {
-            // Press feedback lands on press-in and stays near-imperceptible.
-            let pressed = isHighlighted
-            UIView.animate(withDuration: pressed ? 0.1 : 0.2, delay: 0, options: [.beginFromCurrentState, .allowUserInteraction]) {
-                self.transform = pressed && !UIAccessibility.isReduceMotionEnabled ? CGAffineTransform(scaleX: 0.97, y: 0.97) : .identity
-                self.alpha = pressed ? 0.86 : 1
-            }
-        }
+        didSet { alpha = isHighlighted ? 0.82 : 1 }
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        if isSlanted { slantMask.path = UIBezierPath.rdSlanted(in: bounds).cgPath }
     }
 
     private func updateColors() {
         var configuration = configuration
+        configuration?.background.strokeWidth = 0
         switch style {
         case .primary:
-            configuration?.baseBackgroundColor = isEnabled ? RDColor.accent : RDColor.fill
-            configuration?.baseForegroundColor = isEnabled ? RDColor.onAccent : RDColor.tertiaryLabel
+            configuration?.baseBackgroundColor = isEnabled ? RDColor.neonGreen : RDColor.surfaceSecondary
+            configuration?.baseForegroundColor = isEnabled ? RDColor.background : RDColor.textMuted
         case .inverse:
-            configuration?.baseBackgroundColor = RDColor.accentTint
-            configuration?.baseForegroundColor = isEnabled ? RDColor.accent : RDColor.tertiaryLabel
+            configuration?.baseBackgroundColor = isEnabled ? RDColor.warmWhite : RDColor.surfaceSecondary
+            configuration?.baseForegroundColor = isEnabled ? RDColor.background : RDColor.textMuted
         case .secondary:
-            configuration?.baseBackgroundColor = RDColor.fill
-            configuration?.baseForegroundColor = isEnabled ? RDColor.label : RDColor.tertiaryLabel
+            configuration?.baseBackgroundColor = .clear
+            configuration?.baseForegroundColor = isEnabled ? RDColor.warmWhite : RDColor.textMuted
+            configuration?.background.strokeColor = RDColor.separatorStrong
+            configuration?.background.strokeWidth = 1.5
         case .destructive:
-            configuration?.baseBackgroundColor = RDColor.destructive.withAlphaComponent(isEnabled ? 0.14 : 0.07)
-            configuration?.baseForegroundColor = isEnabled ? RDColor.destructive : RDColor.tertiaryLabel
+            configuration?.baseBackgroundColor = RDColor.destructive.withAlphaComponent(isEnabled ? 0.16 : 0.08)
+            configuration?.baseForegroundColor = isEnabled ? RDColor.destructive : RDColor.textMuted
         }
         self.configuration = configuration
     }
 }
 
-/// Label for large counts and scores; marks itself as updating for VoiceOver.
+/// Label for large slanted numerals. The sheared glyphs lean past their advance
+/// width, so the label reserves trailing room instead of letting them clip.
 final class RDNumberLabel: UILabel {
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        accessibilityTraits.insert(.updatesFrequently)
+    private var slantInset: CGFloat { ceil(font.pointSize * 0.22) }
+
+    override var intrinsicContentSize: CGSize {
+        let size = super.intrinsicContentSize
+        return CGSize(width: size.width + slantInset, height: size.height)
     }
 
-    required init?(coder: NSCoder) { nil }
+    override func drawText(in rect: CGRect) {
+        super.drawText(in: rect.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: slantInset)))
+    }
 }
 
 /// Round icon-only control used in headers and the workout control bar.
 final class RDIconButton: UIButton {
-    init(symbolName: String, accessibilityLabel: String, diameter: CGFloat = 44, background: UIColor = RDColor.fill) {
+    init(symbolName: String, accessibilityLabel: String, diameter: CGFloat = 44, background: UIColor = RDColor.surfaceRaised) {
         super.init(frame: .zero)
         var configuration = UIButton.Configuration.filled()
         configuration.image = UIImage(
             systemName: symbolName,
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: diameter > 50 ? 20 : 16, weight: .semibold)
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: diameter > 50 ? 20 : 16, weight: .bold)
         )
         configuration.cornerStyle = .capsule
         configuration.baseBackgroundColor = background
-        configuration.baseForegroundColor = RDColor.label
+        configuration.baseForegroundColor = RDColor.warmWhite
         self.configuration = configuration
         self.accessibilityLabel = accessibilityLabel.rdLocalized
         translatesAutoresizingMaskIntoConstraints = false
@@ -114,39 +124,38 @@ final class RDIconButton: UIButton {
     func setSymbol(_ symbolName: String) {
         configuration?.image = UIImage(
             systemName: symbolName,
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: bounds.width > 50 ? 20 : 16, weight: .semibold)
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: bounds.width > 50 ? 20 : 16, weight: .bold)
         )
     }
 }
 
-/// Capsule label chip: streaks, phases, records.
+/// Slanted label chip: streaks, phases, records.
 final class RDTag: UIView {
     private let label = UILabel()
     private let iconView = UIImageView()
+    private let slantMask = CAShapeLayer()
 
-    init(text: String = "", symbolName: String? = nil, background: UIColor = RDColor.accentTint, foreground: UIColor = RDColor.accent) {
+    init(text: String = "", symbolName: String? = nil, background: UIColor, foreground: UIColor = RDColor.background) {
         super.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
         backgroundColor = background
+        layer.mask = slantMask
         label.font = UIFontMetrics(forTextStyle: .footnote).scaledFont(
-            for: .systemFont(ofSize: 14, weight: .semibold),
+            for: .systemFont(ofSize: 14, weight: .black),
             maximumPointSize: 20
         )
         label.adjustsFontForContentSizeCategory = true
         label.textColor = foreground
         label.text = text.rdLocalized
         iconView.image = symbolName.flatMap {
-            UIImage(systemName: $0, withConfiguration: UIImage.SymbolConfiguration(pointSize: 12, weight: .semibold))
+            UIImage(systemName: $0, withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .heavy))
         }
         iconView.tintColor = foreground
         iconView.isHidden = symbolName == nil
         let stack = UIStackView(axis: .horizontal, spacing: 5, arrangedSubviews: [iconView, label])
         stack.alignment = .center
         addSubview(stack)
-        stack.pinEdges(to: self, insets: NSDirectionalEdgeInsets(top: 5, leading: 12, bottom: 5, trailing: 12))
-        // Hug the text so the capsule never stretches inside a row.
-        label.setContentHuggingPriority(.required, for: .horizontal)
-        iconView.setContentHuggingPriority(.required, for: .horizontal)
+        stack.pinEdges(to: self, insets: NSDirectionalEdgeInsets(top: 5, leading: 14, bottom: 5, trailing: 14))
         isAccessibilityElement = true
     }
 
@@ -168,7 +177,7 @@ final class RDTag: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        layer.cornerRadius = bounds.height / 2
+        slantMask.path = UIBezierPath.rdSlanted(in: bounds, slant: 7).cgPath
     }
 }
 
@@ -185,9 +194,6 @@ private final class RDLogoMarkView: UIView {
         isOpaque = false
         isUserInteractionEnabled = false
         translatesAutoresizingMaskIntoConstraints = false
-        if #available(iOS 17.0, *) {
-            registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _) in view.setNeedsDisplay() }
-        }
     }
 
     required init?(coder: NSCoder) { nil }
@@ -239,9 +245,8 @@ private final class RDLogoMarkView: UIView {
 
 final class RDWordmarkView: UIView {
     enum Surface {
-        /// Label-colored mark with an accent stroke on a neutral background.
         case dark
-        /// Single-color mark on an accent surface, such as the share card.
+        /// Black mark on a lime surface, such as the share card.
         case neon
     }
 
@@ -250,12 +255,12 @@ final class RDWordmarkView: UIView {
         translatesAutoresizingMaskIntoConstraints = false
         isAccessibilityElement = true
         accessibilityLabel = "RepDuo"
-        let ink = surface == .dark ? RDColor.label : RDColor.onAccent
-        let mark = RDLogoMarkView(leadingColor: ink, trailingColor: surface == .dark ? RDColor.accent : RDColor.onAccent)
+        let ink = surface == .dark ? RDColor.warmWhite : RDColor.background
+        let mark = RDLogoMarkView(leadingColor: ink, trailingColor: surface == .dark ? RDColor.neonGreen : RDColor.background)
         let wordmark = UILabel()
-        wordmark.text = "RepDuo"
+        wordmark.text = "REPDUO"
         wordmark.textColor = ink
-        wordmark.font = RDFont.numeric(size, weight: .bold, maximumScale: 1)
+        wordmark.font = RDFont.numeric(size, maximumScale: 1)
         let content = UIStackView(axis: .horizontal, spacing: 8, arrangedSubviews: [mark, wordmark])
         content.alignment = .center
         content.isUserInteractionEnabled = false
@@ -281,7 +286,7 @@ final class RDStatusPill: UIView {
         dot.layer.cornerRadius = 4
         dot.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFontMetrics(forTextStyle: .footnote).scaledFont(
-            for: .systemFont(ofSize: 13, weight: .semibold),
+            for: .systemFont(ofSize: 13, weight: .bold),
             maximumPointSize: 18
         )
         label.adjustsFontForContentSizeCategory = true
@@ -299,7 +304,7 @@ final class RDStatusPill: UIView {
             label.topAnchor.constraint(equalTo: topAnchor, constant: 6),
             label.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -6)
         ])
-        update(text: text.rdLocalized, tone: positive ? RDColor.accent : RDColor.warning)
+        update(text: text.rdLocalized, tone: positive ? RDColor.neonGreen : RDColor.warning)
     }
 
     required init?(coder: NSCoder) { nil }
@@ -313,27 +318,27 @@ final class RDStatusPill: UIView {
         label.text = text
         label.textColor = tone
         dot.backgroundColor = tone
-        backgroundColor = tone.withAlphaComponent(0.16)
+        backgroundColor = tone.withAlphaComponent(0.13)
     }
 }
 
-/// Rounded number over a small caption, on an inset tile.
+/// Big condensed number over a small caption, on a dark tile.
 final class RDStatTile: UIView {
     private let valueLabel = UILabel()
     private let captionLabel = UILabel()
 
-    init(value: String = "—", caption: String, valueColor: UIColor = RDColor.label, valueSize: CGFloat = 24, filled: Bool = true) {
+    init(value: String = "—", caption: String, valueColor: UIColor = RDColor.warmWhite, valueSize: CGFloat = 28, filled: Bool = true) {
         super.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
-        backgroundColor = filled ? RDColor.card : .clear
-        setContinuousCorners(RDCornerRadius.medium)
-        valueLabel.font = RDFont.numeric(valueSize, weight: .semibold)
+        backgroundColor = filled ? RDColor.surface : .clear
+        layer.cornerRadius = RDCornerRadius.small
+        valueLabel.font = RDFont.numeric(valueSize)
         valueLabel.textColor = valueColor
         valueLabel.adjustsFontSizeToFitWidth = true
         valueLabel.minimumScaleFactor = 0.6
         valueLabel.adjustsFontForContentSizeCategory = true
-        captionLabel.font = RDFont.caption(weight: .regular)
-        captionLabel.textColor = RDColor.secondaryLabel
+        captionLabel.font = RDFont.caption(weight: .medium)
+        captionLabel.textColor = RDColor.textSecondary
         captionLabel.numberOfLines = 2
         captionLabel.adjustsFontForContentSizeCategory = true
         let stack = UIStackView(axis: .vertical, spacing: 4, arrangedSubviews: [valueLabel, captionLabel])
@@ -360,8 +365,7 @@ final class RDRingView: UIView {
     private let trackLayer = CAShapeLayer()
     private let progressLayer = CAShapeLayer()
     var lineWidth: CGFloat = 14 { didSet { setNeedsLayout() } }
-    var progressColor: UIColor = RDColor.accent { didSet { updateColors() } }
-    var trackColor: UIColor = RDColor.fill { didSet { updateColors() } }
+    var progressColor: UIColor = RDColor.neonGreen { didSet { progressLayer.strokeColor = progressColor.cgColor } }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -372,23 +376,9 @@ final class RDRingView: UIView {
             shape.lineCap = .round
             layer.addSublayer(shape)
         }
+        trackLayer.strokeColor = RDColor.surfaceSecondary.cgColor
+        progressLayer.strokeColor = progressColor.cgColor
         progressLayer.strokeEnd = 0
-        updateColors()
-        if #available(iOS 17.0, *) {
-            registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _) in view.updateColors() }
-        }
-    }
-
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        if #unavailable(iOS 17.0), traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-            updateColors()
-        }
-    }
-
-    private func updateColors() {
-        trackLayer.strokeColor = trackColor.resolvedColor(with: traitCollection).cgColor
-        progressLayer.strokeColor = progressColor.resolvedColor(with: traitCollection).cgColor
     }
 
     required init?(coder: NSCoder) { nil }
@@ -422,7 +412,7 @@ final class RDRingView: UIView {
 
 /// Small weekly bar chart with day labels; the highlighted bar is today.
 final class RDBarChartView: UIView {
-    private let barsStack = UIStackView(axis: .horizontal, spacing: 8)
+    private let barsStack = UIStackView(axis: .horizontal, spacing: 4)
     private let barHeight: CGFloat
 
     init(barHeight: CGFloat = 38) {
@@ -437,19 +427,19 @@ final class RDBarChartView: UIView {
 
     required init?(coder: NSCoder) { nil }
 
-    func render(values: [Int], labels: [String], highlightIndex: Int, highlightColor: UIColor = RDColor.accent) {
+    func render(values: [Int], labels: [String], highlightIndex: Int, highlightColor: UIColor = RDColor.neonGreen) {
         barsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         let peak = max(values.max() ?? 0, 1)
         for (index, value) in values.enumerated() {
             let isToday = index == highlightIndex
-            let bar = RDBlockView(cornerRadius: 4)
-            bar.fillColor = isToday ? highlightColor : (value == 0 ? RDColor.fill : RDColor.separator)
+            let bar = RDSlantedBlockView(slant: 3)
+            bar.fillColor = isToday ? highlightColor : (value == 0 ? RDColor.surfaceSecondary : RDColor.separatorStrong)
             let height = value == 0 ? 3 : max(6, barHeight * CGFloat(value) / CGFloat(peak))
             bar.heightAnchor.constraint(equalToConstant: height).isActive = true
             let label = UILabel()
             label.text = labels.indices.contains(index) ? labels[index] : ""
-            label.font = .systemFont(ofSize: 12, weight: isToday ? .semibold : .regular)
-            label.textColor = isToday ? RDColor.label : RDColor.secondaryLabel
+            label.font = .systemFont(ofSize: 11, weight: .bold)
+            label.textColor = isToday ? highlightColor : RDColor.textMuted
             label.textAlignment = .center
             let column = UIStackView(axis: .vertical, spacing: 4, arrangedSubviews: [bar, label])
             column.alignment = .fill
@@ -460,21 +450,18 @@ final class RDBarChartView: UIView {
     }
 }
 
-/// Solid rounded block for bars and progress segments.
-final class RDBlockView: UIView {
-    private let cornerRadius: CGFloat
-    var fillColor: UIColor = RDColor.fill { didSet { setNeedsDisplay() } }
+/// Solid parallelogram block for bars and progress segments.
+final class RDSlantedBlockView: UIView {
+    private let slant: CGFloat
+    var fillColor: UIColor = RDColor.surfaceSecondary { didSet { setNeedsDisplay() } }
 
-    init(cornerRadius: CGFloat) {
-        self.cornerRadius = cornerRadius
+    init(slant: CGFloat) {
+        self.slant = slant
         super.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
         isOpaque = false
         backgroundColor = .clear
         contentMode = .redraw
-        if #available(iOS 17.0, *) {
-            registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _) in view.setNeedsDisplay() }
-        }
     }
 
     required init?(coder: NSCoder) { nil }
@@ -488,7 +475,7 @@ final class RDBlockView: UIView {
 
     override func draw(_ rect: CGRect) {
         fillColor.setFill()
-        UIBezierPath(roundedRect: bounds, cornerRadius: min(cornerRadius, bounds.height / 2)).fill()
+        UIBezierPath.rdSlanted(in: bounds, slant: slant).fill()
     }
 }
 
@@ -505,8 +492,8 @@ final class RDStarProgressView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         translatesAutoresizingMaskIntoConstraints = false
-        track.backgroundColor = RDColor.label.withAlphaComponent(0.22)
-        fill.backgroundColor = RDColor.accent
+        track.backgroundColor = RDColor.separatorOnDark
+        fill.backgroundColor = RDColor.neonGreen
         [track, fill].forEach {
             $0.layer.cornerRadius = 2
             addSubview($0)
@@ -515,7 +502,7 @@ final class RDStarProgressView: UIView {
         stars = (0..<RepRewardTracker.maximumStars).map { _ in
             let star = UIImageView(image: UIImage(systemName: "star.fill", withConfiguration: configuration))
             star.contentMode = .center
-            star.tintColor = RDColor.tertiaryLabel
+            star.tintColor = RDColor.textMuted
             // Earned stars keep their gold while an alert dims the screen.
             star.tintAdjustmentMode = .normal
             addSubview(star)
@@ -551,7 +538,7 @@ final class RDStarProgressView: UIView {
             self.layoutIfNeeded()
         }
         for (index, star) in stars.enumerated() {
-            star.tintColor = index < lit ? RDColor.reward : RDColor.tertiaryLabel
+            star.tintColor = index < lit ? RDColor.reward : RDColor.textMuted
             if animate, index >= litCount, index < lit {
                 star.transform = CGAffineTransform(scaleX: 1.8, y: 1.8)
                 UIView.animate(
@@ -580,31 +567,11 @@ final class RDHeatmapView: UIView {
         grid.distribution = .fillEqually
         addSubview(grid)
         grid.pinEdges(to: self)
-        if #available(iOS 17.0, *) {
-            registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _) in view.updateTodayBorder() }
-        }
     }
 
     required init?(coder: NSCoder) { nil }
 
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        if #unavailable(iOS 17.0), traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-            updateTodayBorder()
-        }
-    }
-
-    private func updateTodayBorder() {
-        todayCell?.layer.borderColor = RDColor.label.resolvedColor(with: traitCollection).cgColor
-    }
-
-    static let shades: [UIColor] = [
-        RDColor.fill,
-        UIColor { RDColor.accent.resolvedColor(with: $0).withAlphaComponent(0.35) },
-        UIColor { RDColor.accent.resolvedColor(with: $0).withAlphaComponent(0.65) },
-        RDColor.accent
-    ]
-    private var todayCell: UIView?
+    static let shades = [RDColor.surfaceSecondary, UIColor(hex: 0x4F6B0C), UIColor(hex: 0x8DB515), RDColor.neonGreen]
 
     func render(dailyReps: [Int]) {
         grid.arrangedSubviews.forEach { $0.removeFromSuperview() }
@@ -617,18 +584,17 @@ final class RDHeatmapView: UIView {
                 let level = value == 0 ? 0 : min(3, 1 + Int(Double(value) / Double(peak) * 2.99))
                 let cell = UIView()
                 cell.backgroundColor = Self.shades[level]
-                cell.setContinuousCorners(3)
+                cell.layer.cornerRadius = 2
                 cell.translatesAutoresizingMaskIntoConstraints = false
                 cell.heightAnchor.constraint(equalTo: cell.widthAnchor, multiplier: 0.55).isActive = true
                 if index == dailyReps.count - 1 {
+                    cell.layer.borderColor = RDColor.warmWhite.cgColor
                     cell.layer.borderWidth = 2
-                    todayCell = cell
                 }
                 row.addArrangedSubview(cell)
             }
             grid.addArrangedSubview(row)
         }
-        updateTodayBorder()
         isAccessibilityElement = true
         accessibilityLabel = "Training days in the last four weeks: %d".rdLocalizedFormat(dailyReps.filter { $0 > 0 }.count)
     }
@@ -641,15 +607,15 @@ final class RDDeviceStatusCard: UIView {
     private let statusDot = UIView()
     private let detailLabel = UILabel()
 
-    init(symbol: String, title: String, iconTint: UIColor = RDColor.label) {
+    init(symbol: String, title: String, iconTint: UIColor = RDColor.warmWhite) {
         super.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
-        backgroundColor = RDColor.card
-        setContinuousCorners(RDCornerRadius.medium)
+        backgroundColor = RDColor.surface
+        layer.cornerRadius = RDCornerRadius.small
 
         let iconBox = UIView()
-        iconBox.backgroundColor = RDColor.fill
-        iconBox.setContinuousCorners(RDCornerRadius.small)
+        iconBox.backgroundColor = RDColor.surfaceSecondary
+        iconBox.layer.cornerRadius = 26
         iconBox.translatesAutoresizingMaskIntoConstraints = false
         iconView.image = UIImage(systemName: symbol)
         iconView.tintColor = iconTint
@@ -658,14 +624,14 @@ final class RDDeviceStatusCard: UIView {
         iconBox.addSubview(iconView)
 
         titleLabel.text = title.rdLocalized
-        titleLabel.textColor = RDColor.label
-        titleLabel.font = RDFont.body(weight: .semibold)
+        titleLabel.textColor = RDColor.warmWhite
+        titleLabel.font = RDFont.body(weight: .black)
         titleLabel.adjustsFontForContentSizeCategory = true
-        detailLabel.textColor = RDColor.secondaryLabel
+        detailLabel.textColor = RDColor.textSecondary
         detailLabel.font = RDFont.caption(weight: .regular)
         detailLabel.numberOfLines = 0
         detailLabel.adjustsFontForContentSizeCategory = true
-        statusLabel.font = .systemFont(ofSize: 13, weight: .semibold)
+        statusLabel.font = .systemFont(ofSize: 13, weight: .bold)
         statusDot.layer.cornerRadius = 4
         statusDot.translatesAutoresizingMaskIntoConstraints = false
         let status = UIStackView(axis: .horizontal, spacing: 6, arrangedSubviews: [statusDot, statusLabel])
@@ -679,12 +645,12 @@ final class RDDeviceStatusCard: UIView {
         addSubview(row)
         row.pinEdges(to: self, insets: NSDirectionalEdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16))
         NSLayoutConstraint.activate([
-            iconBox.widthAnchor.constraint(equalToConstant: 44),
-            iconBox.heightAnchor.constraint(equalToConstant: 44),
+            iconBox.widthAnchor.constraint(equalToConstant: 52),
+            iconBox.heightAnchor.constraint(equalToConstant: 52),
             iconView.centerXAnchor.constraint(equalTo: iconBox.centerXAnchor),
             iconView.centerYAnchor.constraint(equalTo: iconBox.centerYAnchor),
-            iconView.widthAnchor.constraint(equalToConstant: 24),
-            iconView.heightAnchor.constraint(equalToConstant: 24),
+            iconView.widthAnchor.constraint(equalToConstant: 26),
+            iconView.heightAnchor.constraint(equalToConstant: 26),
             statusDot.widthAnchor.constraint(equalToConstant: 8),
             statusDot.heightAnchor.constraint(equalToConstant: 8)
         ])
@@ -696,7 +662,7 @@ final class RDDeviceStatusCard: UIView {
     func update(status: String, detail: String, connected: Bool) {
         let localizedStatus = status.rdLocalized
         let localizedDetail = detail.rdLocalized
-        let tone = connected ? RDColor.accent : RDColor.tertiaryLabel
+        let tone = connected ? RDColor.neonGreen : RDColor.textMuted
         statusLabel.text = localizedStatus
         statusLabel.textColor = tone
         statusDot.backgroundColor = tone
@@ -722,23 +688,22 @@ final class RDExerciseCard: UIControl {
         self.exercise = exercise
         super.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
-        setContinuousCorners(RDCornerRadius.medium)
+        layer.cornerRadius = RDCornerRadius.small
         layer.borderWidth = 2
 
         symbolView.image = UIImage(systemName: exercise.symbolName)
         symbolView.contentMode = .scaleAspectFit
         symbolView.translatesAutoresizingMaskIntoConstraints = false
         tagLabel.setEyebrow(exercise.scoreboardName)
-        tagLabel.isHidden = true
-        dot.layer.cornerRadius = 11
+        dot.layer.cornerRadius = 7
         dot.layer.borderWidth = 2
         dot.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.text = exercise.displayName
-        titleLabel.font = RDFont.title(22)
+        titleLabel.font = RDFont.title(24)
         titleLabel.adjustsFontForContentSizeCategory = true
         titleLabel.adjustsFontSizeToFitWidth = true
         titleLabel.minimumScaleFactor = 0.7
-        bestLabel.font = RDFont.caption(weight: .regular)
+        bestLabel.font = RDFont.caption(weight: .medium)
         bestLabel.adjustsFontForContentSizeCategory = true
 
         let top = UIStackView(axis: .horizontal, spacing: 8, arrangedSubviews: [tagLabel, UIView(), dot])
@@ -755,18 +720,15 @@ final class RDExerciseCard: UIControl {
         addSubview(stack)
         stack.pinEdges(to: self, insets: NSDirectionalEdgeInsets(top: 14, leading: 14, bottom: 14, trailing: 14))
         NSLayoutConstraint.activate([
-            heightAnchor.constraint(greaterThanOrEqualToConstant: 120),
-            dot.widthAnchor.constraint(equalToConstant: 22),
-            dot.heightAnchor.constraint(equalToConstant: 22),
+            heightAnchor.constraint(greaterThanOrEqualToConstant: 132),
+            dot.widthAnchor.constraint(equalToConstant: 14),
+            dot.heightAnchor.constraint(equalToConstant: 14),
             symbolView.widthAnchor.constraint(equalToConstant: 40),
             symbolView.heightAnchor.constraint(equalToConstant: 40)
         ])
         accessibilityTraits = .button
         setPersonalBest(0)
         updateAppearance()
-        if #available(iOS 17.0, *) {
-            registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: Self, _) in view.updateAppearance() }
-        }
     }
 
     required init?(coder: NSCoder) { nil }
@@ -783,12 +745,7 @@ final class RDExerciseCard: UIControl {
     }
 
     override var isHighlighted: Bool {
-        didSet {
-            let pressed = isHighlighted
-            UIView.animate(withDuration: pressed ? 0.1 : 0.2, delay: 0, options: [.beginFromCurrentState, .allowUserInteraction]) {
-                self.transform = pressed && !UIAccessibility.isReduceMotionEnabled ? CGAffineTransform(scaleX: 0.97, y: 0.97) : .identity
-            }
-        }
+        didSet { alpha = isHighlighted ? 0.72 : 1 }
     }
 
     func setPersonalBest(_ reps: Int) {
@@ -797,14 +754,15 @@ final class RDExerciseCard: UIControl {
     }
 
     private func updateAppearance() {
-        backgroundColor = RDColor.card
-        layer.borderColor = (isSelected ? RDColor.accent : UIColor.clear).resolvedColor(with: traitCollection).cgColor
-        titleLabel.textColor = RDColor.label
-        symbolView.tintColor = isSelected ? RDColor.accent : RDColor.secondaryLabel
-        tagLabel.textColor = RDColor.secondaryLabel
-        bestLabel.textColor = RDColor.secondaryLabel
-        dot.layer.borderColor = (isSelected ? RDColor.accent : RDColor.separator).resolvedColor(with: traitCollection).cgColor
-        dot.backgroundColor = isSelected ? RDColor.accent : .clear
+        let accent = isSelected ? RDColor.neonGreen : RDColor.warmWhite
+        backgroundColor = isSelected ? RDColor.neonTint : RDColor.surface
+        layer.borderColor = (isSelected ? RDColor.neonGreen : RDColor.surfaceSecondary).cgColor
+        titleLabel.textColor = accent
+        symbolView.tintColor = accent
+        tagLabel.textColor = isSelected ? RDColor.neonGreen : RDColor.textMuted
+        bestLabel.textColor = isSelected ? RDColor.warmWhite : RDColor.textSecondary
+        dot.layer.borderColor = (isSelected ? RDColor.neonGreen : RDColor.separatorStrong).cgColor
+        dot.backgroundColor = isSelected ? RDColor.neonGreen : .clear
         accessibilityValue = (isSelected ? "Selected" : "Not selected").rdLocalized
         accessibilityTraits = isSelected ? [.button, .selected] : .button
     }
@@ -875,47 +833,24 @@ final class RDCameraGuideOverlay: UIView {
             path.addLine(to: CGPoint(x: corner.x + dx, y: corner.y))
         }
         cornersLayer.path = path.cgPath
-        cornersLayer.strokeColor = (quality.permitsCounting ? RDColor.accent : RDColor.warning).cgColor
+        cornersLayer.strokeColor = (quality.permitsCounting ? RDColor.neonGreen : RDColor.warning).cgColor
         cornersLayer.opacity = quality.permitsCounting ? 1 : 0.6
     }
 }
 
-/// Lets the visible screen pick the status bar style, so camera stages stay
-/// light-on-black while the rest of the app follows the system appearance.
-final class RDNavigationController: UINavigationController {
-    override var childForStatusBarStyle: UIViewController? { topViewController }
-}
-
 class RDBaseViewController: UIViewController {
-    override var preferredStatusBarStyle: UIStatusBarStyle {
-        overrideUserInterfaceStyle == .dark ? .lightContent : .default
-    }
-
-    /// Camera screens are always dark: black stage, white type, transparent bar.
-    func useCameraStageAppearance() {
-        overrideUserInterfaceStyle = .dark
-        view.backgroundColor = RDColor.camera
-        let clearBar = UINavigationBarAppearance()
-        clearBar.configureWithTransparentBackground()
-        clearBar.titleTextAttributes = [.foregroundColor: UIColor.white]
-        navigationItem.standardAppearance = clearBar
-        navigationItem.scrollEdgeAppearance = clearBar
-        navigationItem.compactAppearance = clearBar
-        setNeedsStatusBarAppearanceUpdate()
-    }
+    override var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = RDColor.background
         navigationItem.backButtonDisplayMode = .minimal
-        // Large titles are opt-in per screen; flows without a title keep a compact bar.
-        navigationItem.largeTitleDisplayMode = .never
+        navigationController?.navigationBar.tintColor = RDColor.warmWhite
     }
 
     func makeScrollableContent(pinnedFooter: UIView? = nil) -> (UIScrollView, UIStackView) {
         let scrollView = UIScrollView()
         scrollView.alwaysBounceVertical = true
-        scrollView.contentInsetAdjustmentBehavior = .automatic
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         let stack = UIStackView(axis: .vertical, spacing: RDSpacing.lg)
         scrollView.addSubview(stack)
@@ -964,7 +899,7 @@ class RDBaseViewController: UIViewController {
         return footer
     }
 
-    func makeLabel(text: String, font: UIFont, color: UIColor = RDColor.label, lines: Int = 0) -> UILabel {
+    func makeLabel(text: String, font: UIFont, color: UIColor = RDColor.warmWhite, lines: Int = 0) -> UILabel {
         let label = UILabel()
         label.text = text.rdLocalized
         label.font = font
@@ -974,7 +909,7 @@ class RDBaseViewController: UIViewController {
         return label
     }
 
-    func makeEyebrow(_ text: String, color: UIColor = RDColor.secondaryLabel) -> UILabel {
+    func makeEyebrow(_ text: String, color: UIColor = RDColor.textSecondary) -> UILabel {
         let label = UILabel()
         label.setEyebrow(text.rdLocalized, color: color)
         label.numberOfLines = 0
@@ -984,8 +919,8 @@ class RDBaseViewController: UIViewController {
     func makeCard() -> UIView {
         let card = UIView()
         card.translatesAutoresizingMaskIntoConstraints = false
-        card.backgroundColor = RDColor.card
-        card.setContinuousCorners(RDCornerRadius.medium)
+        card.backgroundColor = RDColor.surface
+        card.layer.cornerRadius = RDCornerRadius.small
         return card
     }
 }

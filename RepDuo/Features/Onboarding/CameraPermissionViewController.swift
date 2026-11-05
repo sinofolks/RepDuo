@@ -16,7 +16,7 @@ final class CameraPermissionViewController: RDBaseViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        let button = RDPrimaryButton(title: "OPEN SETTINGS")
+        let button = RDPrimaryButton(title: "OPEN SETTINGS", symbolName: "arrow.up.right")
         button.accessibilityIdentifier = "cameraPermission.settings"
         button.addAction(UIAction { [weak self] _ in self?.service.openSystemSettings() }, for: .touchUpInside)
         let (_, stack) = makeScrollableContent(pinnedFooter: makeFooter([button]))
@@ -41,12 +41,12 @@ final class CameraPermissionViewController: RDBaseViewController {
         let iconRow = UIStackView(axis: .horizontal, spacing: 0, arrangedSubviews: [iconBox, UIView()])
 
         let eyebrow = makeEyebrow("CAMERA OFF · CAMERA ACCESS IS OFF", color: RDColor.warning)
-        let title = makeLabel(text: "LET REPDUO\nSEE THE MOVE.", font: RDFont.title(34))
+        let title = makeLabel(text: "LET REPDUO\nSEE THE MOVE.", font: RDFont.display(42))
         title.accessibilityTraits = .header
         let body = makeLabel(
             text: "Counting and AI scoring need the camera. Frames are processed on this iPhone and never recorded.",
             font: RDFont.body(),
-            color: RDColor.secondaryLabel
+            color: RDColor.textSecondary
         )
 
         let steps = makeCard()
@@ -80,7 +80,7 @@ final class CameraPermissionViewController: RDBaseViewController {
         let numberLabel = UILabel()
         numberLabel.text = String(number)
         numberLabel.font = RDFont.numeric(26)
-        numberLabel.textColor = RDColor.accent
+        numberLabel.textColor = RDColor.neonGreen
         numberLabel.widthAnchor.constraint(equalToConstant: 22).isActive = true
         let label = makeLabel(text: text, font: RDFont.body(weight: .medium))
         let row = UIStackView(axis: .horizontal, spacing: 14, arrangedSubviews: [numberLabel, label])

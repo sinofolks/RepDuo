@@ -170,7 +170,7 @@ final class AppCoordinator {
         controller.onDone = { [weak self] in self?.showChoose(animated: true) }
         controller.onShare = { [weak self] content in
             let share = ShareCardViewController(content: content)
-            share.modalPresentationStyle = .pageSheet
+            share.modalPresentationStyle = .fullScreen
             self?.navigationController.present(share, animated: true)
         }
         controller.onAnotherSet = { [weak self] in
@@ -200,10 +200,17 @@ final class AppCoordinator {
     }
 
     private func configureNavigationBar() {
-        // System bar materials: transparent at the scroll edge, blurred once content
-        // scrolls under. Screens opt in or out of large titles individually.
-        let bar = navigationController.navigationBar
-        bar.prefersLargeTitles = true
-        bar.tintColor = RDColor.accent
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithTransparentBackground()
+        appearance.backgroundColor = RDColor.background
+        appearance.shadowColor = .clear
+        appearance.titleTextAttributes = [
+            .foregroundColor: RDColor.warmWhite,
+            .font: UIFont.systemFont(ofSize: 16, weight: .black)
+        ]
+        navigationController.navigationBar.standardAppearance = appearance
+        navigationController.navigationBar.scrollEdgeAppearance = appearance
+        navigationController.navigationBar.compactAppearance = appearance
+        navigationController.navigationBar.tintColor = RDColor.warmWhite
     }
 }

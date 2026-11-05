@@ -4,9 +4,9 @@ import CoreImage
 /// image stays as it is, a soft accent fill rises along the body with rep
 /// depth, and a thin rim brightens at the bottom of each rep.
 struct BodyStageCompositor {
-    /// RDColor.accent in dark appearance; the camera stage is always dark.
-    var fillColor = (red: 0.19, green: 0.82, blue: 0.35)
-    /// RDColor.reward in dark appearance.
+    /// RDColor.neonGreen.
+    var fillColor = (red: 0.78, green: 1.0, blue: 0.12)
+    /// RDColor.reward.
     var goldColor = (red: 1.0, green: 0.84, blue: 0.04)
 
     /// - Parameters:
