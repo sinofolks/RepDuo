@@ -721,7 +721,7 @@ final class RDExerciseCard: UIControl {
         addSubview(stack)
         stack.pinEdges(to: self, insets: NSDirectionalEdgeInsets(top: 14, leading: 14, bottom: 14, trailing: 14))
         NSLayoutConstraint.activate([
-            heightAnchor.constraint(greaterThanOrEqualToConstant: 132),
+            heightAnchor.constraint(greaterThanOrEqualToConstant: 116),
             dot.widthAnchor.constraint(equalToConstant: 14),
             dot.heightAnchor.constraint(equalToConstant: 14),
             symbolView.widthAnchor.constraint(equalToConstant: 52),
@@ -769,8 +769,8 @@ final class RDExerciseCard: UIControl {
     }
 }
 
-/// Side-view stick figures for each exercise. Tracking reads the body from the side,
-/// so icons and the camera guide show the pose the way the camera should see it.
+/// Stick figures for each exercise, drawn the way the camera should see the pose:
+/// side-on for most moves, front-on for jumping jacks.
 enum RDSideProfile {
     private struct Figure {
         let head: CGPoint
@@ -798,6 +798,48 @@ enum RDSideProfile {
                 limbs: [
                     [CGPoint(x: 0.76, y: 0.53), CGPoint(x: 0.40, y: 0.61), CGPoint(x: 0.06, y: 0.70)],
                     [CGPoint(x: 0.76, y: 0.53), CGPoint(x: 0.77, y: 0.82)]
+                ]
+            )
+        case .lunge:
+            return Figure(
+                head: CGPoint(x: 0.50, y: 0.10),
+                headRadius: 0.085,
+                limbs: [
+                    [CGPoint(x: 0.50, y: 0.22), CGPoint(x: 0.50, y: 0.52), CGPoint(x: 0.78, y: 0.56),
+                     CGPoint(x: 0.78, y: 0.92), CGPoint(x: 0.90, y: 0.92)],
+                    [CGPoint(x: 0.50, y: 0.52), CGPoint(x: 0.34, y: 0.84), CGPoint(x: 0.10, y: 0.80)],
+                    [CGPoint(x: 0.50, y: 0.27), CGPoint(x: 0.56, y: 0.50)]
+                ]
+            )
+        case .gluteBridge:
+            return Figure(
+                head: CGPoint(x: 0.09, y: 0.70),
+                headRadius: 0.07,
+                limbs: [
+                    [CGPoint(x: 0.20, y: 0.74), CGPoint(x: 0.52, y: 0.52), CGPoint(x: 0.76, y: 0.40),
+                     CGPoint(x: 0.84, y: 0.78), CGPoint(x: 0.94, y: 0.78)],
+                    [CGPoint(x: 0.21, y: 0.77), CGPoint(x: 0.46, y: 0.80)]
+                ]
+            )
+        case .sitUp:
+            return Figure(
+                head: CGPoint(x: 0.20, y: 0.34),
+                headRadius: 0.075,
+                limbs: [
+                    [CGPoint(x: 0.26, y: 0.46), CGPoint(x: 0.40, y: 0.80), CGPoint(x: 0.64, y: 0.54),
+                     CGPoint(x: 0.86, y: 0.80)],
+                    [CGPoint(x: 0.27, y: 0.50), CGPoint(x: 0.52, y: 0.52)]
+                ]
+            )
+        case .jumpingJack:
+            // Filmed from the front, so this one is a frontal star.
+            return Figure(
+                head: CGPoint(x: 0.50, y: 0.12),
+                headRadius: 0.085,
+                limbs: [
+                    [CGPoint(x: 0.50, y: 0.24), CGPoint(x: 0.50, y: 0.56)],
+                    [CGPoint(x: 0.16, y: 0.06), CGPoint(x: 0.50, y: 0.29), CGPoint(x: 0.84, y: 0.06)],
+                    [CGPoint(x: 0.22, y: 0.94), CGPoint(x: 0.50, y: 0.56), CGPoint(x: 0.78, y: 0.94)]
                 ]
             )
         }

@@ -392,6 +392,15 @@ final class MovementCoach {
                 second: (.rightShoulder, .rightElbow, .rightWrist),
                 joints: joints
             )
+        case .jumpingJack:
+            return angleDifference(
+                first: (.leftHip, .leftShoulder, .leftWrist),
+                second: (.rightHip, .rightShoulder, .rightWrist),
+                joints: joints
+            )
+        case .lunge, .gluteBridge, .sitUp:
+            // Lunges are asymmetric by design; floor moves are filmed side-on with one side hidden.
+            return nil
         }
     }
 
@@ -449,11 +458,22 @@ final class MovementCoach {
     }
 
     private var defaultExpectedRange: Double {
-        exercise == .squat ? 65 : 70
+        switch exercise {
+        case .squat: return 65
+        case .pushUp: return 70
+        case .lunge: return 52
+        case .gluteBridge: return 36
+        case .sitUp: return 52
+        case .jumpingJack: return 95
+        }
     }
 
     private var symmetryThreshold: Double {
-        exercise == .squat ? 18 : 22
+        switch exercise {
+        case .squat: return 18
+        case .jumpingJack: return 28
+        case .pushUp, .lunge, .gluteBridge, .sitUp: return 22
+        }
     }
 
     private var alignmentThreshold: Double { 0.09 }

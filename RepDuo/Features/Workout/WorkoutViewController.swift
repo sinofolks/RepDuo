@@ -157,7 +157,7 @@ final class WorkoutViewController: RDBaseViewController {
     }
 
     private func configureCameraSurface() {
-        let fallbackImage = UIImage(named: session.exercise.demoImageName)
+        let fallbackImage = session.exercise.demoImageName.flatMap { UIImage(named: $0) }
         fallbackImageView.image = fallbackImage
         if let fallbackImage {
             BlackStageImageProcessor.render(fallbackImage) { [weak self] processed in

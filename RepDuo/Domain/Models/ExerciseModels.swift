@@ -3,40 +3,39 @@ import Foundation
 public enum ExerciseType: String, Codable, CaseIterable, Sendable {
     case squat
     case pushUp
+    case lunge
+    case gluteBridge
+    case sitUp
+    case jumpingJack
 
-    var displayName: String {
-        switch self {
-        case .squat: return "SQUAT".rdLocalized
-        case .pushUp: return "PUSH-UP".rdLocalized
-        }
-    }
+    var displayName: String { scoreboardName.rdLocalized }
 
     /// Untranslated label for condensed scoreboard captions.
     var scoreboardName: String {
         switch self {
         case .squat: return "SQUAT"
         case .pushUp: return "PUSH-UP"
+        case .lunge: return "LUNGE"
+        case .gluteBridge: return "GLUTE BRIDGE"
+        case .sitUp: return "SIT-UP"
+        case .jumpingJack: return "JUMPING JACK"
         }
     }
 
-    var shortInstruction: String {
+    /// Floor moves are filmed lying down, so framing checks use the longer body axis.
+    var isFloorMove: Bool {
         switch self {
-        case .squat: return "Head, hips, knees and ankles in frame.".rdLocalized
-        case .pushUp: return "Face the camera with your full body visible.".rdLocalized
+        case .pushUp, .gluteBridge, .sitUp: return true
+        case .squat, .lunge, .jumpingJack: return false
         }
     }
 
-    var demoImageName: String {
+    /// Asset for demo mode; only some moves ship a reference photo.
+    var demoImageName: String? {
         switch self {
         case .squat: return "SquatDemo"
         case .pushUp: return "PushUpDemo"
-        }
-    }
-
-    var symbolName: String {
-        switch self {
-        case .squat: return "figure.strengthtraining.traditional"
-        case .pushUp: return "figure.core.training"
+        case .lunge, .gluteBridge, .sitUp, .jumpingJack: return nil
         }
     }
 }
@@ -54,10 +53,13 @@ public enum BodyTrackingMode: String, Codable, CaseIterable, Sendable {
 
     func setupTitle(for exercise: ExerciseType) -> String {
         switch (self, exercise) {
-        case (.fullBody, .squat): return "GET YOUR FULL\nBODY IN FRAME.".rdLocalized
         case (.fullBody, .pushUp): return "FACE THE CAMERA\nIN PUSH-UP POSITION.".rdLocalized
-        case (.partialBody, .squat): return "FRAME YOUR\nLOWER BODY.".rdLocalized
-        case (.partialBody, .pushUp): return "FRAME YOUR\nUPPER BODY.".rdLocalized
+        case (.fullBody, .jumpingJack): return "FACE THE CAMERA\nWITH ROOM TO JUMP.".rdLocalized
+        case (.fullBody, .gluteBridge), (.fullBody, .sitUp): return "LIE SIDE-ON\nTO THE PHONE.".rdLocalized
+        case (.fullBody, _): return "GET YOUR FULL\nBODY IN FRAME.".rdLocalized
+        case (.partialBody, .squat), (.partialBody, .lunge): return "FRAME YOUR\nLOWER BODY.".rdLocalized
+        case (.partialBody, .pushUp), (.partialBody, .jumpingJack): return "FRAME YOUR\nUPPER BODY.".rdLocalized
+        case (.partialBody, .gluteBridge), (.partialBody, .sitUp): return "FRAME YOUR\nWORKING SIDE.".rdLocalized
         }
     }
 
@@ -65,8 +67,15 @@ public enum BodyTrackingMode: String, Codable, CaseIterable, Sendable {
         switch (self, exercise) {
         case (.fullBody, .squat): return "Head, hips, knees and ankles in frame.".rdLocalized
         case (.fullBody, .pushUp): return "Face the camera with your full body visible.".rdLocalized
-        case (.partialBody, .squat): return "Keep one hip, knee and ankle in frame.".rdLocalized
+        case (.fullBody, .lunge): return "Stand side-on with head, hips, knees and ankles in frame.".rdLocalized
+        case (.fullBody, .gluteBridge), (.fullBody, .sitUp):
+            return "Lie side-on with shoulders, hips, knees and ankles in frame.".rdLocalized
+        case (.fullBody, .jumpingJack): return "Face the camera with arms and feet in frame.".rdLocalized
+        case (.partialBody, .squat), (.partialBody, .lunge): return "Keep one hip, knee and ankle in frame.".rdLocalized
         case (.partialBody, .pushUp): return "Face the camera with both shoulders, elbows and wrists visible.".rdLocalized
+        case (.partialBody, .gluteBridge), (.partialBody, .sitUp):
+            return "Keep one shoulder, hip and knee in frame.".rdLocalized
+        case (.partialBody, .jumpingJack): return "Face the camera with shoulders, wrists and hips visible.".rdLocalized
         }
     }
 }

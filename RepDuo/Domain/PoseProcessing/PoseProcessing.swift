@@ -53,15 +53,21 @@ enum PoseFramingEvaluator {
                 guidance: (centerX < 0.28 ? "Move right toward the center of the guide." : "Move left toward the center of the guide.").rdLocalized
             )
         }
+        // Floor moves lie along the frame, so they are judged by the longer axis.
+        let extent = exercise.isFloorMove ? max(width, height) : height
         switch (trackingMode, exercise) {
-        case (.fullBody, .squat) where height < 0.48:
+        case (.fullBody, .squat) where extent < 0.48, (.fullBody, .lunge) where extent < 0.48:
             return PoseFramingEvaluation(isReady: false, guidance: "Move the phone closer while keeping head and ankles visible.".rdLocalized)
-        case (.fullBody, .pushUp) where max(width, height) < 0.52:
+        case (.fullBody, .pushUp) where extent < 0.52, (.fullBody, .jumpingJack) where extent < 0.52:
             return PoseFramingEvaluation(isReady: false, guidance: "Move the phone closer while keeping your full body and both arms visible.".rdLocalized)
-        case (.partialBody, .squat) where height < 0.30:
+        case (.fullBody, .gluteBridge) where extent < 0.52, (.fullBody, .sitUp) where extent < 0.52:
+            return PoseFramingEvaluation(isReady: false, guidance: "Move the phone closer while keeping shoulders and ankles visible.".rdLocalized)
+        case (.partialBody, .squat) where extent < 0.30, (.partialBody, .lunge) where extent < 0.30:
             return PoseFramingEvaluation(isReady: false, guidance: "Move the phone closer while keeping hip, knee and ankle visible.".rdLocalized)
-        case (.partialBody, .pushUp) where max(width, height) < 0.30:
+        case (.partialBody, .pushUp) where extent < 0.30, (.partialBody, .jumpingJack) where extent < 0.30:
             return PoseFramingEvaluation(isReady: false, guidance: "Move the phone closer while keeping both arms visible.".rdLocalized)
+        case (.partialBody, .gluteBridge) where extent < 0.30, (.partialBody, .sitUp) where extent < 0.30:
+            return PoseFramingEvaluation(isReady: false, guidance: "Move the phone closer while keeping shoulder, hip and knee visible.".rdLocalized)
         default:
             return PoseFramingEvaluation(isReady: true, guidance: "Hold steady while RepDuo locks your position.".rdLocalized)
         }
@@ -158,6 +164,35 @@ enum PoseQualityEvaluator {
                 [.leftShoulder, .leftElbow, .leftWrist],
                 [.rightShoulder, .rightElbow, .rightWrist]
             ]
+        case (.fullBody, .lunge):
+            return [
+                [.nose, .leftHip, .leftKnee, .leftAnkle, .rightHip, .rightKnee, .rightAnkle],
+                [.nose, .leftHip, .leftKnee, .leftAnkle],
+                [.nose, .rightHip, .rightKnee, .rightAnkle]
+            ]
+        case (.partialBody, .lunge):
+            return [
+                [.leftHip, .leftKnee, .leftAnkle],
+                [.rightHip, .rightKnee, .rightAnkle]
+            ]
+        case (.fullBody, .gluteBridge), (.fullBody, .sitUp):
+            return [
+                [.leftShoulder, .leftHip, .leftKnee, .leftAnkle],
+                [.rightShoulder, .rightHip, .rightKnee, .rightAnkle]
+            ]
+        case (.partialBody, .gluteBridge), (.partialBody, .sitUp):
+            return [
+                [.leftShoulder, .leftHip, .leftKnee],
+                [.rightShoulder, .rightHip, .rightKnee]
+            ]
+        case (.fullBody, .jumpingJack):
+            return [[
+                .nose,
+                .leftShoulder, .leftWrist, .rightShoulder, .rightWrist,
+                .leftHip, .rightHip, .leftAnkle, .rightAnkle
+            ]]
+        case (.partialBody, .jumpingJack):
+            return [[.leftShoulder, .leftWrist, .rightShoulder, .rightWrist, .leftHip, .rightHip]]
         }
     }
 }
@@ -187,8 +222,45 @@ enum PoseMeasurementBuilder {
 
         case .pushUp:
             return pushUpMeasurement(joints: joints, trackingMode: trackingMode)
+
+        case .lunge:
+            // Both knees bend in a lunge; the deeper one carries the rep.
+            let angles = [
+                triplet(.leftHip, .leftKnee, .leftAnkle, joints: joints),
+                triplet(.rightHip, .rightKnee, .rightAnkle, joints: joints)
+            ].compactMap { $0 }.map { PoseGeometry.angle($0.0, vertex: $0.1, $0.2) }
+            return PoseMeasurement(angle: angles.min(), formAcceptable: !angles.isEmpty)
+
+        case .gluteBridge, .sitUp:
+            let left = triplet(.leftShoulder, .leftHip, .leftKnee, joints: joints)
+            let right = triplet(.rightShoulder, .rightHip, .rightKnee, joints: joints)
+            guard let selected = selectHigherConfidence(left, right) else {
+                return PoseMeasurement(angle: nil, formAcceptable: false)
+            }
+            let hipAngle = PoseGeometry.angle(selected.0, vertex: selected.1, selected.2)
+            guard exercise == .gluteBridge else {
+                return PoseMeasurement(angle: hipAngle, formAcceptable: true)
+            }
+            // The bridge opens the hip from about 130° lying down to a straight line at the top.
+            // Flip it so resting reads high and the lift reads low, like every other move.
+            return PoseMeasurement(angle: min(180, max(0, gluteBridgeFlip - hipAngle)), formAcceptable: true)
+
+        case .jumpingJack:
+            // Arm raise is the hip–shoulder–wrist angle: near 0° at the sides, near 180° overhead.
+            let arms = [
+                triplet(.leftHip, .leftShoulder, .leftWrist, joints: joints),
+                triplet(.rightHip, .rightShoulder, .rightWrist, joints: joints)
+            ].compactMap { $0 }
+            guard !arms.isEmpty else { return PoseMeasurement(angle: nil, formAcceptable: false) }
+            let weights = arms.map(confidence(of:))
+            let raise = zip(arms, weights).map { PoseGeometry.angle($0.0, vertex: $0.1, $0.2) * $1 }
+                .reduce(0, +) / max(.ulpOfOne, weights.reduce(0, +))
+            return PoseMeasurement(angle: 180 - raise, formAcceptable: true)
         }
     }
+
+    /// Hip angle that maps a 175° bridge top to 130° and a 135° rest to 170°.
+    static let gluteBridgeFlip = 305.0
 
     private static func pushUpMeasurement(
         joints: [BodyJoint: JointPoint],

@@ -1,14 +1,23 @@
 import UIKit
 
 final class HistoryViewController: RDBaseViewController {
-    private enum Filter: Int, CaseIterable {
-        case all, squat, pushUp
+    private enum Filter: Equatable {
+        case all
+        case exercise(ExerciseType)
+
+        static let allCases: [Filter] = [.all] + ExerciseType.allCases.map(Filter.exercise)
 
         var title: String {
             switch self {
             case .all: return "ALL".rdLocalized
-            case .squat: return ExerciseType.squat.displayName
-            case .pushUp: return ExerciseType.pushUp.displayName
+            case .exercise(let exercise): return exercise.displayName
+            }
+        }
+
+        var identifier: String {
+            switch self {
+            case .all: return "all"
+            case .exercise(let exercise): return exercise.rawValue
             }
         }
     }
@@ -16,8 +25,7 @@ final class HistoryViewController: RDBaseViewController {
     private let store: WorkoutPersistenceStore
     private let tableView = UITableView(frame: .zero, style: .plain)
     private let headerContainer = UIView()
-    private let squatBest = RDStatTile(caption: "", valueColor: RDColor.neonGreen, valueSize: 44)
-    private let pushUpBest = RDStatTile(caption: "", valueSize: 44)
+    private let bestsGrid = UIStackView(axis: .vertical, spacing: 8)
     private let heatmap = RDHeatmapView()
     private let streakLabel = UILabel()
     private var filterButtons: [UIButton] = []
@@ -67,9 +75,6 @@ final class HistoryViewController: RDBaseViewController {
         let title = makeLabel(text: "HISTORY", font: RDFont.display(34))
         title.accessibilityTraits = .header
 
-        let bests = UIStackView(axis: .horizontal, spacing: 8, arrangedSubviews: [squatBest, pushUpBest])
-        bests.distribution = .fillEqually
-
         let calendarCard = makeCard()
         let calendarTitle = makeLabel(text: "Last 4 weeks", font: RDFont.body(weight: .black))
         streakLabel.font = .systemFont(ofSize: 13, weight: .bold)
@@ -95,10 +100,22 @@ final class HistoryViewController: RDBaseViewController {
         calendarCard.addSubview(calendarStack)
         calendarStack.pinEdges(to: calendarCard, insets: NSDirectionalEdgeInsets(top: 14, leading: 14, bottom: 14, trailing: 14))
 
+        // Six moves no longer fit in one row, so the chips scroll sideways.
         let filters = UIStackView(axis: .horizontal, spacing: 8, arrangedSubviews: Filter.allCases.map(makeFilterButton))
-        let filterRow = UIStackView(axis: .horizontal, spacing: 0, arrangedSubviews: [filters, UIView()])
+        let filterRow = UIScrollView()
+        filterRow.showsHorizontalScrollIndicator = false
+        filterRow.translatesAutoresizingMaskIntoConstraints = false
+        filterRow.addSubview(filters)
+        NSLayoutConstraint.activate([
+            filters.leadingAnchor.constraint(equalTo: filterRow.contentLayoutGuide.leadingAnchor),
+            filters.trailingAnchor.constraint(equalTo: filterRow.contentLayoutGuide.trailingAnchor),
+            filters.topAnchor.constraint(equalTo: filterRow.contentLayoutGuide.topAnchor),
+            filters.bottomAnchor.constraint(equalTo: filterRow.contentLayoutGuide.bottomAnchor),
+            filters.heightAnchor.constraint(equalTo: filterRow.frameLayoutGuide.heightAnchor)
+        ])
+        filterRow.heightAnchor.constraint(equalTo: filters.heightAnchor).isActive = true
 
-        let stack = UIStackView(axis: .vertical, spacing: 8, arrangedSubviews: [title, bests, calendarCard, filterRow])
+        let stack = UIStackView(axis: .vertical, spacing: 8, arrangedSubviews: [title, bestsGrid, calendarCard, filterRow])
         stack.setCustomSpacing(16, after: title)
         stack.setCustomSpacing(18, after: calendarCard)
         headerContainer.addSubview(stack)
@@ -119,8 +136,7 @@ final class HistoryViewController: RDBaseViewController {
             return outgoing
         }
         button.configuration = configuration
-        button.tag = filter.rawValue
-        button.accessibilityIdentifier = "history.filter.\(filter.rawValue)"
+        button.accessibilityIdentifier = "history.filter.\(filter.identifier)"
         button.addAction(UIAction { [weak self] _ in
             self?.filter = filter
             self?.renderFilters()
@@ -131,8 +147,8 @@ final class HistoryViewController: RDBaseViewController {
     }
 
     private func renderFilters() {
-        for button in filterButtons {
-            let isSelected = button.tag == filter.rawValue
+        for (button, candidate) in zip(filterButtons, Filter.allCases) {
+            let isSelected = candidate == filter
             button.configuration?.baseBackgroundColor = isSelected ? RDColor.warmWhite : RDColor.surface
             button.configuration?.baseForegroundColor = isSelected ? RDColor.background : RDColor.textBody
             button.accessibilityTraits = isSelected ? [.button, .selected] : .button
@@ -147,7 +163,7 @@ final class HistoryViewController: RDBaseViewController {
             return
         }
         let label = UILabel()
-        label.text = "NO SETS YET\n\nFinish a squat or push-up set to see it here.".rdLocalized
+        label.text = "NO SETS YET\n\nFinish a set to see it here.".rdLocalized
         label.textColor = RDColor.textSecondary
         label.font = RDFont.body(weight: .semibold)
         label.numberOfLines = 0
@@ -160,8 +176,7 @@ final class HistoryViewController: RDBaseViewController {
 
     private var filteredRecords: [WorkoutSummary] {
         switch filter {
-        case .squat: return records.filter { $0.exercise == .squat }
-        case .pushUp: return records.filter { $0.exercise == .pushUp }
+        case .exercise(let exercise): return records.filter { $0.exercise == exercise }
         case .all: return records
         }
     }
@@ -175,11 +190,30 @@ final class HistoryViewController: RDBaseViewController {
             present(alert, animated: true)
         }
         stats = WorkoutStats(summaries: records)
-        renderBest(squatBest, exercise: .squat)
-        renderBest(pushUpBest, exercise: .pushUp)
+        renderBests()
         heatmap.render(dailyReps: stats.recentDailyReps)
         streakLabel.text = stats.streakDays > 0 ? "%d-day streak".rdLocalizedFormat(stats.streakDays) : nil
         reloadRows()
+    }
+
+    /// Best-set tiles for every move that has a set, two per row; squat and
+    /// push-up stand in with dashes before anything is recorded.
+    private func renderBests() {
+        bestsGrid.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        let trained = ExerciseType.allCases.filter { stats.personalBest(for: $0) > 0 }
+        let shown = trained.isEmpty ? [.squat, .pushUp] : trained
+        let tiles = shown.enumerated().map { index, exercise -> RDStatTile in
+            let tile = RDStatTile(caption: "", valueColor: index == 0 ? RDColor.neonGreen : RDColor.warmWhite, valueSize: 44)
+            renderBest(tile, exercise: exercise)
+            return tile
+        }
+        for index in stride(from: 0, to: tiles.count, by: 2) {
+            let pair: [UIView] = Array(tiles[index..<min(index + 2, tiles.count)])
+            let row = UIStackView(axis: .horizontal, spacing: 8, arrangedSubviews: pair.count == 2 ? pair : pair + [UIView()])
+            row.distribution = .fillEqually
+            bestsGrid.addArrangedSubview(row)
+        }
+        view.setNeedsLayout()
     }
 
     private func renderBest(_ tile: RDStatTile, exercise: ExerciseType) {

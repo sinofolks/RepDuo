@@ -209,7 +209,6 @@
 "ALL" = "全部";
 "HISTORY" = "训练记录";
 "History unavailable" = "无法读取训练记录";
-"NO SETS YET\n\nFinish a squat or push-up set to see it here." = "还没有训练记录\n\n完成一组深蹲或俯卧撑后，记录会显示在这里。";
 "%1$@ · %2$d REPS" = "%1$@ · %2$d 次";
 "%1$@, %2$d reps, %3$@" = "%1$@，%2$d 次，%3$@";
 
@@ -390,3 +389,19 @@
 "×%d combo" = "×%d 连击";
 "%d of 5 stars" = "%d 星（满分 5 星）";
 "Best combo ×%1$d · %2$d perfect" = "最高连击 ×%1$d · %2$d 次完美";
+
+/* Home exercises */
+"LUNGE" = "箭步蹲";
+"GLUTE BRIDGE" = "臀桥";
+"SIT-UP" = "仰卧起坐";
+"JUMPING JACK" = "开合跳";
+"FACE THE CAMERA\nWITH ROOM TO JUMP." = "正对镜头\n留出跳跃空间。";
+"LIE SIDE-ON\nTO THE PHONE." = "侧身躺\n对着手机。";
+"Stand side-on with head, hips, knees and ankles in frame." = "侧身站立，确保头部、髋部、膝盖和脚踝都在画面内。";
+"Lie side-on with shoulders, hips, knees and ankles in frame." = "侧身躺下，确保肩、髋、膝和脚踝都在画面内。";
+"Face the camera with arms and feet in frame." = "正对镜头，确保双臂和双脚都在画面内。";
+"Keep one shoulder, hip and knee in frame." = "请让同一侧的肩、髋和膝盖保持在画面内。";
+"Face the camera with shoulders, wrists and hips visible." = "正对镜头，保持肩、手腕和髋部可见。";
+"Move the phone closer while keeping shoulders and ankles visible." = "请将手机移近，同时保持肩部和脚踝可见。";
+"Move the phone closer while keeping shoulder, hip and knee visible." = "请将手机移近，同时保持肩、髋和膝盖可见。";
+"NO SETS YET\n\nFinish a set to see it here." = "还没有训练记录\n\n完成一组训练后，记录会显示在这里。";

@@ -4,8 +4,7 @@ final class ChooseViewController: RDBaseViewController {
     private let preferences: AppPreferences
     private let feedback: FeedbackService
     private let loadStats: () -> WorkoutStats
-    private let squatCard = RDExerciseCard(exercise: .squat)
-    private let pushUpCard = RDExerciseCard(exercise: .pushUp)
+    private let exerciseCards = ExerciseType.allCases.map(RDExerciseCard.init(exercise:))
     private let streakTag = RDTag(symbolName: "flame.fill", background: RDColor.ember)
     private let streakNote = UILabel()
     private let goalMeter = RDGoalMeterView()
@@ -78,12 +77,18 @@ final class ChooseViewController: RDBaseViewController {
         streakTag.setContentHuggingPriority(.required, for: .horizontal)
         streakTag.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-        let cards = UIStackView(axis: .horizontal, spacing: 12, arrangedSubviews: [squatCard, pushUpCard])
-        cards.distribution = .fillEqually
-        squatCard.accessibilityIdentifier = "choose.squat"
-        pushUpCard.accessibilityIdentifier = "choose.pushUp"
-        squatCard.addAction(UIAction { [weak self] _ in self?.select(.squat) }, for: .touchUpInside)
-        pushUpCard.addAction(UIAction { [weak self] _ in self?.select(.pushUp) }, for: .touchUpInside)
+        for card in exerciseCards {
+            card.accessibilityIdentifier = "choose.\(card.exercise.rawValue)"
+            card.addAction(UIAction { [weak self] _ in self?.select(card.exercise) }, for: .touchUpInside)
+        }
+        // Two-column grid; an odd last card keeps its half width.
+        let rows = stride(from: 0, to: exerciseCards.count, by: 2).map { index -> UIStackView in
+            let pair: [UIView] = Array(exerciseCards[index..<min(index + 2, exerciseCards.count)])
+            let row = UIStackView(axis: .horizontal, spacing: 12, arrangedSubviews: pair.count == 2 ? pair : pair + [UIView()])
+            row.distribution = .fillEqually
+            return row
+        }
+        let cards = UIStackView(axis: .vertical, spacing: 12, arrangedSubviews: rows)
         lastSetCard.accessibilityIdentifier = "choose.lastSet"
         lastSetCard.addAction(UIAction { [weak self] _ in
             guard let exercise = self?.stats?.lastSet?.exercise else { return }
@@ -185,8 +190,7 @@ final class ChooseViewController: RDBaseViewController {
         weekDeltaLabel.accessibilityLabel = "%d vs last week".rdLocalizedFormat(delta)
         weekChart.render(values: stats.currentWeekDailyReps, labels: Self.weekdayLabels(), highlightIndex: stats.todayIndex)
 
-        squatCard.setPersonalBest(stats.personalBest(for: .squat))
-        pushUpCard.setPersonalBest(stats.personalBest(for: .pushUp))
+        exerciseCards.forEach { $0.setPersonalBest(stats.personalBest(for: $0.exercise)) }
         if let lastSet = stats.lastSet {
             lastSetCard.isHidden = false
             lastSetCard.render(lastSet)
@@ -213,8 +217,7 @@ final class ChooseViewController: RDBaseViewController {
     }
 
     private func renderSelection() {
-        squatCard.isSelected = selectedExercise == .squat
-        pushUpCard.isSelected = selectedExercise == .pushUp
+        exerciseCards.forEach { $0.isSelected = $0.exercise == selectedExercise }
         let title = NSMutableAttributedString(string: "GO", attributes: [
             .font: RDFont.numeric(38, maximumScale: 1.1),
             .kern: 1

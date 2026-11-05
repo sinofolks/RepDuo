@@ -209,7 +209,6 @@
 "ALL" = "ALL";
 "HISTORY" = "HISTORY";
 "History unavailable" = "History unavailable";
-"NO SETS YET\n\nFinish a squat or push-up set to see it here." = "NO SETS YET\n\nFinish a squat or push-up set to see it here.";
 "%1$@ · %2$d REPS" = "%1$@ · %2$d REPS";
 "%1$@, %2$d reps, %3$@" = "%1$@, %2$d reps, %3$@";
 
@@ -390,3 +389,19 @@
 "×%d combo" = "×%d COMBO";
 "%d of 5 stars" = "%d of 5 stars";
 "Best combo ×%1$d · %2$d perfect" = "Best combo ×%1$d · %2$d perfect";
+
+/* Home exercises */
+"LUNGE" = "LUNGE";
+"GLUTE BRIDGE" = "GLUTE BRIDGE";
+"SIT-UP" = "SIT-UP";
+"JUMPING JACK" = "JUMPING JACK";
+"FACE THE CAMERA\nWITH ROOM TO JUMP." = "FACE THE CAMERA\nWITH ROOM TO JUMP.";
+"LIE SIDE-ON\nTO THE PHONE." = "LIE SIDE-ON\nTO THE PHONE.";
+"Stand side-on with head, hips, knees and ankles in frame." = "Stand side-on with head, hips, knees and ankles in frame.";
+"Lie side-on with shoulders, hips, knees and ankles in frame." = "Lie side-on with shoulders, hips, knees and ankles in frame.";
+"Face the camera with arms and feet in frame." = "Face the camera with arms and feet in frame.";
+"Keep one shoulder, hip and knee in frame." = "Keep one shoulder, hip and knee in frame.";
+"Face the camera with shoulders, wrists and hips visible." = "Face the camera with shoulders, wrists and hips visible.";
+"Move the phone closer while keeping shoulders and ankles visible." = "Move the phone closer while keeping shoulders and ankles visible.";
+"Move the phone closer while keeping shoulder, hip and knee visible." = "Move the phone closer while keeping shoulder, hip and knee visible.";
+"NO SETS YET\n\nFinish a set to see it here." = "NO SETS YET\n\nFinish a set to see it here.";

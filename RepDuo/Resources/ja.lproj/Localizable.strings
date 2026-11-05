@@ -209,7 +209,6 @@
 "ALL" = "すべて";
 "HISTORY" = "履歴";
 "History unavailable" = "履歴を読み込めません";
-"NO SETS YET\n\nFinish a squat or push-up set to see it here." = "まだセットがありません\n\nスクワットまたはプッシュアップを完了すると、ここに表示されます。";
 "%1$@ · %2$d REPS" = "%1$@ · %2$d回";
 "%1$@, %2$d reps, %3$@" = "%1$@、%2$d回、%3$@";
 
@@ -390,3 +389,19 @@
 "×%d combo" = "×%d コンボ";
 "%d of 5 stars" = "5 つ星中 %d";
 "Best combo ×%1$d · %2$d perfect" = "最高コンボ ×%1$d · パーフェクト %2$d 回";
+
+/* Home exercises */
+"LUNGE" = "ランジ";
+"GLUTE BRIDGE" = "ヒップリフト";
+"SIT-UP" = "シットアップ";
+"JUMPING JACK" = "ジャンピングジャック";
+"FACE THE CAMERA\nWITH ROOM TO JUMP." = "カメラに向いて\n跳べる広さを。";
+"LIE SIDE-ON\nTO THE PHONE." = "スマートフォンに\n横向きで寝る。";
+"Stand side-on with head, hips, knees and ankles in frame." = "横向きに立ち、頭、腰、膝、足首をフレーム内に入れてください。";
+"Lie side-on with shoulders, hips, knees and ankles in frame." = "横向きに寝て、肩、腰、膝、足首をフレーム内に入れてください。";
+"Face the camera with arms and feet in frame." = "カメラに向いて、両腕と両足をフレーム内に入れてください。";
+"Keep one shoulder, hip and knee in frame." = "片側の肩、腰、膝をフレーム内に入れてください。";
+"Face the camera with shoulders, wrists and hips visible." = "カメラに向いて、肩、手首、腰が見えるようにしてください。";
+"Move the phone closer while keeping shoulders and ankles visible." = "肩と足首が見える範囲で、スマートフォンを近づけてください。";
+"Move the phone closer while keeping shoulder, hip and knee visible." = "肩、腰、膝が見える範囲で、スマートフォンを近づけてください。";
+"NO SETS YET\n\nFinish a set to see it here." = "まだセットがありません\n\nセットを完了すると、ここに表示されます。";

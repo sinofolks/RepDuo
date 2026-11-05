@@ -223,7 +223,7 @@ final class VisionPoseAnalyzer {
             let ratio = max(target.scale, current.calibration.bodyScale) / max(min(target.scale, current.calibration.bodyScale), 1e-6)
             if ratio > 1.3 { replaceSilhouette(nil) }
         }
-        let configuration: RepDetectionConfiguration = exercise == .squat ? .squat : .pushUp
+        let configuration = exercise.repConfiguration
         let atTop = (angle ?? 0) >= configuration.topAngle - 12
         if let current = silhouette {
             if current.fit(to: joints) < 0.45 {

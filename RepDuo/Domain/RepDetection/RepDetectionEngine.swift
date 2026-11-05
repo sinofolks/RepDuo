@@ -41,6 +41,71 @@ struct RepDetectionConfiguration: Equatable, Sendable {
         cooldown: 0.25,
         maximumTrackingGap: 0.8
     )
+
+    /// Front knee of a split stance; it bends a little less than a deep squat.
+    static let lunge = RepDetectionConfiguration(
+        topAngle: 155,
+        descentAngle: 142,
+        bottomAngle: 112,
+        bottomExitAngle: 124,
+        minimumRange: 40,
+        stableFrameCount: 2,
+        minimumRepDuration: 0.5,
+        cooldown: 0.25,
+        maximumTrackingGap: 0.8
+    )
+
+    /// Measured as hip drop, so lying flat reads as the top and the lifted bridge as the bottom.
+    static let gluteBridge = RepDetectionConfiguration(
+        topAngle: 160,
+        descentAngle: 150,
+        bottomAngle: 132,
+        bottomExitAngle: 140,
+        minimumRange: 24,
+        stableFrameCount: 2,
+        minimumRepDuration: 0.5,
+        cooldown: 0.25,
+        maximumTrackingGap: 0.8
+    )
+
+    /// Shoulder–hip–knee angle: about 130° lying with bent knees, closing as the torso curls up.
+    static let sitUp = RepDetectionConfiguration(
+        topAngle: 120,
+        descentAngle: 110,
+        bottomAngle: 75,
+        bottomExitAngle: 88,
+        minimumRange: 38,
+        stableFrameCount: 2,
+        minimumRepDuration: 0.6,
+        cooldown: 0.25,
+        maximumTrackingGap: 0.8
+    )
+
+    /// Measured as 180° minus arm raise, so arms at the sides read as the top.
+    static let jumpingJack = RepDetectionConfiguration(
+        topAngle: 145,
+        descentAngle: 125,
+        bottomAngle: 65,
+        bottomExitAngle: 80,
+        minimumRange: 70,
+        stableFrameCount: 2,
+        minimumRepDuration: 0.35,
+        cooldown: 0.15,
+        maximumTrackingGap: 0.8
+    )
+}
+
+extension ExerciseType {
+    var repConfiguration: RepDetectionConfiguration {
+        switch self {
+        case .squat: return .squat
+        case .pushUp: return .pushUp
+        case .lunge: return .lunge
+        case .gluteBridge: return .gluteBridge
+        case .sitUp: return .sitUp
+        case .jumpingJack: return .jumpingJack
+        }
+    }
 }
 
 final class RepDetectionEngine {
@@ -67,7 +132,7 @@ final class RepDetectionEngine {
     private(set) var repCount = 0
 
     init(exercise: ExerciseType, configuration: RepDetectionConfiguration? = nil) {
-        self.configuration = configuration ?? (exercise == .squat ? .squat : .pushUp)
+        self.configuration = configuration ?? exercise.repConfiguration
     }
 
     func reset() {

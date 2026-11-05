@@ -475,7 +475,7 @@ struct SkinnedSilhouette: Sendable {
 enum RepDepthProgress {
     static func value(angle: Double?, referenceAngle: Double?, exercise: ExerciseType) -> Double? {
         guard let angle else { return nil }
-        let configuration: RepDetectionConfiguration = exercise == .squat ? .squat : .pushUp
+        let configuration = exercise.repConfiguration
         let top = max(referenceAngle ?? configuration.topAngle, configuration.bottomAngle + 20)
         return min(1, max(0, (top - angle) / (top - configuration.bottomAngle)))
     }

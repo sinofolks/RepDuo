@@ -39,7 +39,7 @@ final class CountdownViewController: RDBaseViewController {
         clearBar.configureWithTransparentBackground()
         navigationItem.standardAppearance = clearBar
         navigationItem.scrollEdgeAppearance = clearBar
-        fallbackImageView.image = UIImage(named: exercise.demoImageName)
+        fallbackImageView.image = exercise.demoImageName.flatMap { UIImage(named: $0) }
         fallbackImageView.contentMode = .scaleAspectFill
         fallbackImageView.clipsToBounds = true
         fallbackImageView.translatesAutoresizingMaskIntoConstraints = false

@@ -86,7 +86,7 @@ final class CameraSetupViewController: RDBaseViewController {
     }
 
     private func configureCameraSurface() {
-        fallbackImageView.image = UIImage(named: exercise.demoImageName)
+        fallbackImageView.image = exercise.demoImageName.flatMap { UIImage(named: $0) }
         fallbackImageView.contentMode = .scaleAspectFill
         fallbackImageView.clipsToBounds = true
         fallbackImageView.translatesAutoresizingMaskIntoConstraints = false
@@ -101,8 +101,10 @@ final class CameraSetupViewController: RDBaseViewController {
         view.addSubview(shade)
         shade.pinEdges(to: view)
 
-        // The side-on placement hint only makes sense over the live camera, not the demo photo.
-        guideOverlay.exercise = cameraAccess.state == .authorized ? exercise : nil
+        // The placement outline would clash with a demo photo, so it shows over the live
+        // camera, or in demo mode for moves that have no photo.
+        let showsDemoPhoto = cameraAccess.state != .authorized && exercise.demoImageName != nil
+        guideOverlay.exercise = showsDemoPhoto ? nil : exercise
         view.addSubview(guideOverlay)
         guideOverlay.pinEdges(to: view)
     }
