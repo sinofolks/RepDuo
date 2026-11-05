@@ -10,6 +10,12 @@ struct WorkoutViewState: Equatable, Sendable {
     let heartRate: Int?
     let isPaused: Bool
     let rendererQuality: RendererQuality
+    /// Reward for the most recent rep; stays set until the next rep replaces it.
+    let reward: RepReward?
+    /// 0...1 toward five stars.
+    let starProgress: Double
+
+    var stars: Int { RepRewardTracker.stars(for: starProgress) }
 }
 
 final class WorkoutSession {
@@ -23,6 +29,7 @@ final class WorkoutSession {
     private var lowConfidenceEventCount = 0
     private var heartRates: [Double] = []
     private var assessmentMessageUntil: TimeInterval?
+    private var rewardTracker: RepRewardTracker
 
     let exercise: ExerciseType
     private(set) var state: WorkoutViewState
@@ -33,6 +40,8 @@ final class WorkoutSession {
         exercise: ExerciseType,
         trackingMode: BodyTrackingMode = .fullBody,
         baseline: MovementBaseline? = nil,
+        setTarget: Int = 12,
+        personalBest: Int = 0,
         startedAt: Date = Date(),
         monotonicStart: TimeInterval = ProcessInfo.processInfo.systemUptime
     ) {
@@ -40,6 +49,7 @@ final class WorkoutSession {
         self.startedAt = startedAt
         self.monotonicStart = monotonicStart
         self.detector = RepDetectionEngine(exercise: exercise)
+        self.rewardTracker = RepRewardTracker(target: setTarget, personalBest: personalBest)
         self.coach = MovementCoach(
             exercise: exercise,
             trackingMode: trackingMode,
@@ -56,7 +66,9 @@ final class WorkoutSession {
             lastRepCoaching: nil,
             heartRate: nil,
             isPaused: false,
-            rendererQuality: .balanced
+            rendererQuality: .balanced,
+            reward: nil,
+            starProgress: 0
         )
     }
 
@@ -75,6 +87,9 @@ final class WorkoutSession {
         )
         if assessment != nil {
             assessmentMessageUntil = frame.timestamp + 2.4
+        }
+        if update.completedRep {
+            rewardTracker.register(repNumber: update.repCount, score: assessment?.score)
         }
         let latestAssessment = assessment ?? state.lastRepCoaching
         let message: String
@@ -96,7 +111,9 @@ final class WorkoutSession {
             lastRepCoaching: latestAssessment,
             heartRate: state.heartRate,
             isPaused: false,
-            rendererQuality: state.rendererQuality
+            rendererQuality: state.rendererQuality,
+            reward: rewardTracker.lastReward,
+            starProgress: rewardTracker.progress
         )
         onStateChange?(state, update.completedRep)
     }
@@ -128,7 +145,9 @@ final class WorkoutSession {
             lastRepCoaching: state.lastRepCoaching,
             heartRate: Int(beatsPerMinute.rounded()),
             isPaused: state.isPaused,
-            rendererQuality: state.rendererQuality
+            rendererQuality: state.rendererQuality,
+            reward: rewardTracker.lastReward,
+            starProgress: rewardTracker.progress
         )
         onStateChange?(state, false)
     }
@@ -143,7 +162,9 @@ final class WorkoutSession {
             lastRepCoaching: state.lastRepCoaching,
             heartRate: state.heartRate,
             isPaused: state.isPaused,
-            rendererQuality: quality
+            rendererQuality: quality,
+            reward: rewardTracker.lastReward,
+            starProgress: rewardTracker.progress
         )
         onStateChange?(state, false)
     }
@@ -153,6 +174,7 @@ final class WorkoutSession {
         let update = detector.registerDebugRep()
         let assessment = coach.registerDebugRep(repNumber: update.repCount, timestamp: timestamp)
         assessmentMessageUntil = timestamp + 2.4
+        rewardTracker.register(repNumber: update.repCount, score: assessment.score)
         state = WorkoutViewState(
             exercise: state.exercise,
             phase: update.phase,
@@ -162,7 +184,9 @@ final class WorkoutSession {
             lastRepCoaching: assessment,
             heartRate: state.heartRate,
             isPaused: false,
-            rendererQuality: state.rendererQuality
+            rendererQuality: state.rendererQuality,
+            reward: rewardTracker.lastReward,
+            starProgress: rewardTracker.progress
         )
         onStateChange?(state, true)
     }
@@ -181,7 +205,8 @@ final class WorkoutSession {
             maximumHeartRate: heartRates.max(),
             lowConfidenceEventCount: lowConfidenceEventCount,
             coachingReport: coach.report(),
-            learnedBaseline: coach.baseline
+            learnedBaseline: coach.baseline,
+            rewards: rewardTracker.summary
         )
     }
 
@@ -195,7 +220,9 @@ final class WorkoutSession {
             lastRepCoaching: state.lastRepCoaching,
             heartRate: state.heartRate,
             isPaused: isPaused,
-            rendererQuality: state.rendererQuality
+            rendererQuality: state.rendererQuality,
+            reward: rewardTracker.lastReward,
+            starProgress: rewardTracker.progress
         )
     }
 

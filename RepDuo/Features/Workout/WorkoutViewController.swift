@@ -17,9 +17,10 @@ final class WorkoutViewController: RDBaseViewController {
     private let repLabel = RDNumberLabel()
     private let phaseTag = RDTag(background: RDColor.fill, foreground: RDColor.label)
     private let recordTag = RDTag(text: "NEW RECORD", symbolName: "star.fill", background: RDColor.accent, foreground: RDColor.onAccent)
-    private let segmentBar = RDSegmentBar()
+    private let comboTag = RDTag(background: RDColor.accent, foreground: RDColor.onAccent)
+    private let starBar = RDStarProgressView()
     private let targetLabel = UILabel()
-    private let plusOneLabel = UILabel()
+    private let ratingLabel = UILabel()
     private let flashRing = CAShapeLayer()
     private let promptLabel = UILabel()
     private var bystandersInView = false
@@ -191,12 +192,15 @@ final class WorkoutViewController: RDBaseViewController {
         repLabel.layer.shadowRadius = 12
         repLabel.layer.shadowOpacity = 0.5
         repLabel.layer.shadowOffset = .zero
-        plusOneLabel.text = "+1"
-        plusOneLabel.font = RDFont.numeric(34, maximumScale: 1)
-        plusOneLabel.textColor = RDColor.label
-        plusOneLabel.alpha = 0
-        plusOneLabel.isAccessibilityElement = false
-        plusOneLabel.translatesAutoresizingMaskIntoConstraints = false
+        ratingLabel.font = RDFont.numeric(40, weight: .heavy, maximumScale: 1)
+        ratingLabel.textAlignment = .center
+        ratingLabel.alpha = 0
+        ratingLabel.isAccessibilityElement = false
+        ratingLabel.translatesAutoresizingMaskIntoConstraints = false
+        ratingLabel.layer.shadowColor = UIColor.black.cgColor
+        ratingLabel.layer.shadowRadius = 8
+        ratingLabel.layer.shadowOpacity = 0.6
+        ratingLabel.layer.shadowOffset = .zero
         flashRing.fillColor = UIColor.clear.cgColor
         flashRing.lineWidth = 3
         flashRing.opacity = 0
@@ -236,14 +240,15 @@ final class WorkoutViewController: RDBaseViewController {
         count.layer.addSublayer(flashRing)
         repLabel.translatesAutoresizingMaskIntoConstraints = false
         count.addSubview(repLabel)
-        count.addSubview(plusOneLabel)
+        count.addSubview(ratingLabel)
         NSLayoutConstraint.activate([
             repLabel.leadingAnchor.constraint(equalTo: count.leadingAnchor),
             repLabel.trailingAnchor.constraint(equalTo: count.trailingAnchor),
             repLabel.topAnchor.constraint(equalTo: count.topAnchor),
             repLabel.bottomAnchor.constraint(equalTo: count.bottomAnchor),
-            plusOneLabel.trailingAnchor.constraint(equalTo: count.trailingAnchor, constant: -12),
-            plusOneLabel.topAnchor.constraint(equalTo: count.topAnchor, constant: 18)
+            ratingLabel.centerXAnchor.constraint(equalTo: count.centerXAnchor),
+            // Sits just above the digits; the number font has generous top padding.
+            ratingLabel.bottomAnchor.constraint(equalTo: count.topAnchor, constant: 24)
         ])
         countStack = count
 
@@ -251,15 +256,16 @@ final class WorkoutViewController: RDBaseViewController {
         countCaption.setEyebrow("REPS".rdLocalized)
         countCaption.isAccessibilityElement = false
         recordTag.isHidden = true
-        let tags = UIStackView(axis: .horizontal, spacing: 10, arrangedSubviews: [countCaption, phaseTag, recordTag])
+        comboTag.isHidden = true
+        let tags = UIStackView(axis: .horizontal, spacing: 10, arrangedSubviews: [countCaption, phaseTag, comboTag, recordTag])
         tags.alignment = .center
         targetLabel.font = RDFont.caption(weight: .medium)
         targetLabel.textColor = RDColor.label
         targetLabel.adjustsFontForContentSizeCategory = true
         targetLabel.textAlignment = .center
-        infoStack = UIStackView(axis: .vertical, spacing: 10, arrangedSubviews: [tags, segmentBar, targetLabel])
+        infoStack = UIStackView(axis: .vertical, spacing: 10, arrangedSubviews: [tags, starBar, targetLabel])
         infoStack.alignment = .center
-        segmentBar.widthAnchor.constraint(equalToConstant: 280).isActive = true
+        starBar.widthAnchor.constraint(equalToConstant: 280).isActive = true
 
         view.addLayoutGuide(countAreaGuide)
         view.addSubview(topStack)
@@ -400,9 +406,7 @@ final class WorkoutViewController: RDBaseViewController {
                 }
                 self?.renderDebugPanel()
                 #endif
-                self?.feedback.repCompleted()
-                self?.pulseCounter()
-                self?.cameraView.triggerCompletionPulse()
+                self?.celebrate(state.reward)
                 if let result = state.lastRepCoaching,
                    result.repNumber != self?.lastSpokenFormRep,
                    result.shouldSpeak,
@@ -424,7 +428,12 @@ final class WorkoutViewController: RDBaseViewController {
         repLabel.layer.shadowColor = UIColor.black.cgColor
         phaseTag.text = state.phase.displayName
         recordTag.isHidden = !isRecord
-        segmentBar.render(filled: state.repCount, total: setTarget, color: RDColor.accent)
+        starBar.render(progress: state.starProgress, animated: true)
+        let combo = state.reward?.combo ?? 0
+        if combo >= 2 { comboTag.text = "×%d combo".rdLocalizedFormat(combo) }
+        if comboTag.isHidden != (combo < 2) {
+            UIView.animate(withDuration: 0.2) { self.comboTag.isHidden = combo < 2 }
+        }
         targetLabel.text = targetText(for: state.repCount)
         if let coachingMessage = state.coachingMessage {
             promptLabel.text = coachingMessage
@@ -532,9 +541,67 @@ final class WorkoutViewController: RDBaseViewController {
         present(alert, animated: true)
     }
 
-    private func pulseCounter() {
+    /// Rep feedback: the count pops, a rating word rises over it, and gold
+    /// reps turn the ring, the word and the body fill gold.
+    private func celebrate(_ reward: RepReward?) {
+        let isGold = reward?.isGold ?? false
+        feedback.repCompleted(isGold: isGold)
+        cameraView.triggerCompletionPulse(gold: isGold)
+        pulseCounter(highlight: isGold ? RDColor.reward : RDColor.accent)
+        if let reward { showRating(reward) }
+        if reward?.earnedStar == true, let stars = reward?.stars {
+            UIAccessibility.post(notification: .announcement, argument: "%d of 5 stars".rdLocalizedFormat(stars))
+        }
+    }
+
+    private func showRating(_ reward: RepReward) {
+        switch reward.rating {
+        case .perfect: ratingLabel.text = "Perfect".rdLocalized
+        case .great: ratingLabel.text = "Great".rdLocalized
+        case .good: ratingLabel.text = "Good".rdLocalized
+        }
+        if reward.isGold {
+            ratingLabel.textColor = RDColor.reward
+        } else {
+            ratingLabel.textColor = reward.rating == .good ? RDColor.label : RDColor.accent
+        }
+        ratingLabel.layer.removeAllAnimations()
+        guard !UIAccessibility.isReduceMotionEnabled else {
+            ratingLabel.transform = .identity
+            ratingLabel.alpha = 1
+            UIView.animate(withDuration: 0.3, delay: 0.7, options: [.allowUserInteraction]) {
+                self.ratingLabel.alpha = 0
+            }
+            return
+        }
+        // Better ratings land bigger.
+        let scale: CGFloat
+        switch reward.rating {
+        case .perfect: scale = reward.isGold ? 1.25 : 1.1
+        case .great: scale = reward.isGold ? 1.15 : 1
+        case .good: scale = reward.isGold ? 1.05 : 0.85
+        }
+        ratingLabel.alpha = 0
+        ratingLabel.transform = CGAffineTransform(scaleX: scale * 0.6, y: scale * 0.6)
+        UIView.animate(
+            withDuration: 0.35,
+            delay: 0,
+            usingSpringWithDamping: 0.55,
+            initialSpringVelocity: 0.8,
+            options: [.allowUserInteraction, .beginFromCurrentState]
+        ) {
+            self.ratingLabel.alpha = 1
+            self.ratingLabel.transform = CGAffineTransform(scaleX: scale, y: scale)
+        }
+        UIView.animate(withDuration: 0.35, delay: 0.75, options: [.curveEaseIn, .allowUserInteraction]) {
+            self.ratingLabel.alpha = 0
+            self.ratingLabel.transform = CGAffineTransform(translationX: 0, y: -24).scaledBy(x: scale, y: scale)
+        }
+    }
+
+    private func pulseCounter(highlight: UIColor) {
         let tone = repLabel.textColor ?? RDColor.label
-        repLabel.textColor = RDColor.accent
+        repLabel.textColor = highlight
         guard !UIAccessibility.isReduceMotionEnabled else {
             UIView.transition(with: repLabel, duration: 0.2, options: .transitionCrossDissolve) {
                 self.repLabel.textColor = tone
@@ -564,7 +631,7 @@ final class WorkoutViewController: RDBaseViewController {
             width: diameter,
             height: diameter
         )).cgPath
-        flashRing.strokeColor = tone.cgColor
+        flashRing.strokeColor = highlight.cgColor
         let scale = CABasicAnimation(keyPath: "transform.scale")
         scale.fromValue = 0.6
         scale.toValue = 1.45
@@ -576,14 +643,6 @@ final class WorkoutViewController: RDBaseViewController {
         ring.duration = 0.6
         ring.timingFunction = CAMediaTimingFunction(name: .easeOut)
         flashRing.add(ring, forKey: "flash")
-
-        plusOneLabel.layer.removeAllAnimations()
-        plusOneLabel.transform = CGAffineTransform(translationX: 0, y: 10)
-        plusOneLabel.alpha = 1
-        UIView.animate(withDuration: 0.8, delay: 0, options: [.curveEaseOut, .allowUserInteraction]) {
-            self.plusOneLabel.transform = CGAffineTransform(translationX: 0, y: -40)
-            self.plusOneLabel.alpha = 0
-        }
     }
 
     private func handleCameraError(_ error: Error) {

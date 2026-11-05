@@ -21,6 +21,8 @@ enum RDColor {
     }
     /// Camera stages stay black in either appearance.
     static let camera = UIColor(hex: 0x000000)
+    /// Reward moments only: gold reps and earned stars.
+    static let reward = dynamic(light: 0xB07D00, dark: 0xFFD60A)
     static let warning = dynamic(light: 0xC75300, dark: 0xFF9F0A)
     static let destructive = dynamic(light: 0xD70015, dark: 0xFF453A)
 

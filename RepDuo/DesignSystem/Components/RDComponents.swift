@@ -492,33 +492,81 @@ final class RDBlockView: UIView {
     }
 }
 
-/// Row of rounded segments that fill up toward a set target.
-final class RDSegmentBar: UIView {
-    private var segments: [RDBlockView] = []
-    private let stack = UIStackView(axis: .horizontal, spacing: 2)
+/// Progress toward five stars: a thin track with a star at each fifth.
+/// A star lights in the reward color and pops when progress passes it.
+final class RDStarProgressView: UIView {
+    private let track = UIView()
+    private let fill = UIView()
+    private var stars: [UIImageView] = []
+    private var progress: CGFloat = 0
+    private var litCount = 0
+    private let starSize: CGFloat = 18
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         translatesAutoresizingMaskIntoConstraints = false
-        stack.distribution = .fillEqually
-        addSubview(stack)
-        stack.pinEdges(to: self)
-        heightAnchor.constraint(equalToConstant: 6).isActive = true
+        track.backgroundColor = RDColor.label.withAlphaComponent(0.22)
+        fill.backgroundColor = RDColor.accent
+        [track, fill].forEach {
+            $0.layer.cornerRadius = 2
+            addSubview($0)
+        }
+        let configuration = UIImage.SymbolConfiguration(pointSize: starSize - 2, weight: .bold)
+        stars = (0..<RepRewardTracker.maximumStars).map { _ in
+            let star = UIImageView(image: UIImage(systemName: "star.fill", withConfiguration: configuration))
+            star.contentMode = .center
+            star.tintColor = RDColor.tertiaryLabel
+            // Earned stars keep their gold while an alert dims the screen.
+            star.tintAdjustmentMode = .normal
+            addSubview(star)
+            return star
+        }
+        heightAnchor.constraint(equalToConstant: starSize + 4).isActive = true
+        isAccessibilityElement = true
+        accessibilityTraits = .updatesFrequently
+        accessibilityLabel = "%d of 5 stars".rdLocalizedFormat(0)
     }
 
     required init?(coder: NSCoder) { nil }
 
-    func render(filled: Int, total: Int, color: UIColor) {
-        let total = max(1, total)
-        if segments.count != total {
-            segments.forEach { $0.removeFromSuperview() }
-            segments = (0..<total).map { _ in RDBlockView(cornerRadius: 3) }
-            segments.forEach(stack.addArrangedSubview)
-            stack.spacing = total > 30 ? 1 : 2
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        // Stars sit on the track at 20%, 40% … 100%, so the last one ends the bar.
+        let trackWidth = bounds.width - starSize / 2
+        track.frame = CGRect(x: 0, y: bounds.midY - 2, width: trackWidth, height: 4)
+        fill.frame = CGRect(x: 0, y: bounds.midY - 2, width: trackWidth * progress, height: 4)
+        for (index, star) in stars.enumerated() {
+            let x = trackWidth * CGFloat(index + 1) / CGFloat(stars.count)
+            star.bounds = CGRect(x: 0, y: 0, width: starSize, height: starSize)
+            star.center = CGPoint(x: x, y: bounds.midY)
         }
-        for (index, segment) in segments.enumerated() {
-            segment.fillColor = index < filled ? color : RDColor.separator
+    }
+
+    func render(progress newProgress: Double, animated: Bool) {
+        progress = CGFloat(max(0, min(1, newProgress)))
+        let lit = RepRewardTracker.stars(for: Double(progress))
+        let animate = animated && !UIAccessibility.isReduceMotionEnabled
+        UIView.animate(withDuration: animate ? 0.3 : 0, delay: 0, options: [.curveEaseOut, .beginFromCurrentState]) {
+            self.setNeedsLayout()
+            self.layoutIfNeeded()
         }
+        for (index, star) in stars.enumerated() {
+            star.tintColor = index < lit ? RDColor.reward : RDColor.tertiaryLabel
+            if animate, index >= litCount, index < lit {
+                star.transform = CGAffineTransform(scaleX: 1.8, y: 1.8)
+                UIView.animate(
+                    withDuration: 0.5,
+                    delay: 0.1,
+                    usingSpringWithDamping: 0.5,
+                    initialSpringVelocity: 0.6,
+                    options: [.allowUserInteraction, .beginFromCurrentState]
+                ) {
+                    star.transform = .identity
+                }
+            }
+        }
+        litCount = lit
+        accessibilityLabel = "%d of 5 stars".rdLocalizedFormat(lit)
     }
 }
 

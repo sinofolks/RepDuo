@@ -132,6 +132,8 @@ public struct WorkoutSummary: Equatable, Sendable {
     public let algorithmVersion: String
     public let coachingReport: WorkoutCoachingReport?
     public let learnedBaseline: MovementBaseline?
+    /// Stars and streaks from the live set; not persisted, like the coaching report.
+    public let rewards: SetRewards?
 
     public init(
         id: UUID = UUID(),
@@ -145,7 +147,8 @@ public struct WorkoutSummary: Equatable, Sendable {
         lowConfidenceEventCount: Int = 0,
         algorithmVersion: String = "coach-rules-1.0",
         coachingReport: WorkoutCoachingReport? = nil,
-        learnedBaseline: MovementBaseline? = nil
+        learnedBaseline: MovementBaseline? = nil,
+        rewards: SetRewards? = nil
     ) {
         self.id = id
         self.exercise = exercise
@@ -159,6 +162,7 @@ public struct WorkoutSummary: Equatable, Sendable {
         self.algorithmVersion = algorithmVersion
         self.coachingReport = coachingReport
         self.learnedBaseline = learnedBaseline
+        self.rewards = rewards
     }
 
     var averageTempo: TimeInterval? {

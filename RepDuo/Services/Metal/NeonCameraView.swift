@@ -8,8 +8,8 @@ struct MetalRenderMetrics: Equatable {
     let gpuDurationMilliseconds: Double
 }
 
-/// Camera stage for training. The room is dimmed so the trainee stands out,
-/// and their body fills with the accent color as they go deeper into a rep.
+/// Camera stage for training. The trainee's body fills with the accent color
+/// as they go deeper into a rep.
 ///
 /// Once a calibration outline exists, the body mask comes from that outline
 /// bound to the live skeleton (`SkinnedSilhouette`), which is stable frame to
@@ -37,8 +37,10 @@ final class NeonCameraView: MTKView {
     private var smoothedJoints: [BodyJoint: JointPoint] = [:]
     private var depthLevel: Double = 0
     private var flash: Double = 0
+    private var gold: Double = 0
     private var lastDrawAt: TimeInterval?
     private var pulseRequested = false
+    private var goldRequested = false
 
     private let renderingColorSpace = CGColorSpaceCreateDeviceRGB()
     private let maskFadeDuration: TimeInterval = 0.28
@@ -141,8 +143,10 @@ final class NeonCameraView: MTKView {
         DispatchQueue.main.async { [weak self] in self?.setNeedsDisplay() }
     }
 
-    func triggerCompletionPulse() {
+    /// Flashes the rim after a rep; a gold rep also washes the body in gold.
+    func triggerCompletionPulse(gold: Bool = false) {
         pulseRequested = true
+        if gold { goldRequested = true }
         setNeedsDisplay()
     }
 
@@ -206,6 +210,7 @@ final class NeonCameraView: MTKView {
                 joints: smoothedJoints,
                 depth: depthLevel,
                 flash: flash,
+                gold: gold,
                 strength: Double(min(1, intensity * trackingConfidence)),
                 quality: rendererQuality
             )
@@ -253,7 +258,14 @@ final class NeonCameraView: MTKView {
             pulseRequested = false
             if !reduceMotion { flash = max(flash, 0.8) }
         }
+        if goldRequested {
+            goldRequested = false
+            gold = reduceMotion ? 0.6 : 1
+        }
         flash *= exp(-dt / 0.25)
+        // Gold lingers longer than the rim flash so it reads as a moment.
+        gold *= exp(-dt / 0.45)
+        if gold < 0.01 { gold = 0 }
     }
 
     // MARK: Masks

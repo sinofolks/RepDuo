@@ -398,3 +398,11 @@
 "Dark" = "ダーク";
 "%@ vs last week" = "先週比 %@";
 "SETUP" = "セットアップ";
+
+/* Rep rewards */
+"Perfect" = "パーフェクト";
+"Great" = "グレート";
+"Good" = "グッド";
+"×%d combo" = "×%d コンボ";
+"%d of 5 stars" = "5 つ星中 %d";
+"Best combo ×%1$d · %2$d perfect" = "最高コンボ ×%1$d · パーフェクト %2$d 回";

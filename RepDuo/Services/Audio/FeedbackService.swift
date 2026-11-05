@@ -6,6 +6,7 @@ final class FeedbackService {
     private let preferences: AppPreferences
     private let speechSynthesizer = AVSpeechSynthesizer()
     private let impact = UIImpactFeedbackGenerator(style: .light)
+    private let heavyImpact = UIImpactFeedbackGenerator(style: .heavy)
     private let notification = UINotificationFeedbackGenerator()
     private var lastCoachingCueAt: TimeInterval = -.infinity
     private var lastTrackingCueAt: TimeInterval = -.infinity
@@ -15,6 +16,7 @@ final class FeedbackService {
         self.preferences = preferences
         impact.prepare()
         notification.prepare()
+        heavyImpact.prepare()
     }
 
     func countdown(_ value: Int) {
@@ -27,9 +29,16 @@ final class FeedbackService {
         if preferences.hapticsEnabled { impact.impactOccurred(intensity: value == 0 ? 1 : 0.65) }
     }
 
-    func repCompleted() {
+    /// Gold reps add a heavy tap right after the usual success haptic.
+    func repCompleted(isGold: Bool = false) {
         if preferences.soundEnabled { AudioServicesPlaySystemSound(1104) }
-        if preferences.hapticsEnabled { notification.notificationOccurred(.success) }
+        guard preferences.hapticsEnabled else { return }
+        notification.notificationOccurred(.success)
+        if isGold {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { [heavyImpact] in
+                heavyImpact.impactOccurred()
+            }
+        }
     }
 
     func coach(phase: ExercisePhase) {

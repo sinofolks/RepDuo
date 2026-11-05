@@ -1,16 +1,19 @@
 import CoreImage
 
-/// Builds the training stage from a camera frame and a body mask: the room is
-/// dimmed, the trainee keeps full color, a soft accent fill rises along the
-/// body with rep depth, and a thin rim brightens at the bottom of each rep.
+/// Builds the training stage from a camera frame and a body mask: the camera
+/// image stays as it is, a soft accent fill rises along the body with rep
+/// depth, and a thin rim brightens at the bottom of each rep.
 struct BodyStageCompositor {
     /// RDColor.accent in dark appearance; the camera stage is always dark.
     var fillColor = (red: 0.19, green: 0.82, blue: 0.35)
+    /// RDColor.reward in dark appearance.
+    var goldColor = (red: 1.0, green: 0.84, blue: 0.04)
 
     /// - Parameters:
     ///   - joints: Vision-normalized joints of the trainee.
     ///   - depth: 0 at the top of the rep, 1 at the bottom.
     ///   - flash: 0...1 rim boost after reaching the bottom.
+    ///   - gold: 0...1 gold wash over the whole body after a gold rep.
     ///   - strength: overall effect strength from Settings and tracking confidence.
     func compose(
         camera: CIImage,
@@ -18,17 +21,12 @@ struct BodyStageCompositor {
         joints: [BodyJoint: JointPoint],
         depth: Double,
         flash: Double,
+        gold: Double = 0,
         strength: Double,
         quality: RendererQuality
     ) -> CIImage {
         let extent = camera.extent
-        let dimmed = camera
-            .applyingFilter("CIColorControls", parameters: [kCIInputSaturationKey: 0.35])
-            .applyingFilter("CIExposureAdjust", parameters: [kCIInputEVKey: -1.4])
-        var stage = camera.applyingFilter("CIBlendWithMask", parameters: [
-            kCIInputBackgroundImageKey: dimmed,
-            kCIInputMaskImageKey: bodyMask
-        ]).cropped(to: extent)
+        var stage = camera.cropped(to: extent)
 
         if depth > 0.01, let gradient = depthGradient(extent: extent, joints: joints, depth: depth, alpha: 0.6 * strength) {
             let fill = gradient.applyingFilter("CIBlendWithMask", parameters: [
@@ -38,8 +36,25 @@ struct BodyStageCompositor {
             stage = fill.composited(over: stage)
         }
 
+        if gold > 0.01 {
+            let alpha = 0.5 * gold * strength
+            let wash = CIImage(color: CIColor(
+                red: goldColor.red * alpha,
+                green: goldColor.green * alpha,
+                blue: goldColor.blue * alpha,
+                alpha: alpha
+            )).cropped(to: extent).applyingFilter("CIBlendWithMask", parameters: [
+                kCIInputBackgroundImageKey: CIImage.empty(),
+                kCIInputMaskImageKey: bodyMask
+            ]).cropped(to: extent)
+            stage = wash.composited(over: stage)
+        }
+
         if quality != .thermalSafe {
-            let rimAlpha = (0.18 + 0.6 * flash) * strength
+            let rimAlpha = (0.18 + 0.6 * max(flash, gold)) * strength
+            // White rim, shifting to gold during a gold rep.
+            let rimBlue = 1 - gold * (1 - goldColor.blue)
+            let rimGreen = 1 - gold * (1 - goldColor.green)
             let rim = bodyMask
                 .applyingFilter("CIMorphologyGradient", parameters: [kCIInputRadiusKey: quality == .lowPower ? 1.0 : 1.5])
                 .applyingFilter("CIColorMatrix", parameters: [
@@ -47,7 +62,7 @@ struct BodyStageCompositor {
                     "inputGVector": CIVector(x: 0, y: 0, z: 0, w: 0),
                     "inputBVector": CIVector(x: 0, y: 0, z: 0, w: 0),
                     "inputAVector": CIVector(x: rimAlpha, y: 0, z: 0, w: 0),
-                    "inputBiasVector": CIVector(x: 1, y: 1, z: 1, w: 0)
+                    "inputBiasVector": CIVector(x: 1, y: rimGreen, z: rimBlue, w: 0)
                 ])
                 .applyingFilter("CIPremultiply")
                 .cropped(to: extent)

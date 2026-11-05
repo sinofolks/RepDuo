@@ -103,6 +103,36 @@ final class CompleteViewController: UIViewController {
         let stack = UIStackView(axis: .vertical, spacing: 4, arrangedSubviews: [eyebrow, count, tag])
         stack.alignment = .center
         stack.setCustomSpacing(8, after: count)
+        if let rewards = summary.rewards, summary.repCount > 0 {
+            stack.setCustomSpacing(16, after: tag)
+            stack.addArrangedSubview(makeStars(rewards))
+        }
+        return stack
+    }
+
+    private func makeStars(_ rewards: SetRewards) -> UIView {
+        let configuration = UIImage.SymbolConfiguration(pointSize: 28, weight: .bold)
+        let stars = (0..<RepRewardTracker.maximumStars).map { index -> UIImageView in
+            let lit = index < rewards.stars
+            let star = UIImageView(image: UIImage(systemName: lit ? "star.fill" : "star", withConfiguration: configuration))
+            star.tintColor = lit ? RDColor.reward : RDColor.tertiaryLabel
+            return star
+        }
+        let row = UIStackView(axis: .horizontal, spacing: 6, arrangedSubviews: stars)
+        row.isAccessibilityElement = true
+        row.accessibilityLabel = "%d of 5 stars".rdLocalizedFormat(rewards.stars)
+
+        let caption = UILabel()
+        caption.text = "Best combo ×%1$d · %2$d perfect".rdLocalizedFormat(rewards.bestCombo, rewards.perfectCount)
+        caption.font = .preferredFont(forTextStyle: .footnote)
+        caption.adjustsFontForContentSizeCategory = true
+        caption.textColor = RDColor.secondaryLabel
+        caption.textAlignment = .center
+        caption.numberOfLines = 0
+
+        let stack = UIStackView(axis: .vertical, spacing: 6, arrangedSubviews: [row, caption])
+        stack.alignment = .center
+        stack.accessibilityIdentifier = "summary.stars"
         return stack
     }
 

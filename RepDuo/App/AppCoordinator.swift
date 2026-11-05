@@ -121,13 +121,16 @@ final class AppCoordinator {
 
     private func showWorkout(for exercise: ExerciseType) {
         let trackingMode = container.preferences.bodyTrackingMode
+        let personalBest = currentStats().personalBest(for: exercise)
         let session = WorkoutSession(
             exercise: exercise,
             trackingMode: trackingMode,
             baseline: container.preferences.movementBaseline(
                 for: exercise,
                 trackingMode: trackingMode
-            )
+            ),
+            setTarget: container.preferences.setRepTarget,
+            personalBest: personalBest
         )
         let controller = WorkoutViewController(
             session: session,
@@ -136,7 +139,7 @@ final class AppCoordinator {
             feedback: container.feedback,
             preferences: container.preferences,
             audioService: container.audioRoute,
-            personalBest: currentStats().personalBest(for: exercise)
+            personalBest: personalBest
         )
         controller.onFinish = { [weak self] summary in self?.complete(summary) }
         navigationController.pushViewController(controller, animated: true)

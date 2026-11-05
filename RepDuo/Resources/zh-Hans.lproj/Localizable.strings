@@ -398,3 +398,11 @@
 "Dark" = "深色";
 "%@ vs last week" = "较上周 %@";
 "SETUP" = "摆放手机";
+
+/* Rep rewards */
+"Perfect" = "完美";
+"Great" = "很好";
+"Good" = "不错";
+"×%d combo" = "×%d 连击";
+"%d of 5 stars" = "%d 星（满分 5 星）";
+"Best combo ×%1$d · %2$d perfect" = "最高连击 ×%1$d · %2$d 次完美";
