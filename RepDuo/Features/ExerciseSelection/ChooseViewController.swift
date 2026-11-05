@@ -8,7 +8,8 @@ final class ChooseViewController: RDBaseViewController {
     private let pushUpCard = RDExerciseCard(exercise: .pushUp)
     private let streakTag = RDTag(symbolName: "flame.fill", background: RDColor.ember)
     private let streakNote = UILabel()
-    private let goalRing = RDRingView()
+    private let goalMeter = RDGoalMeterView()
+    private let goalPercentLabel = UILabel()
     private let todayLabel = RDNumberLabel()
     private let goalLabel = UILabel()
     private let weekLabel = RDNumberLabel()
@@ -103,45 +104,50 @@ final class ChooseViewController: RDBaseViewController {
         renderSelection()
     }
 
+    /// Scoreboard panel: today's count against the goal on a segmented meter,
+    /// then the week's total beside the daily bars.
     private func makeHero() -> UIView {
-        goalRing.lineWidth = 14
         todayLabel.font = RDFont.numeric(64)
         todayLabel.textColor = RDColor.warmWhite
-        todayLabel.adjustsFontSizeToFitWidth = true
-        todayLabel.minimumScaleFactor = 0.6
-        todayLabel.textAlignment = .center
-        goalLabel.font = RDFont.numeric(16, weight: .bold, italic: false)
+        goalLabel.font = RDFont.numeric(20, weight: .heavy)
         goalLabel.textColor = RDColor.textSecondary
-        let goalCaption = makeLabel(text: "TODAY'S GOAL", font: .systemFont(ofSize: 12, weight: .bold), color: RDColor.neonGreen)
-        let ringCenter = UIStackView(axis: .vertical, spacing: 0, arrangedSubviews: [todayLabel, goalLabel, goalCaption])
-        ringCenter.alignment = .center
-        ringCenter.setCustomSpacing(2, after: goalLabel)
-        goalRing.addSubview(ringCenter)
-        ringCenter.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            goalRing.widthAnchor.constraint(equalToConstant: 168),
-            goalRing.heightAnchor.constraint(equalToConstant: 168),
-            ringCenter.centerXAnchor.constraint(equalTo: goalRing.centerXAnchor),
-            ringCenter.centerYAnchor.constraint(equalTo: goalRing.centerYAnchor),
-            ringCenter.widthAnchor.constraint(lessThanOrEqualToConstant: 120)
+        goalPercentLabel.font = RDFont.numeric(20, weight: .heavy, italic: false)
+        goalPercentLabel.textAlignment = .right
+        let todayHeader = UIStackView(axis: .horizontal, spacing: 8, arrangedSubviews: [
+            makeEyebrow("TODAY'S GOAL", color: RDColor.neonGreen), UIView(), goalPercentLabel
         ])
-        goalRing.isAccessibilityElement = true
+        todayHeader.alignment = .firstBaseline
+        let todayRow = UIStackView(axis: .horizontal, spacing: 4, arrangedSubviews: [todayLabel, goalLabel, UIView()])
+        todayRow.alignment = .lastBaseline
+        goalMeter.isAccessibilityElement = true
 
-        weekLabel.font = RDFont.numeric(48)
+        let divider = UIView()
+        divider.backgroundColor = RDColor.separatorOnDark
+        divider.heightAnchor.constraint(equalToConstant: 1).isActive = true
+
+        weekLabel.font = RDFont.numeric(40)
         weekLabel.textColor = RDColor.warmWhite
         weekDeltaLabel.font = RDFont.numeric(16, weight: .heavy, italic: false)
-        let weekRow = UIStackView(axis: .horizontal, spacing: 8, arrangedSubviews: [weekLabel, weekDeltaLabel, UIView()])
-        weekRow.alignment = .firstBaseline
-        weekChart.heightAnchor.constraint(equalToConstant: 58).isActive = true
-        let week = UIStackView(axis: .vertical, spacing: 4, arrangedSubviews: [
-            makeLabel(text: "THIS WEEK", font: .systemFont(ofSize: 12, weight: .bold), color: RDColor.textSecondary),
-            weekRow,
-            weekChart
+        let weekTotals = UIStackView(axis: .vertical, spacing: 0, arrangedSubviews: [
+            makeEyebrow("THIS WEEK"), weekLabel, weekDeltaLabel
         ])
-        week.setCustomSpacing(8, after: weekRow)
-        let hero = UIStackView(axis: .horizontal, spacing: 20, arrangedSubviews: [goalRing, week])
-        hero.alignment = .center
-        return hero
+        weekTotals.alignment = .leading
+        weekTotals.setContentHuggingPriority(.required, for: .horizontal)
+        weekChart.heightAnchor.constraint(equalToConstant: 64).isActive = true
+        let weekRow = UIStackView(axis: .horizontal, spacing: 20, arrangedSubviews: [weekTotals, weekChart])
+        weekRow.alignment = .bottom
+        weekChart.widthAnchor.constraint(equalTo: weekRow.widthAnchor, multiplier: 0.62).isActive = true
+
+        let content = UIStackView(axis: .vertical, spacing: 4, arrangedSubviews: [todayHeader, todayRow, goalMeter, divider, weekRow])
+        content.setCustomSpacing(10, after: todayRow)
+        content.setCustomSpacing(18, after: goalMeter)
+        content.setCustomSpacing(16, after: divider)
+        let panel = UIView()
+        panel.backgroundColor = RDColor.surface
+        panel.layer.cornerRadius = RDCornerRadius.small
+        panel.addSubview(content)
+        content.pinEdges(to: panel, insets: NSDirectionalEdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16))
+        return panel
     }
 
     private func renderStats(_ stats: WorkoutStats) {
@@ -164,10 +170,13 @@ final class ChooseViewController: RDBaseViewController {
         let goal = preferences.dailyRepGoal
         todayLabel.text = String(stats.todayReps)
         goalLabel.text = "/ %d REPS".rdLocalizedFormat(goal)
-        goalRing.setProgress(CGFloat(stats.todayReps) / CGFloat(goal), animated: true)
-        goalRing.progressColor = stats.todayReps >= goal ? RDColor.ember : RDColor.neonGreen
-        goalRing.accessibilityLabel = "Today's goal".rdLocalized
-        goalRing.accessibilityValue = "%1$d of %2$d reps".rdLocalizedFormat(stats.todayReps, goal)
+        let progress = CGFloat(stats.todayReps) / CGFloat(max(goal, 1))
+        let meterColor = stats.todayReps >= goal ? RDColor.ember : RDColor.neonGreen
+        goalMeter.render(progress: progress, color: meterColor)
+        goalPercentLabel.text = "\(Int(min(progress, 1) * 100))%"
+        goalPercentLabel.textColor = meterColor
+        goalMeter.accessibilityLabel = "Today's goal".rdLocalized
+        goalMeter.accessibilityValue = "%1$d of %2$d reps".rdLocalizedFormat(stats.todayReps, goal)
 
         weekLabel.text = String(stats.thisWeekReps)
         let delta = stats.thisWeekReps - stats.lastWeekReps
@@ -277,5 +286,31 @@ private final class LastSetCard: UIControl {
         detailLabel.text = "%1$@ · %2$d reps".rdLocalizedFormat(when, summary.repCount)
         accessibilityLabel = titleLabel.text
         accessibilityValue = detailLabel.text
+    }
+}
+
+/// Ten slanted segments that light up toward the daily goal.
+private final class RDGoalMeterView: UIView {
+    private static let segmentCount = 10
+    private let segments = (0..<RDGoalMeterView.segmentCount).map { _ in RDSlantedBlockView(slant: 6) }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        translatesAutoresizingMaskIntoConstraints = false
+        let row = UIStackView(axis: .horizontal, spacing: 4, arrangedSubviews: segments)
+        row.distribution = .fillEqually
+        addSubview(row)
+        row.pinEdges(to: self)
+        heightAnchor.constraint(equalToConstant: 14).isActive = true
+    }
+
+    required init?(coder: NSCoder) { nil }
+
+    func render(progress: CGFloat, color: UIColor) {
+        // Any rep lights the first segment so a started day never reads as empty.
+        let lit = progress > 0 ? max(1, Int((min(progress, 1) * CGFloat(Self.segmentCount)).rounded(.down))) : 0
+        for (index, segment) in segments.enumerated() {
+            segment.fillColor = index < lit ? color : RDColor.surfaceSecondary
+        }
     }
 }

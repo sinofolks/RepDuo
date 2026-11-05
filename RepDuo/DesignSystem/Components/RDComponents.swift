@@ -257,7 +257,8 @@ final class RDWordmarkView: UIView {
         accessibilityLabel = "RepDuo"
         let ink = surface == .dark ? RDColor.warmWhite : RDColor.background
         let mark = RDLogoMarkView(leadingColor: ink, trailingColor: surface == .dark ? RDColor.neonGreen : RDColor.background)
-        let wordmark = UILabel()
+        // RDNumberLabel reserves room for the sheared glyphs so the last letter isn't clipped.
+        let wordmark = RDNumberLabel()
         wordmark.text = "REPDUO"
         wordmark.textColor = ink
         wordmark.font = RDFont.numeric(size, maximumScale: 1)
@@ -691,7 +692,7 @@ final class RDExerciseCard: UIControl {
         layer.cornerRadius = RDCornerRadius.small
         layer.borderWidth = 2
 
-        symbolView.image = UIImage(systemName: exercise.symbolName)
+        symbolView.image = RDSideProfile.image(for: exercise, size: 52)
         symbolView.contentMode = .scaleAspectFit
         symbolView.translatesAutoresizingMaskIntoConstraints = false
         tagLabel.setEyebrow(exercise.scoreboardName)
@@ -723,8 +724,8 @@ final class RDExerciseCard: UIControl {
             heightAnchor.constraint(greaterThanOrEqualToConstant: 132),
             dot.widthAnchor.constraint(equalToConstant: 14),
             dot.heightAnchor.constraint(equalToConstant: 14),
-            symbolView.widthAnchor.constraint(equalToConstant: 40),
-            symbolView.heightAnchor.constraint(equalToConstant: 40)
+            symbolView.widthAnchor.constraint(equalToConstant: 52),
+            symbolView.heightAnchor.constraint(equalToConstant: 52)
         ])
         accessibilityTraits = .button
         setPersonalBest(0)
@@ -768,11 +769,80 @@ final class RDExerciseCard: UIControl {
     }
 }
 
+/// Side-view stick figures for each exercise. Tracking reads the body from the side,
+/// so icons and the camera guide show the pose the way the camera should see it.
+enum RDSideProfile {
+    private struct Figure {
+        let head: CGPoint
+        let headRadius: CGFloat
+        /// Polylines in a unit square, facing right.
+        let limbs: [[CGPoint]]
+    }
+
+    private static func figure(for exercise: ExerciseType) -> Figure {
+        switch exercise {
+        case .squat:
+            return Figure(
+                head: CGPoint(x: 0.44, y: 0.13),
+                headRadius: 0.09,
+                limbs: [
+                    [CGPoint(x: 0.41, y: 0.27), CGPoint(x: 0.22, y: 0.58), CGPoint(x: 0.58, y: 0.63),
+                     CGPoint(x: 0.48, y: 0.93), CGPoint(x: 0.64, y: 0.93)],
+                    [CGPoint(x: 0.39, y: 0.31), CGPoint(x: 0.84, y: 0.33)]
+                ]
+            )
+        case .pushUp:
+            return Figure(
+                head: CGPoint(x: 0.88, y: 0.43),
+                headRadius: 0.075,
+                limbs: [
+                    [CGPoint(x: 0.76, y: 0.53), CGPoint(x: 0.40, y: 0.61), CGPoint(x: 0.06, y: 0.70)],
+                    [CGPoint(x: 0.76, y: 0.53), CGPoint(x: 0.77, y: 0.82)]
+                ]
+            )
+        }
+    }
+
+    /// Limbs as one open path, head as a separate circle, scaled into `rect`.
+    static func paths(for exercise: ExerciseType, in rect: CGRect) -> (limbs: UIBezierPath, head: UIBezierPath) {
+        let figure = figure(for: exercise)
+        let side = min(rect.width, rect.height)
+        let origin = CGPoint(x: rect.midX - side / 2, y: rect.midY - side / 2)
+        func map(_ point: CGPoint) -> CGPoint { CGPoint(x: origin.x + point.x * side, y: origin.y + point.y * side) }
+        let limbs = UIBezierPath()
+        for line in figure.limbs {
+            guard let first = line.first else { continue }
+            limbs.move(to: map(first))
+            line.dropFirst().forEach { limbs.addLine(to: map($0)) }
+        }
+        let radius = figure.headRadius * side
+        let head = UIBezierPath(ovalIn: CGRect(x: map(figure.head).x - radius, y: map(figure.head).y - radius, width: radius * 2, height: radius * 2))
+        return (limbs, head)
+    }
+
+    /// Template image for cards and lists; tint it like an SF Symbol.
+    static func image(for exercise: ExerciseType, size: CGFloat) -> UIImage {
+        UIGraphicsImageRenderer(size: CGSize(width: size, height: size)).image { _ in
+            let (limbs, head) = paths(for: exercise, in: CGRect(x: 0, y: 0, width: size, height: size))
+            UIColor.black.set()
+            limbs.lineWidth = size * 0.085
+            limbs.lineCapStyle = .round
+            limbs.lineJoinStyle = .round
+            limbs.stroke()
+            head.fill()
+        }.withRenderingMode(.alwaysTemplate)
+    }
+}
+
 /// Lime corner brackets around the tracked body; amber while the pose is not usable.
+/// Before anyone is tracked it shows a dashed side-profile outline of the exercise
+/// so the user knows to stand side-on to the phone.
 final class RDCameraGuideOverlay: UIView {
     private let cornersLayer = CAShapeLayer()
+    private let profileLayer = CAShapeLayer()
     private var joints: [BodyJoint: JointPoint] = [:]
     private var quality: PoseQuality = .missingRequiredJoints
+    var exercise: ExerciseType? { didSet { setNeedsLayout() } }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -781,6 +851,13 @@ final class RDCameraGuideOverlay: UIView {
         cornersLayer.fillColor = UIColor.clear.cgColor
         cornersLayer.lineWidth = 4
         cornersLayer.lineCap = .square
+        profileLayer.fillColor = UIColor.clear.cgColor
+        profileLayer.strokeColor = RDColor.warmWhite.withAlphaComponent(0.7).cgColor
+        profileLayer.lineWidth = 3
+        profileLayer.lineCap = .round
+        profileLayer.lineJoin = .round
+        profileLayer.lineDashPattern = [10, 8]
+        layer.addSublayer(profileLayer)
         layer.addSublayer(cornersLayer)
     }
 
@@ -812,8 +889,10 @@ final class RDCameraGuideOverlay: UIView {
               mapped.count >= 4 else {
             cornersLayer.path = nil
             cornersLayer.opacity = 0
+            showProfile(true)
             return
         }
+        showProfile(false)
         let rect = CGRect(
             x: CGFloat(minX),
             y: CGFloat(minY),
@@ -835,6 +914,21 @@ final class RDCameraGuideOverlay: UIView {
         cornersLayer.path = path.cgPath
         cornersLayer.strokeColor = (quality.permitsCounting ? RDColor.neonGreen : RDColor.warning).cgColor
         cornersLayer.opacity = quality.permitsCounting ? 1 : 0.6
+    }
+
+    private func showProfile(_ visible: Bool) {
+        profileLayer.frame = bounds
+        guard visible, let exercise else {
+            profileLayer.opacity = 0
+            return
+        }
+        // Sits between the title block and the bottom status panel.
+        let side = min(bounds.width * 0.7, bounds.height * 0.38)
+        let rect = CGRect(x: bounds.midX - side / 2, y: bounds.height * 0.47 - side / 2, width: side, height: side)
+        let (limbs, head) = RDSideProfile.paths(for: exercise, in: rect)
+        limbs.append(head)
+        profileLayer.path = limbs.cgPath
+        profileLayer.opacity = 1
     }
 }
 

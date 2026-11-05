@@ -101,6 +101,8 @@ final class CameraSetupViewController: RDBaseViewController {
         view.addSubview(shade)
         shade.pinEdges(to: view)
 
+        // The side-on placement hint only makes sense over the live camera, not the demo photo.
+        guideOverlay.exercise = cameraAccess.state == .authorized ? exercise : nil
         view.addSubview(guideOverlay)
         guideOverlay.pinEdges(to: view)
     }
