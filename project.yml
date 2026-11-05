@@ -10,8 +10,8 @@ settings:
     SWIFT_VERSION: "5.0"
     TARGETED_DEVICE_FAMILY: "1"
     IPHONEOS_DEPLOYMENT_TARGET: "15.0"
-    CURRENT_PROJECT_VERSION: "1"
-    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "3"
+    MARKETING_VERSION: "1.0.2"
     CODE_SIGN_STYLE: Automatic
     DEVELOPMENT_TEAM: 35J449VWJ2
     GENERATE_INFOPLIST_FILE: NO
@@ -27,6 +27,9 @@ targets:
       path: RepDuo/SupportingFiles/Info.plist
       properties:
         CFBundleDisplayName: RepDuo
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        ITSAppUsesNonExemptEncryption: false
         UILaunchScreen:
           UIColorName: LaunchBackground
         UIApplicationSceneManifest:
