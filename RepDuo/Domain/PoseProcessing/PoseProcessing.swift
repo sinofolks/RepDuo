@@ -56,7 +56,8 @@ enum PoseFramingEvaluator {
         // Floor moves lie along the frame, so they are judged by the longer axis.
         let extent = exercise.isFloorMove ? max(width, height) : height
         switch (trackingMode, exercise) {
-        case (.fullBody, .squat) where extent < 0.48, (.fullBody, .lunge) where extent < 0.48:
+        case (.fullBody, .squat) where extent < 0.48, (.fullBody, .lunge) where extent < 0.48,
+             (.fullBody, .jumpRope) where extent < 0.48:
             return PoseFramingEvaluation(isReady: false, guidance: "Move the phone closer while keeping head and ankles visible.".rdLocalized)
         case (.fullBody, .pushUp) where extent < 0.52, (.fullBody, .jumpingJack) where extent < 0.52:
             return PoseFramingEvaluation(isReady: false, guidance: "Move the phone closer while keeping your full body and both arms visible.".rdLocalized)
@@ -66,6 +67,8 @@ enum PoseFramingEvaluator {
             return PoseFramingEvaluation(isReady: false, guidance: "Move the phone closer while keeping hip, knee and ankle visible.".rdLocalized)
         case (.partialBody, .pushUp) where extent < 0.30, (.partialBody, .jumpingJack) where extent < 0.30:
             return PoseFramingEvaluation(isReady: false, guidance: "Move the phone closer while keeping both arms visible.".rdLocalized)
+        case (.partialBody, .jumpRope) where extent < 0.30:
+            return PoseFramingEvaluation(isReady: false, guidance: "Move the phone closer while keeping shoulders and hips visible.".rdLocalized)
         case (.partialBody, .gluteBridge) where extent < 0.30, (.partialBody, .sitUp) where extent < 0.30:
             return PoseFramingEvaluation(isReady: false, guidance: "Move the phone closer while keeping shoulder, hip and knee visible.".rdLocalized)
         default:
@@ -193,6 +196,10 @@ enum PoseQualityEvaluator {
             ]]
         case (.partialBody, .jumpingJack):
             return [[.leftShoulder, .leftWrist, .rightShoulder, .rightWrist, .leftHip, .rightHip]]
+        case (.fullBody, .jumpRope):
+            return [[.leftShoulder, .rightShoulder, .leftHip, .rightHip, .leftAnkle, .rightAnkle]]
+        case (.partialBody, .jumpRope):
+            return [[.leftShoulder, .rightShoulder, .leftHip, .rightHip]]
         }
     }
 }
@@ -256,6 +263,11 @@ enum PoseMeasurementBuilder {
             let raise = zip(arms, weights).map { PoseGeometry.angle($0.0, vertex: $0.1, $0.2) * $1 }
                 .reduce(0, +) / max(.ulpOfOne, weights.reduce(0, +))
             return PoseMeasurement(angle: 180 - raise, formAcceptable: true)
+
+        case .jumpRope:
+            // A skip has no joint that bends; the bounce comes from `JumpRopeMotionEstimator`,
+            // which needs the frames before this one.
+            return PoseMeasurement(angle: nil, formAcceptable: true)
         }
     }
 
@@ -378,6 +390,50 @@ enum PoseMeasurementBuilder {
 
     private static func confidence(of triplet: JointTriplet) -> Double {
         triplet.0.confidence + triplet.1.confidence + triplet.2.confidence
+    }
+}
+
+/// Turns the vertical bounce of a skipping body into the shared rep signal.
+/// Ground level is the lowest hip height in the last moment; lift above it is
+/// divided by torso length, so the distance from the camera doesn't matter.
+struct JumpRopeMotionEstimator {
+    /// Signal degrees per torso length of lift: a 0.1-torso hop reads as 150°.
+    static let liftScale = 300.0
+    private let window: TimeInterval = 1.2
+    private let maximumTrackingGap: TimeInterval = 0.8
+    private let minimumConfidence = 0.35
+    private var hipHeights: [(timestamp: TimeInterval, height: Double)] = []
+
+    mutating func measurement(joints: [BodyJoint: JointPoint], timestamp: TimeInterval) -> PoseMeasurement {
+        if let last = hipHeights.last, timestamp - last.timestamp > maximumTrackingGap {
+            reset()
+        }
+        guard let hip = midpoint(.leftHip, .rightHip, in: joints),
+              let shoulder = midpoint(.leftShoulder, .rightShoulder, in: joints) else {
+            return PoseMeasurement(angle: nil, formAcceptable: false)
+        }
+        let torso = hypot(shoulder.x - hip.x, shoulder.y - hip.y)
+        guard torso > 0.02 else { return PoseMeasurement(angle: nil, formAcceptable: false) }
+
+        hipHeights.append((timestamp, hip.y))
+        hipHeights.removeAll { timestamp - $0.timestamp > window }
+        // Vision's y grows upward, so the ground is the lowest recent hip height.
+        let ground = hipHeights.map(\.height).min() ?? hip.y
+        let lift = max(0, hip.y - ground) / torso
+        return PoseMeasurement(angle: max(0, 180 - lift * Self.liftScale), formAcceptable: true)
+    }
+
+    mutating func reset() {
+        hipHeights.removeAll()
+    }
+
+    private func midpoint(_ first: BodyJoint, _ second: BodyJoint, in joints: [BodyJoint: JointPoint]) -> (x: Double, y: Double)? {
+        let points = [joints[first], joints[second]].compactMap { $0 }.filter { $0.confidence >= minimumConfidence }
+        guard !points.isEmpty else { return nil }
+        return (
+            points.map(\.x).reduce(0, +) / Double(points.count),
+            points.map(\.y).reduce(0, +) / Double(points.count)
+        )
     }
 }
 

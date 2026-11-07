@@ -93,6 +93,21 @@ struct RepDetectionConfiguration: Equatable, Sendable {
         cooldown: 0.15,
         maximumTrackingGap: 0.8
     )
+
+    /// Hip bounce from `JumpRopeMotionEstimator`: 180° on the ground, falling as the body lifts.
+    /// Skips are quick and small, so one frame is enough to confirm a stage.
+    static let jumpRope = RepDetectionConfiguration(
+        topAngle: 172,
+        descentAngle: 166,
+        bottomAngle: 158,
+        bottomExitAngle: 164,
+        minimumRange: 14,
+        stableFrameCount: 1,
+        // Timed from takeoff to landing, which is only a tenth of a second or so.
+        minimumRepDuration: 0.08,
+        cooldown: 0.1,
+        maximumTrackingGap: 0.8
+    )
 }
 
 extension ExerciseType {
@@ -104,6 +119,7 @@ extension ExerciseType {
         case .gluteBridge: return .gluteBridge
         case .sitUp: return .sitUp
         case .jumpingJack: return .jumpingJack
+        case .jumpRope: return .jumpRope
         }
     }
 }

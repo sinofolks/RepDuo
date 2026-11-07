@@ -7,6 +7,7 @@ public enum ExerciseType: String, Codable, CaseIterable, Sendable {
     case gluteBridge
     case sitUp
     case jumpingJack
+    case jumpRope
 
     var displayName: String { scoreboardName.rdLocalized }
 
@@ -19,6 +20,7 @@ public enum ExerciseType: String, Codable, CaseIterable, Sendable {
         case .gluteBridge: return "GLUTE BRIDGE"
         case .sitUp: return "SIT-UP"
         case .jumpingJack: return "JUMPING JACK"
+        case .jumpRope: return "JUMP ROPE"
         }
     }
 
@@ -26,7 +28,7 @@ public enum ExerciseType: String, Codable, CaseIterable, Sendable {
     var isFloorMove: Bool {
         switch self {
         case .pushUp, .gluteBridge, .sitUp: return true
-        case .squat, .lunge, .jumpingJack: return false
+        case .squat, .lunge, .jumpingJack, .jumpRope: return false
         }
     }
 
@@ -35,7 +37,7 @@ public enum ExerciseType: String, Codable, CaseIterable, Sendable {
         switch self {
         case .squat: return "SquatDemo"
         case .pushUp: return "PushUpDemo"
-        case .lunge, .gluteBridge, .sitUp, .jumpingJack: return nil
+        case .lunge, .gluteBridge, .sitUp, .jumpingJack, .jumpRope: return nil
         }
     }
 }
@@ -54,11 +56,12 @@ public enum BodyTrackingMode: String, Codable, CaseIterable, Sendable {
     func setupTitle(for exercise: ExerciseType) -> String {
         switch (self, exercise) {
         case (.fullBody, .pushUp): return "FACE THE CAMERA\nIN PUSH-UP POSITION.".rdLocalized
-        case (.fullBody, .jumpingJack): return "FACE THE CAMERA\nWITH ROOM TO JUMP.".rdLocalized
+        case (.fullBody, .jumpingJack), (.fullBody, .jumpRope): return "FACE THE CAMERA\nWITH ROOM TO JUMP.".rdLocalized
         case (.fullBody, .gluteBridge), (.fullBody, .sitUp): return "LIE SIDE-ON\nTO THE PHONE.".rdLocalized
         case (.fullBody, _): return "GET YOUR FULL\nBODY IN FRAME.".rdLocalized
         case (.partialBody, .squat), (.partialBody, .lunge): return "FRAME YOUR\nLOWER BODY.".rdLocalized
-        case (.partialBody, .pushUp), (.partialBody, .jumpingJack): return "FRAME YOUR\nUPPER BODY.".rdLocalized
+        case (.partialBody, .pushUp), (.partialBody, .jumpingJack), (.partialBody, .jumpRope):
+            return "FRAME YOUR\nUPPER BODY.".rdLocalized
         case (.partialBody, .gluteBridge), (.partialBody, .sitUp): return "FRAME YOUR\nWORKING SIDE.".rdLocalized
         }
     }
@@ -71,11 +74,13 @@ public enum BodyTrackingMode: String, Codable, CaseIterable, Sendable {
         case (.fullBody, .gluteBridge), (.fullBody, .sitUp):
             return "Lie side-on with shoulders, hips, knees and ankles in frame.".rdLocalized
         case (.fullBody, .jumpingJack): return "Face the camera with arms and feet in frame.".rdLocalized
+        case (.fullBody, .jumpRope): return "Face the camera with shoulders, hips and feet in frame.".rdLocalized
         case (.partialBody, .squat), (.partialBody, .lunge): return "Keep one hip, knee and ankle in frame.".rdLocalized
         case (.partialBody, .pushUp): return "Face the camera with both shoulders, elbows and wrists visible.".rdLocalized
         case (.partialBody, .gluteBridge), (.partialBody, .sitUp):
             return "Keep one shoulder, hip and knee in frame.".rdLocalized
         case (.partialBody, .jumpingJack): return "Face the camera with shoulders, wrists and hips visible.".rdLocalized
+        case (.partialBody, .jumpRope): return "Face the camera with shoulders and hips visible.".rdLocalized
         }
     }
 }

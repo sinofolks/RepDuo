@@ -60,6 +60,43 @@ final class HomeExerciseTests: XCTestCase {
         }
     }
 
+    func testJumpRopeMeasuresHipLiftAgainstTorsoLength() {
+        var estimator = JumpRopeMotionEstimator()
+        let grounded = estimator.measurement(joints: skipJoints(hipY: 0.50), timestamp: 0)
+        // Torso is 0.25 tall, so a 0.025 hop is a tenth of a torso.
+        let airborne = estimator.measurement(joints: skipJoints(hipY: 0.525), timestamp: 0.1)
+        XCTAssertEqual(grounded.angle ?? 0, 180, accuracy: 0.01)
+        XCTAssertEqual(airborne.angle ?? 0, 150, accuracy: 0.5)
+    }
+
+    func testJumpRopeCountsEachSkip() {
+        var estimator = JumpRopeMotionEstimator()
+        let engine = RepDetectionEngine(exercise: .jumpRope)
+        // Three skips at 30 fps, each about 0.33 s with the peak held for two frames.
+        let skip = [0.51, 0.525, 0.525, 0.51, 0.50, 0.50, 0.50, 0.50, 0.50, 0.50]
+        let heights = [0.50, 0.50, 0.50] + Array(repeating: skip, count: 3).flatMap { $0 }
+        for (index, height) in heights.enumerated() {
+            let timestamp = Double(index) / 30
+            let measurement = estimator.measurement(joints: skipJoints(hipY: height), timestamp: timestamp)
+            _ = engine.process(PoseFrame(timestamp: timestamp, quality: .excellent, primaryAngle: measurement.angle))
+        }
+        XCTAssertEqual(engine.repCount, 3)
+    }
+
+    func testJumpRopeForgetsTheGroundAfterATrackingGap() {
+        var estimator = JumpRopeMotionEstimator()
+        _ = estimator.measurement(joints: skipJoints(hipY: 0.40), timestamp: 0)
+        let afterGap = estimator.measurement(joints: skipJoints(hipY: 0.50), timestamp: 2)
+        XCTAssertEqual(afterGap.angle ?? 0, 180, accuracy: 0.01)
+    }
+
+    private func skipJoints(hipY: Double) -> [BodyJoint: JointPoint] {
+        [
+            .leftShoulder: point(0.45, hipY + 0.25), .rightShoulder: point(0.55, hipY + 0.25),
+            .leftHip: point(0.46, hipY), .rightHip: point(0.54, hipY)
+        ]
+    }
+
     private func point(_ x: Double, _ y: Double) -> JointPoint {
         JointPoint(x: x, y: y, confidence: 0.95)
     }

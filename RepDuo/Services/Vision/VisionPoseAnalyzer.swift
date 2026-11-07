@@ -36,6 +36,7 @@ final class VisionPoseAnalyzer {
     private let tracker = TargetPersonTracker()
     private var currentTrackID = 0
     private var pushUpMotionEstimator = PushUpMotionEstimator()
+    private var jumpRopeMotionEstimator = JumpRopeMotionEstimator()
     private var previousMaskAvailability: Bool?
     private let segmentationRequest: VNGeneratePersonSegmentationRequest = {
         let request = VNGeneratePersonSegmentationRequest()
@@ -69,6 +70,7 @@ final class VisionPoseAnalyzer {
             needsSilhouetteValidation = silhouette != nil
             smoother.reset()
             pushUpMotionEstimator.reset()
+            jumpRopeMotionEstimator.reset()
         }
         let target = tracking.targetIndex.map { candidates[$0] }
         let personMask = observations.isEmpty
@@ -112,6 +114,8 @@ final class VisionPoseAnalyzer {
                 trackingMode: trackingMode,
                 timestamp: timestamp
             )
+        } else if exercise == .jumpRope {
+            measurement = jumpRopeMotionEstimator.measurement(joints: joints, timestamp: timestamp)
         } else {
             measurement = rawMeasurement
         }
@@ -299,6 +303,7 @@ final class VisionPoseAnalyzer {
         tracker.reset()
         smoother.reset()
         pushUpMotionEstimator.reset()
+        jumpRopeMotionEstimator.reset()
         previousMaskAvailability = nil
     }
 

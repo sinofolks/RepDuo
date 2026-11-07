@@ -293,8 +293,8 @@ final class MovementCoach {
             ? max(defaultExpectedRange * 0.82, baseline.averageRange * 0.90)
             : defaultExpectedRange
         let minimumDuration = wasPersonalized
-            ? max(0.65, baseline.averageDuration * 0.65)
-            : 0.72
+            ? max(fastestControlledRep * 0.9, baseline.averageDuration * 0.65)
+            : fastestControlledRep
         let symmetryError = average(reliableSamples.compactMap(\.symmetryError))
         let alignmentError = average(reliableSamples.compactMap(\.alignmentError))
         let rangeRatio = range / max(1, expectedRange)
@@ -398,8 +398,8 @@ final class MovementCoach {
                 second: (.rightHip, .rightShoulder, .rightWrist),
                 joints: joints
             )
-        case .lunge, .gluteBridge, .sitUp:
-            // Lunges are asymmetric by design; floor moves are filmed side-on with one side hidden.
+        case .lunge, .gluteBridge, .sitUp, .jumpRope:
+            // Skipping has no joint pair to compare. Lunges are asymmetric by design; floor moves are filmed side-on with one side hidden.
             return nil
         }
     }
@@ -465,6 +465,7 @@ final class MovementCoach {
         case .gluteBridge: return 36
         case .sitUp: return 52
         case .jumpingJack: return 95
+        case .jumpRope: return 18
         }
     }
 
@@ -472,7 +473,16 @@ final class MovementCoach {
         switch exercise {
         case .squat: return 18
         case .jumpingJack: return 28
-        case .pushUp, .lunge, .gluteBridge, .sitUp: return 22
+        case .pushUp, .lunge, .gluteBridge, .sitUp, .jumpRope: return 22
+        }
+    }
+
+    /// Below this a rep counts as rushed. Skipping and jumping jacks are meant to be quick.
+    private var fastestControlledRep: TimeInterval {
+        switch exercise {
+        case .jumpRope: return 0.25
+        case .jumpingJack: return 0.45
+        case .squat, .pushUp, .lunge, .gluteBridge, .sitUp: return 0.72
         }
     }
 

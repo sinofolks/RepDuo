@@ -770,7 +770,7 @@ final class RDExerciseCard: UIControl {
 }
 
 /// Stick figures for each exercise, drawn the way the camera should see the pose:
-/// side-on for most moves, front-on for jumping jacks.
+/// side-on for most moves, front-on for jumping jacks and jump rope.
 enum RDSideProfile {
     private struct Figure {
         let head: CGPoint
@@ -840,6 +840,22 @@ enum RDSideProfile {
                     [CGPoint(x: 0.50, y: 0.24), CGPoint(x: 0.50, y: 0.56)],
                     [CGPoint(x: 0.16, y: 0.06), CGPoint(x: 0.50, y: 0.29), CGPoint(x: 0.84, y: 0.06)],
                     [CGPoint(x: 0.22, y: 0.94), CGPoint(x: 0.50, y: 0.56), CGPoint(x: 0.78, y: 0.94)]
+                ]
+            )
+        case .jumpRope:
+            // Front-on mid-skip, with the rope arcing over the head.
+            return Figure(
+                head: CGPoint(x: 0.50, y: 0.26),
+                headRadius: 0.07,
+                limbs: [
+                    [CGPoint(x: 0.50, y: 0.36), CGPoint(x: 0.50, y: 0.64)],
+                    [CGPoint(x: 0.23, y: 0.58), CGPoint(x: 0.36, y: 0.52), CGPoint(x: 0.50, y: 0.40),
+                     CGPoint(x: 0.64, y: 0.52), CGPoint(x: 0.77, y: 0.58)],
+                    [CGPoint(x: 0.42, y: 0.90), CGPoint(x: 0.50, y: 0.64), CGPoint(x: 0.58, y: 0.90)],
+                    [CGPoint(x: 0.23, y: 0.58), CGPoint(x: 0.24, y: 0.42), CGPoint(x: 0.28, y: 0.27),
+                     CGPoint(x: 0.34, y: 0.16), CGPoint(x: 0.42, y: 0.09), CGPoint(x: 0.50, y: 0.06),
+                     CGPoint(x: 0.58, y: 0.09), CGPoint(x: 0.66, y: 0.16), CGPoint(x: 0.72, y: 0.27),
+                     CGPoint(x: 0.76, y: 0.42), CGPoint(x: 0.77, y: 0.58)]
                 ]
             )
         }
