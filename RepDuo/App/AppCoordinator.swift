@@ -130,7 +130,8 @@ final class AppCoordinator {
                 trackingMode: trackingMode
             ),
             setTarget: container.preferences.setRepTarget,
-            personalBest: personalBest
+            personalBest: personalBest,
+            ghost: container.ghosts.ghost(for: exercise)
         )
         let controller = WorkoutViewController(
             session: session,
@@ -161,6 +162,9 @@ final class AppCoordinator {
             )
         }
         let previousBest = currentStats().personalBest(for: summary.exercise)
+        if let ghostTrack = summary.ghostTrack {
+            container.ghosts.keepIfBest(ghostTrack)
+        }
         do {
             try container.persistence.save(summary)
         } catch {
@@ -195,7 +199,7 @@ final class AppCoordinator {
     }
 
     private func showSettings() {
-        let controller = SettingsViewController(preferences: container.preferences, store: container.persistence)
+        let controller = SettingsViewController(preferences: container.preferences, store: container.persistence, ghosts: container.ghosts)
         navigationController.pushViewController(controller, animated: true)
     }
 

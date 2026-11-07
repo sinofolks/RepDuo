@@ -30,8 +30,11 @@ final class WorkoutSession {
     private var heartRates: [Double] = []
     private var assessmentMessageUntil: TimeInterval?
     private var rewardTracker: RepRewardTracker
+    private var ghostRecorder = GhostRecorder()
 
     let exercise: ExerciseType
+    /// Best earlier set of this move, raced live; nil until one is recorded.
+    let ghost: GhostTrack?
     private(set) var state: WorkoutViewState
 
     var onStateChange: ((WorkoutViewState, Bool) -> Void)?
@@ -42,10 +45,12 @@ final class WorkoutSession {
         baseline: MovementBaseline? = nil,
         setTarget: Int = 12,
         personalBest: Int = 0,
+        ghost: GhostTrack? = nil,
         startedAt: Date = Date(),
         monotonicStart: TimeInterval = ProcessInfo.processInfo.systemUptime
     ) {
         self.exercise = exercise
+        self.ghost = ghost?.exercise == exercise ? ghost : nil
         self.startedAt = startedAt
         self.monotonicStart = monotonicStart
         self.detector = RepDetectionEngine(exercise: exercise)
@@ -88,8 +93,13 @@ final class WorkoutSession {
         if assessment != nil {
             assessmentMessageUntil = frame.timestamp + 2.4
         }
+        let elapsed = activeElapsed(at: frame.timestamp)
+        if frame.quality.permitsCounting {
+            ghostRecorder.record(frame.joints, at: elapsed)
+        }
         if update.completedRep {
             rewardTracker.register(repNumber: update.repCount, score: assessment?.score)
+            ghostRecorder.markRep(at: elapsed)
         }
         let latestAssessment = assessment ?? state.lastRepCoaching
         let message: String
@@ -175,6 +185,7 @@ final class WorkoutSession {
         let assessment = coach.registerDebugRep(repNumber: update.repCount, timestamp: timestamp)
         assessmentMessageUntil = timestamp + 2.4
         rewardTracker.register(repNumber: update.repCount, score: assessment.score)
+        ghostRecorder.markRep(at: activeElapsed(at: timestamp))
         state = WorkoutViewState(
             exercise: state.exercise,
             phase: update.phase,
@@ -191,10 +202,20 @@ final class WorkoutSession {
         onStateChange?(state, true)
     }
 
-    func finish(at date: Date = Date(), monotonicTime: TimeInterval = ProcessInfo.processInfo.systemUptime) -> WorkoutSummary {
+    /// Seconds of unpaused set time at `timestamp`; the ghost's clock.
+    func activeElapsed(at timestamp: TimeInterval = ProcessInfo.processInfo.systemUptime) -> TimeInterval {
         var paused = totalPausedDuration
-        if let pauseStartedAt { paused += max(0, monotonicTime - pauseStartedAt) }
-        let duration = max(0, monotonicTime - monotonicStart - paused)
+        if let pauseStartedAt { paused += max(0, timestamp - pauseStartedAt) }
+        return max(0, timestamp - monotonicStart - paused)
+    }
+
+    /// Live standing against the ghost, or nil when there is none to race.
+    func ghostStatus(at timestamp: TimeInterval = ProcessInfo.processInfo.systemUptime) -> GhostRaceStatus? {
+        ghost.map { GhostRaceStatus(track: $0, liveReps: state.repCount, elapsed: activeElapsed(at: timestamp)) }
+    }
+
+    func finish(at date: Date = Date(), monotonicTime: TimeInterval = ProcessInfo.processInfo.systemUptime) -> WorkoutSummary {
+        let duration = activeElapsed(at: monotonicTime)
         return WorkoutSummary(
             exercise: exercise,
             startedAt: startedAt,
@@ -206,7 +227,8 @@ final class WorkoutSession {
             lowConfidenceEventCount: lowConfidenceEventCount,
             coachingReport: coach.report(),
             learnedBaseline: coach.baseline,
-            rewards: rewardTracker.summary
+            rewards: rewardTracker.summary,
+            ghostTrack: ghostRecorder.track(exercise: exercise, duration: duration, recordedAt: startedAt)
         )
     }
 

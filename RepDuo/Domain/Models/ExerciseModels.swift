@@ -148,6 +148,8 @@ public struct WorkoutSummary: Equatable, Sendable {
     public let learnedBaseline: MovementBaseline?
     /// Stars and streaks from the live set; not persisted, like the coaching report.
     public let rewards: SetRewards?
+    /// This set as a ghost for later races; stored apart from the history record.
+    public let ghostTrack: GhostTrack?
 
     public init(
         id: UUID = UUID(),
@@ -162,7 +164,8 @@ public struct WorkoutSummary: Equatable, Sendable {
         algorithmVersion: String = "coach-rules-1.0",
         coachingReport: WorkoutCoachingReport? = nil,
         learnedBaseline: MovementBaseline? = nil,
-        rewards: SetRewards? = nil
+        rewards: SetRewards? = nil,
+        ghostTrack: GhostTrack? = nil
     ) {
         self.id = id
         self.exercise = exercise
@@ -177,6 +180,7 @@ public struct WorkoutSummary: Equatable, Sendable {
         self.coachingReport = coachingReport
         self.learnedBaseline = learnedBaseline
         self.rewards = rewards
+        self.ghostTrack = ghostTrack
     }
 
     var averageTempo: TimeInterval? {

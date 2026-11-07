@@ -18,6 +18,10 @@ final class WorkoutViewController: RDBaseViewController {
     private let phaseTag = RDTag(background: RDColor.warmWhite)
     private let recordTag = RDTag(text: "NEW RECORD", background: RDColor.ember)
     private let comboTag = RDTag(background: RDColor.neonGreen)
+    private let ghostOverlay = GhostOverlayView()
+    private let ghostTag = RDTag(symbolName: "figure.run", background: RDColor.warmWhite)
+    private var ghostLink: CADisplayLink?
+    private var lastGhostLead: Int?
     private let starBar = RDStarProgressView()
     private let targetLabel = UILabel()
     private let ratingLabel = UILabel()
@@ -140,6 +144,8 @@ final class WorkoutViewController: RDBaseViewController {
         #endif
         if cameraAccess.state == .authorized { pipeline.attach(renderView: cameraView) }
 
+        startGhostRace()
+
         backgroundObserver = NotificationCenter.default.addObserver(
             forName: UIApplication.didEnterBackgroundNotification,
             object: nil,
@@ -149,6 +155,68 @@ final class WorkoutViewController: RDBaseViewController {
 
     deinit {
         if let backgroundObserver { NotificationCenter.default.removeObserver(backgroundObserver) }
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        ghostLink?.invalidate()
+        ghostLink = nil
+    }
+
+    // MARK: Ghost race
+
+    /// The ghost runs on the session's active clock, so it advances between pose
+    /// frames and stops while the set is paused.
+    private func startGhostRace() {
+        guard session.ghost != nil else { return }
+        let link = CADisplayLink(target: GhostLinkTarget(owner: self), selector: #selector(GhostLinkTarget.tick))
+        link.preferredFramesPerSecond = 30
+        link.add(to: .main, forMode: .common)
+        ghostLink = link
+        updateGhost()
+    }
+
+    fileprivate func updateGhost() {
+        guard let ghost = session.ghost, let status = session.ghostStatus() else { return }
+        let elapsed = session.activeElapsed()
+        ghostOverlay.render(session.state.isPaused ? nil : ghost.pose(at: elapsed))
+        renderGhostTag(status)
+    }
+
+    private func renderGhostTag(_ status: GhostRaceStatus) {
+        let text: String
+        let background: UIColor
+        if status.ghostFinished && status.lead > 0 {
+            text = "Ghost beaten · +%d".rdLocalizedFormat(status.lead)
+            background = RDColor.neonGreen
+        } else if status.ghostFinished {
+            text = "Ghost stopped at %d".rdLocalizedFormat(status.ghostReps)
+            background = RDColor.warmWhite
+        } else if status.lead > 0 {
+            text = "Ghost %1$d · ahead %2$d".rdLocalizedFormat(status.ghostReps, status.lead)
+            background = RDColor.neonGreen
+        } else if status.lead < 0 {
+            text = "Ghost %1$d · behind %2$d".rdLocalizedFormat(status.ghostReps, -status.lead)
+            background = RDColor.ember
+        } else {
+            text = "Ghost %d · level".rdLocalizedFormat(status.ghostReps)
+            background = RDColor.warmWhite
+        }
+        if ghostTag.text != text {
+            ghostTag.text = text
+            ghostTag.setColors(background: background, foreground: RDColor.background)
+            ghostTag.accessibilityLabel = text
+        }
+        // Overtaking is the moment worth feeling.
+        if let lastGhostLead, lastGhostLead <= 0, status.lead > 0 {
+            feedback.selectionChanged()
+            UIView.animate(withDuration: 0.12, animations: {
+                self.ghostTag.transform = CGAffineTransform(scaleX: 1.15, y: 1.15)
+            }, completion: { _ in
+                UIView.animate(withDuration: 0.2) { self.ghostTag.transform = .identity }
+            })
+        }
+        lastGhostLead = status.lead
     }
 
     override func viewDidLayoutSubviews() {
@@ -173,6 +241,8 @@ final class WorkoutViewController: RDBaseViewController {
         fallbackImageView.pinEdges(to: view)
         cameraView.isHidden = false
         fallbackImageView.isHidden = cameraAccess.state == .authorized
+        view.addSubview(ghostOverlay)
+        ghostOverlay.pinEdges(to: view)
         cameraView.intensity = preferences.neonIntensity
 
         let gradient = RDGradientOverlayView()
@@ -232,7 +302,11 @@ final class WorkoutViewController: RDBaseViewController {
         let topRight = UIStackView(axis: .vertical, spacing: 4, arrangedSubviews: [exerciseLabel, heartRateLabel, audioRouteLabel])
         topRight.alignment = .trailing
         qualityPill.setContentHuggingPriority(.required, for: .horizontal)
-        topStack = UIStackView(axis: .horizontal, spacing: 12, arrangedSubviews: [qualityPill, UIView(), topRight])
+        ghostTag.isHidden = session.ghost == nil
+        ghostTag.accessibilityIdentifier = "workout.ghost"
+        let topLeft = UIStackView(axis: .vertical, spacing: 8, arrangedSubviews: [qualityPill, ghostTag])
+        topLeft.alignment = .leading
+        topStack = UIStackView(axis: .horizontal, spacing: 12, arrangedSubviews: [topLeft, UIView(), topRight])
         topStack.alignment = .top
 
         let count = UIView()
@@ -747,5 +821,18 @@ private enum BlackStageImageProcessor {
             }
             DispatchQueue.main.async { completion(output) }
         }
+    }
+}
+
+/// Breaks the display link's strong reference to the workout screen.
+private final class GhostLinkTarget {
+    private weak var owner: WorkoutViewController?
+
+    init(owner: WorkoutViewController) {
+        self.owner = owner
+    }
+
+    @objc func tick() {
+        owner?.updateGhost()
     }
 }

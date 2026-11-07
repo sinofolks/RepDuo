@@ -409,3 +409,10 @@
 "Face the camera with shoulders, hips and feet in frame." = "Face the camera with shoulders, hips and feet in frame.";
 "Face the camera with shoulders and hips visible." = "Face the camera with shoulders and hips visible.";
 "Move the phone closer while keeping shoulders and hips visible." = "Move the phone closer while keeping shoulders and hips visible.";
+
+/* Ghost race */
+"Ghost %1$d · ahead %2$d" = "Ghost %1$d · ahead %2$d";
+"Ghost %1$d · behind %2$d" = "Ghost %1$d · behind %2$d";
+"Ghost %d · level" = "Ghost %d · level";
+"Ghost beaten · +%d" = "Ghost beaten · +%d";
+"Ghost stopped at %d" = "Ghost stopped at %d";

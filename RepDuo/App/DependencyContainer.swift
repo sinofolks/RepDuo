@@ -3,6 +3,7 @@ import Foundation
 final class DependencyContainer {
     let preferences: AppPreferences
     let persistence: WorkoutPersistenceStore
+    let ghosts: GhostStore
     let cameraAuthorization: CameraAuthorizationService
     let cameraPipeline: CameraVisionPipeline
     let audioRoute: AudioRouteService
@@ -13,6 +14,7 @@ final class DependencyContainer {
         let preferences = AppPreferences()
         self.preferences = preferences
         self.persistence = WorkoutPersistenceStore()
+        self.ghosts = GhostStore()
         self.cameraAuthorization = CameraAuthorizationService()
         self.cameraPipeline = CameraVisionPipeline()
         self.audioRoute = AudioRouteService()

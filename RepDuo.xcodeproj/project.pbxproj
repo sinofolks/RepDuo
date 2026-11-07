@@ -71,6 +71,10 @@
 		9C380AFB751193413A8AAAE1 /* RepRewards.swift in Sources */ = {isa = PBXBuildFile; fileRef = F87921834A0AE99D9D6D025D /* RepRewards.swift */; };
 		D96E5A6A57D992EE09593629 /* RepRewardsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8179B30FBDF58CA8B3C96275 /* RepRewardsTests.swift */; };
 		F9C0CB0ABBAA0D551BE04531 /* HomeExerciseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1693951047D9722C2C600C82 /* HomeExerciseTests.swift */; };
+		ACF6A3A491780D94962FC135 /* GhostRace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FDA6DA26823F06AEF573F41 /* GhostRace.swift */; };
+		0528F4979EC155C1A7A2E07A /* GhostStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7271089BB98E148FEEC5CBB /* GhostStore.swift */; };
+		E0E46EE2B5EA99971ACA11A3 /* GhostOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A76237B81983EFA104B95F /* GhostOverlayView.swift */; };
+		CB8F5CD2E2F2C3F9681F89C0 /* GhostRaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E66556BECA68B774313BC64D /* GhostRaceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -162,6 +166,10 @@
 		F87921834A0AE99D9D6D025D /* RepRewards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepRewards.swift; sourceTree = "<group>"; };
 		8179B30FBDF58CA8B3C96275 /* RepRewardsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepRewardsTests.swift; sourceTree = "<group>"; };
 		1693951047D9722C2C600C82 /* HomeExerciseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeExerciseTests.swift; sourceTree = "<group>"; };
+		7FDA6DA26823F06AEF573F41 /* GhostRace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GhostRace.swift; sourceTree = "<group>"; };
+		E7271089BB98E148FEEC5CBB /* GhostStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GhostStore.swift; sourceTree = "<group>"; };
+		00A76237B81983EFA104B95F /* GhostOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GhostOverlayView.swift; sourceTree = "<group>"; };
+		E66556BECA68B774313BC64D /* GhostRaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GhostRaceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -257,6 +265,7 @@
 			isa = PBXGroup;
 			children = (
 				EED721A2B31E3C4D34DA5987 /* CoachScaleView.swift */,
+				00A76237B81983EFA104B95F /* GhostOverlayView.swift */,
 				D8724CBFFC2D7D0723BB0C2A /* CountdownViewController.swift */,
 				C484E4867921B2216CB7EF2F /* RDGradientOverlayView.swift */,
 				61D46976B03465640FA67934 /* WorkoutViewController.swift */,
@@ -288,6 +297,7 @@
 				EF924B1624351FB3428E6F7A /* WorkoutSession.swift */,
 				52473B18A4BA84BB782A5A54 /* WorkoutStats.swift */,
 				F87921834A0AE99D9D6D025D /* RepRewards.swift */,
+				7FDA6DA26823F06AEF573F41 /* GhostRace.swift */,
 			);
 			path = WorkoutSession;
 			sourceTree = "<group>";
@@ -386,6 +396,7 @@
 			isa = PBXGroup;
 			children = (
 				69DC10FEF3420926A00C6BDA /* AppPreferences.swift */,
+				E7271089BB98E148FEEC5CBB /* GhostStore.swift */,
 				8B1FDDBED2E2092B423A5E23 /* WorkoutPersistenceStore.swift */,
 			);
 			path = Persistence;
@@ -503,6 +514,7 @@
 				FA1AB53F3B88CBF5DF39FFD8 /* RepFixtureTests.swift */,
 				8B252BC752F9D2DD2CE13129 /* SkinnedSilhouetteTests.swift */,
 				8179B30FBDF58CA8B3C96275 /* RepRewardsTests.swift */,
+				E66556BECA68B774313BC64D /* GhostRaceTests.swift */,
 				1693951047D9722C2C600C82 /* HomeExerciseTests.swift */,
 				BB0197E6768F8FAFA9296BED /* TargetPersonTrackerTests.swift */,
 				504318BB0FAB956187354FB1 /* WorkoutSessionTests.swift */,
@@ -667,6 +679,7 @@
 				30CB77B11CF9056831E1D0D4 /* RepFixtureTests.swift in Sources */,
 				4B581310C32C3C56DA162D08 /* SkinnedSilhouetteTests.swift in Sources */,
 				D96E5A6A57D992EE09593629 /* RepRewardsTests.swift in Sources */,
+				CB8F5CD2E2F2C3F9681F89C0 /* GhostRaceTests.swift in Sources */,
 				F9C0CB0ABBAA0D551BE04531 /* HomeExerciseTests.swift in Sources */,
 				256E2CC020DC87E83B18D26A /* TargetPersonTrackerTests.swift in Sources */,
 				23FBCE5D26AE5E28BF7C904D /* WorkoutPersistenceStoreTests.swift in Sources */,
@@ -682,6 +695,7 @@
 				2FA2746FE4924DD8826E0EBA /* AppCoordinator.swift in Sources */,
 				AE768E3F953EEB200F18841D /* AppDelegate.swift in Sources */,
 				5CCE89AC3580009E743E95E1 /* AppPreferences.swift in Sources */,
+				0528F4979EC155C1A7A2E07A /* GhostStore.swift in Sources */,
 				004710B1DA9B932BF66D5EF5 /* AudioRouteService.swift in Sources */,
 				55EFC25283DBE8A0F9A5385D /* BodyStageCompositor.swift in Sources */,
 				2CB3D9C2DEFDDB635FB5111A /* CameraAuthorizationService.swift in Sources */,
@@ -691,6 +705,7 @@
 				9E28D324B9CF7DF02D114807 /* CameraVisionPipeline.swift in Sources */,
 				E2A117A0449811293057229A /* ChooseViewController.swift in Sources */,
 				6427CC6EA7522E7DB642F8ED /* CoachScaleView.swift in Sources */,
+				E0E46EE2B5EA99971ACA11A3 /* GhostOverlayView.swift in Sources */,
 				2848B5C4CE177209F1433A4A /* CompleteViewController.swift in Sources */,
 				CF00CC34A8D3F65859F8C8E6 /* CountdownViewController.swift in Sources */,
 				E018C1DADE1915E063CA5FB2 /* DependencyContainer.swift in Sources */,
@@ -722,6 +737,7 @@
 				94191592371A371D214F0C9C /* WorkoutSession.swift in Sources */,
 				50089A26959EEE0DFC2F1094 /* WorkoutStats.swift in Sources */,
 				9C380AFB751193413A8AAAE1 /* RepRewards.swift in Sources */,
+				ACF6A3A491780D94962FC135 /* GhostRace.swift in Sources */,
 				F5CF74C4595680069B6A1628 /* WorkoutViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

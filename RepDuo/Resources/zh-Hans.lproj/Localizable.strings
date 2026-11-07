@@ -409,3 +409,10 @@
 "Face the camera with shoulders, hips and feet in frame." = "正对镜头，确保肩、髋和双脚都在画面内。";
 "Face the camera with shoulders and hips visible." = "正对镜头，保持肩部和髋部可见。";
 "Move the phone closer while keeping shoulders and hips visible." = "请将手机移近，同时保持肩部和髋部可见。";
+
+/* Ghost race */
+"Ghost %1$d · ahead %2$d" = "影子 %1$d · 领先 %2$d";
+"Ghost %1$d · behind %2$d" = "影子 %1$d · 落后 %2$d";
+"Ghost %d · level" = "影子 %d · 持平";
+"Ghost beaten · +%d" = "已超越影子 +%d";
+"Ghost stopped at %d" = "影子停在 %d 次";

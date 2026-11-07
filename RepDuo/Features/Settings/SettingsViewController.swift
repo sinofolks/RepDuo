@@ -14,11 +14,13 @@ final class SettingsViewController: RDBaseViewController {
 
     private let preferences: AppPreferences
     private let store: WorkoutPersistenceStore
+    private let ghosts: GhostStore
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
 
-    init(preferences: AppPreferences, store: WorkoutPersistenceStore) {
+    init(preferences: AppPreferences, store: WorkoutPersistenceStore, ghosts: GhostStore) {
         self.preferences = preferences
         self.store = store
+        self.ghosts = ghosts
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -65,6 +67,8 @@ final class SettingsViewController: RDBaseViewController {
         )
         alert.addAction(UIAlertAction(title: "Cancel".rdLocalized, style: .cancel))
         alert.addAction(UIAlertAction(title: "Clear".rdLocalized, style: .destructive) { [weak self] _ in
+            // Ghosts are past sets too, so they go with the history.
+            self?.ghosts.deleteAll()
             do { try self?.store.deleteAll() }
             catch { self?.showStoreError(error) }
         })

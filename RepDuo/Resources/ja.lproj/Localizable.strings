@@ -409,3 +409,10 @@
 "Face the camera with shoulders, hips and feet in frame." = "カメラに向いて、肩、腰、両足をフレーム内に入れてください。";
 "Face the camera with shoulders and hips visible." = "カメラに向いて、肩と腰が見えるようにしてください。";
 "Move the phone closer while keeping shoulders and hips visible." = "肩と腰が見える範囲で、スマートフォンを近づけてください。";
+
+/* Ghost race */
+"Ghost %1$d · ahead %2$d" = "ゴースト %1$d · %2$d リード";
+"Ghost %1$d · behind %2$d" = "ゴースト %1$d · %2$d 遅れ";
+"Ghost %d · level" = "ゴースト %d · 互角";
+"Ghost beaten · +%d" = "ゴーストに勝利 +%d";
+"Ghost stopped at %d" = "ゴーストは %d 回で終了";
